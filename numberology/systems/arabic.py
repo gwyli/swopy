@@ -30,9 +30,9 @@ class Arabic(System[int]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> _limits(10)
+            >>> Arabic._limits(10)
             10
-            >>> _limits(3999)
+            >>> Arabic._limits(3999)
             3999
         """
         return number
@@ -48,11 +48,11 @@ class Arabic(System[int]):
             The Arabic numeral representation of the number.
 
         Examples:
-            >>> from_int(1)
+            >>> Arabic.from_int(1)
             1
-            >>> from_int(10)
+            >>> Arabic.from_int(10)
             10
-            >>> from_int(42)
+            >>> Arabic.from_int(42)
             42
         """
         return Arabic._limits(number)
@@ -68,11 +68,11 @@ class Arabic(System[int]):
             The integer representation of the Arabic numeral.
 
         Examples:
-            >>> to_int(1)
+            >>> Arabic.to_int(1)
             1
-            >>> to_int(10)
+            >>> Arabic.to_int(10)
             10
-            >>> to_int(42)
+            >>> Arabic.to_int(42)
             42
         """
         return Arabic._limits(int(number))

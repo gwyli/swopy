@@ -45,9 +45,9 @@ class Egyptian(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> _limits(1)
+            >>> Egyptian._limits(1)
             1
-            >>> _limits(1000000)
+            >>> Egyptian._limits(1000000)
             1000000
         """
         if number < Egyptian.minimum:
@@ -71,9 +71,9 @@ class Egyptian(System[str]):
             The Egyptian hieroglyph string representation of the number.
 
         Examples:
-            >>> from_int(1) == "\U000133fa"
+            >>> Egyptian.from_int(1) == "\U000133fa"
             True
-            >>> from_int(101) == "\U00013362\U000133fa"
+            >>> Egyptian.from_int(101) == "\U00013362\U000133fa"
             True
         """
         result = ""
@@ -99,9 +99,9 @@ class Egyptian(System[str]):
             The integer representation of the Egyptian hieroglyphs.
 
         Examples:
-            >>> to_int("\U000133fa")  # Single unit hieroglyph
+            >>> Egyptian.to_int("\U000133fa")  # Single unit hieroglyph
             1
-            >>> to_int("\U00013386")  # Ten hieroglyph
+            >>> Egyptian.to_int("\U00013386")  # Ten hieroglyph
             10
         """
         total: int = 0

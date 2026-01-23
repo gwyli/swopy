@@ -51,15 +51,15 @@ class Roman(System[str]):
             ValueError: If the number is not in the range 1..3999.
 
         Examples:
-            >>> _limits(1)
+            >>> Roman._limits(1)
             1
-            >>> _limits(3999)
+            >>> Roman._limits(3999)
             3999
-            >>> _limits(0)
+            >>> Roman._limits(0)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be between 1 and 3999
-            >>> _limits(4000)
+            >>> Roman._limits(4000)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be between 1 and 3999
@@ -88,17 +88,17 @@ class Roman(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> from_int(1)
+            >>> Roman.from_int(1)
             'I'
-            >>> from_int(10)
+            >>> Roman.from_int(10)
             'X'
-            >>> from_int(4)
+            >>> Roman.from_int(4)
             'IV'
-            >>> from_int(9)
+            >>> Roman.from_int(9)
             'IX'
-            >>> from_int(42)
+            >>> Roman.from_int(42)
             'XLII'
-            >>> from_int(1994)
+            >>> Roman.from_int(1994)
             'MCMXCIV'
         """
         result: str = ""
@@ -128,21 +128,21 @@ class Roman(System[str]):
             ValueError: If the string contains invalid Roman numerals.
 
         Examples:
-            >>> to_int('I')
+            >>> Roman.to_int('I')
             1
-            >>> to_int('X')
+            >>> Roman.to_int('X')
             10
-            >>> to_int('IV')
+            >>> Roman.to_int('IV')
             4
-            >>> to_int('IX')
+            >>> Roman.to_int('IX')
             9
-            >>> to_int('XLII')
+            >>> Roman.to_int('XLII')
             42
-            >>> to_int('MCMXCIV')
+            >>> Roman.to_int('MCMXCIV')
             1994
-            >>> to_int('i')  # Case insensitive
+            >>> Roman.to_int('i')  # Case insensitive
             1
-            >>> to_int('Z')
+            >>> Roman.to_int('Z')
             Traceback (most recent call last):
                 ...
             ValueError: Invalid Roman character: Z
