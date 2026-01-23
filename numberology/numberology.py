@@ -36,6 +36,8 @@ class Numberology:
             '\U00013386'
             >>> converter.convert('X', System.ROMAN, System.EGYPTIAN)
             '\U00013386'
+            >>> converter.convert('X', System.ROMAN, System.ROMAN)
+            'X'
         """
         intermediate = self._convert_to_int(number, from_system)
 
