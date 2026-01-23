@@ -5,69 +5,74 @@ It's a placeholder module since Arabic numerals are the standard integer represe
 """
 
 from sys import maxsize
+from typing import ClassVar
 
-MINIMUM: int = -maxsize
-MAXIMUM: int = maxsize
-
-MAXIMUM_IS_MANY: bool = False
+from numberology.system import System
 
 
-def _limits(number: int) -> int:
-    """Placeholder function for validating Arabic numerals.
+class Arabic(System[int]):
+    minimum: ClassVar[int] = -maxsize
+    maximum: ClassVar[int] = maxsize
 
-    Args:
-        number: The number to validate.
+    maximum_is_many: ClassVar[bool] = False
 
-    Returns:
-        The validated number.
+    @staticmethod
+    def _limits(number: int) -> int:
+        """Placeholder function for validating Arabic numerals.
 
-    Raises:
-        ValueError: If the number is outside the valid range.
+        Args:
+            number: The number to validate.
 
-    Examples:
-        >>> _limits(10)
-        10
-        >>> _limits(3999)
-        3999
-    """
-    return number
+        Returns:
+            The validated number.
 
+        Raises:
+            ValueError: If the number is outside the valid range.
 
-def from_int(number: int) -> int:
-    """Placeholder function for converting an integer to a Arabic numeral.
+        Examples:
+            >>> _limits(10)
+            10
+            >>> _limits(3999)
+            3999
+        """
+        return number
 
-    Args:
-        number: The integer to convert.
+    @staticmethod
+    def from_int(number: int) -> int:
+        """Placeholder function for converting an integer to a Arabic numeral.
 
-    Returns:
-        The Arabic numeral representation of the number.
+        Args:
+            number: The integer to convert.
 
-    Examples:
-        >>> from_int(1)
-        1
-        >>> from_int(10)
-        10
-        >>> from_int(42)
-        42
-    """
-    return _limits(number)
+        Returns:
+            The Arabic numeral representation of the number.
 
+        Examples:
+            >>> from_int(1)
+            1
+            >>> from_int(10)
+            10
+            >>> from_int(42)
+            42
+        """
+        return Arabic._limits(number)
 
-def to_int(number: int | str) -> int:
-    """Placeholder function for converting an Arabic numeral to an integer.
+    @staticmethod
+    def to_int(number: int | str) -> int:
+        """Placeholder function for converting an Arabic numeral to an integer.
 
-    Args:
-        number: The Arabic numeral to convert.
+        Args:
+            number: The Arabic numeral to convert.
 
-    Returns:
-        The integer representation of the Arabic numeral.
+        Returns:
+            The integer representation of the Arabic numeral.
 
-    Examples:
-        >>> to_int(1)
-        1
-        >>> to_int(10)
-        10
-        >>> to_int(42)
-        42
-    """
-    return _limits(int(number))
+        Examples:
+            >>> to_int(1)
+            1
+            >>> to_int(10)
+            10
+            >>> to_int(42)
+            42
+        """
+        return Arabic._limits(int(number))

@@ -5,103 +5,109 @@ Egyptian numerals use a base-10 system with unique hieroglyph symbols for
 values 1, 10, 100, 1000, 10000, 100000, and 1000000.
 """
 
-FROM_INT: dict[int, str] = {
-    1_000_000: "\U00013069",
-    100_000: "\U00013153",
-    10_000: "\U000130ad",
-    1_000: "\U000131bc",
-    100: "\U00013362",
-    10: "\U00013386",
-    1: "\U000133fa",
-}
+from typing import ClassVar
 
-TO_INT: dict[str, int] = {v: k for k, v in FROM_INT.items()}
-
-MINIMUM: int = 0
-MAXIMUM: int = 1_000_000
-
-MAXIMUM_IS_MANY: bool = True
+from numberology.system import System
 
 
-def _limits(number: int) -> int:
-    """Validates that a number is within acceptable limits for Egyptian numerals.
+class Egyptian(System[str]):
+    from_int_: ClassVar[dict[int, str]] = {
+        1_000_000: "\U00013069",
+        100_000: "\U00013153",
+        10_000: "\U000130ad",
+        1_000: "\U000131bc",
+        100: "\U00013362",
+        10: "\U00013386",
+        1: "\U000133fa",
+    }
 
-    Checks if the given number falls within the valid range for Egyptian numeral
-    representation (1 to 9,999,999).
+    to_int_: ClassVar[dict[str, int]] = {v: k for k, v in from_int_.items()}
 
-    Args:
-        number: The number to validate.
+    minimum: ClassVar[int] = 0
+    maximum: ClassVar[int] = 1_000_000
 
-    Returns:
-        The validated number.
+    maximum_is_many: ClassVar[bool] = True
 
-    Raises:
-        ValueError: If the number is outside the valid range.
+    @staticmethod
+    def _limits(number: int) -> int:
+        """Validates that a number is within acceptable limits for Egyptian numerals.
 
-    Examples:
-        >>> _limits(1)
-        1
-        >>> _limits(1000000)
-        1000000
-    """
-    if number < MINIMUM:
-        raise ValueError(f"Number must be greater than {MINIMUM}")
+        Checks if the given number falls within the valid range for Egyptian numeral
+        representation (1 to 9,999,999).
 
-    number_: int = min(number, MAXIMUM)
+        Args:
+            number: The number to validate.
 
-    return number_
+        Returns:
+            The validated number.
 
+        Raises:
+            ValueError: If the number is outside the valid range.
 
-def from_int(number: int) -> str:
-    """Converts an integer to an Egyptian hieroglyph string.
+        Examples:
+            >>> _limits(1)
+            1
+            >>> _limits(1000000)
+            1000000
+        """
+        if number < Egyptian.minimum:
+            raise ValueError(f"Number must be greater than {Egyptian.minimum}")
 
-    Takes an integer and converts it to its Egyptian hieroglyph representation
-    using the base-10 system of hieroglyphic symbols.
+        number_: int = min(number, Egyptian.maximum)
 
-    Args:
-        number: The integer to convert.
+        return number_
 
-    Returns:
-        The Egyptian hieroglyph string representation of the number.
+    @staticmethod
+    def from_int(number: int) -> str:
+        """Converts an integer to an Egyptian hieroglyph string.
 
-    Examples:
-        >>> from_int(1) == "\U000133fa"
-        True
-        >>> from_int(101) == "\U00013362\U000133fa"
-        True
-    """
-    result = ""
-    number_ = _limits(number)
+        Takes an integer and converts it to its Egyptian hieroglyph representation
+        using the base-10 system of hieroglyphic symbols.
 
-    for latin, hieroglyph in FROM_INT.items():
-        count, number_ = divmod(number_, latin)
-        result += hieroglyph * count
+        Args:
+            number: The integer to convert.
 
-    return result
+        Returns:
+            The Egyptian hieroglyph string representation of the number.
 
+        Examples:
+            >>> from_int(1) == "\U000133fa"
+            True
+            >>> from_int(101) == "\U00013362\U000133fa"
+            True
+        """
+        result = ""
+        number_ = Egyptian._limits(number)
 
-def to_int(hieroglyphs: str) -> int:
-    """Converts an Egyptian hieroglyph string to an integer.
+        for latin, hieroglyph in Egyptian.from_int_.items():
+            count, number_ = divmod(number_, latin)
+            result += hieroglyph * count
 
-    Takes an Egyptian hieroglyph string and converts it to its integer equivalent
-    by summing the values of each hieroglyph.
+        return result
 
-    Args:
-        hieroglyphs: The Egyptian hieroglyph string to convert.
+    @staticmethod
+    def to_int(number: str) -> int:
+        """Converts an Egyptian hieroglyph string to an integer.
 
-    Returns:
-        The integer representation of the Egyptian hieroglyphs.
+        Takes an Egyptian hieroglyph string and converts it to its integer equivalent
+        by summing the values of each hieroglyph.
 
-    Examples:
-        >>> to_int("\U000133fa")  # Single unit hieroglyph
-        1
-        >>> to_int("\U00013386")  # Ten hieroglyph
-        10
-    """
-    total: int = 0
-    for hieroglyph in hieroglyphs:
-        if hieroglyph not in TO_INT:
-            raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
-        total += TO_INT[hieroglyph]
+        Args:
+            hieroglyphs: The Egyptian hieroglyph string to convert.
 
-    return _limits(total)
+        Returns:
+            The integer representation of the Egyptian hieroglyphs.
+
+        Examples:
+            >>> to_int("\U000133fa")  # Single unit hieroglyph
+            1
+            >>> to_int("\U00013386")  # Ten hieroglyph
+            10
+        """
+        total: int = 0
+        for hieroglyph in number:
+            if hieroglyph not in Egyptian.to_int_:
+                raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
+            total += Egyptian.to_int_[hieroglyph]
+
+        return Egyptian._limits(total)

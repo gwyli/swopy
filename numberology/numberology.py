@@ -4,9 +4,9 @@ from . import systems
 
 
 class System(Enum):
-    EGYPTIAN = systems.egyptian
-    ARABIC = systems.arabic
-    ROMAN = systems.roman
+    EGYPTIAN = systems.Egyptian
+    ARABIC = systems.Arabic
+    ROMAN = systems.Roman
 
 
 class Numberology:

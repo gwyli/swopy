@@ -1,3 +1,5 @@
-from ..systems import arabic, egyptian, roman
+from ..systems.arabic import Arabic
+from ..systems.egyptian import Egyptian
+from ..systems.roman import Roman
 
-__all__ = ["arabic", "egyptian", "roman"]
+__all__ = ["Arabic", "Egyptian", "Roman"]

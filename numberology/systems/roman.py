@@ -1,161 +1,162 @@
-"""Roman numeral system conversion module.
+from typing import ClassVar
 
-This module provides conversion utilities for Roman numerals (I, V, X, L, C, D, M).
-It implements bidirectional conversion between integers (1-3999) and Roman numeral
-string representations, with support for subtractive notation (e.g., IV for 4, IX for 9)
-"""
-
-FROM_INT: list[tuple[int, str]] = [
-    (1_000, "M"),
-    (900, "CM"),
-    (500, "D"),
-    (400, "CD"),
-    (100, "C"),
-    (90, "XC"),
-    (50, "L"),
-    (40, "XL"),
-    (10, "X"),
-    (9, "IX"),
-    (5, "V"),
-    (4, "IV"),
-    (1, "I"),
-]
-TO_INT: dict[str, int] = {
-    "I": 1,
-    "V": 5,
-    "X": 10,
-    "L": 50,
-    "C": 100,
-    "D": 500,
-    "M": 1_000,
-}
-
-MINIMUM: int = 1
-MAXIMUM: int = 3_999
-
-MAXIMUM_IS_MANY: bool = False
+from numberology.system import System
 
 
-def _limits(number: int) -> int:
-    """Validates that a number is within acceptable limits for Roman numerals.
+class Roman(System[str]):
+    from_int_: ClassVar[dict[int, str]] = {
+        1_000: "M",
+        900: "CM",
+        500: "D",
+        400: "CD",
+        100: "C",
+        90: "XC",
+        50: "L",
+        40: "XL",
+        10: "X",
+        9: "IX",
+        5: "V",
+        4: "IV",
+        1: "I",
+    }
+    to_int_: ClassVar[dict[str, int]] = {
+        "I": 1,
+        "V": 5,
+        "X": 10,
+        "L": 50,
+        "C": 100,
+        "D": 500,
+        "M": 1_000,
+    }
 
-    Checks if the given number falls within the valid range for Roman numeral
-    representation (1 to 3999).
+    minimum: ClassVar[int] = 1
+    maximum: ClassVar[int] = 3_999
 
-    Args:
-        number: The number to validate.
+    maximum_is_many: ClassVar[bool] = False
 
-    Returns:
-        The validated number.
+    @staticmethod
+    def _limits(number: int) -> int:
+        """Validates that a number is within acceptable limits for Roman numerals.
 
-    Raises:
-        ValueError: If the number is not in the range 1..3999.
+        Checks if the given number falls within the valid range for Roman numeral
+        representation (1 to 3999).
 
-    Examples:
-        >>> _limits(1)
-        1
-        >>> _limits(3999)
-        3999
-        >>> _limits(0)
-        Traceback (most recent call last):
-            ...
-        ValueError: Number must be between 1 and 3999
-        >>> _limits(4000)
-        Traceback (most recent call last):
-            ...
-        ValueError: Number must be between 1 and 3999
-    """
+        Args:
+            number: The number to validate.
 
-    if not (MINIMUM <= number <= MAXIMUM):
-        raise ValueError("Number must be between 1 and 3999")
-    return number
+        Returns:
+            The validated number.
 
+        Raises:
+            ValueError: If the number is not in the range 1..3999.
 
-def from_int(number: int) -> str:
-    """Converts an integer to a Roman numeral string.
+        Examples:
+            >>> _limits(1)
+            1
+            >>> _limits(3999)
+            3999
+            >>> _limits(0)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be between 1 and 3999
+            >>> _limits(4000)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be between 1 and 3999
+        """
 
-    Takes an integer and converts it to its Roman numeral representation,
-    using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
+        if not (Roman.minimum <= number <= Roman.maximum):
+            raise ValueError(
+                f"Number must be between {Roman.minimum} and {Roman.maximum}"
+            )
+        return number
 
-    Args:
-        number: The integer to convert, must be between 1 and 3999.
+    @staticmethod
+    def from_int(number: int) -> str:
+        """Converts an integer to a Roman numeral string.
 
-    Returns:
-        The Roman numeral string representation of the number.
+        Takes an integer and converts it to its Roman numeral representation,
+        using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
-    Raises:
-        ValueError: If the number is outside the valid range.
+        Args:
+            number: The integer to convert, must be between 1 and 3999.
 
-    Examples:
-        >>> from_int(1)
-        'I'
-        >>> from_int(10)
-        'X'
-        >>> from_int(4)
-        'IV'
-        >>> from_int(9)
-        'IX'
-        >>> from_int(42)
-        'XLII'
-        >>> from_int(1994)
-        'MCMXCIV'
-    """
-    result: str = ""
-    number_ = _limits(number)
+        Returns:
+            The Roman numeral string representation of the number.
 
-    for latin, roman in FROM_INT:
-        while number_ >= latin:
-            result += roman
-            number_ -= latin
+        Raises:
+            ValueError: If the number is outside the valid range.
 
-    return result
+        Examples:
+            >>> from_int(1)
+            'I'
+            >>> from_int(10)
+            'X'
+            >>> from_int(4)
+            'IV'
+            >>> from_int(9)
+            'IX'
+            >>> from_int(42)
+            'XLII'
+            >>> from_int(1994)
+            'MCMXCIV'
+        """
+        result: str = ""
+        number_ = Roman._limits(number)
 
+        for latin, roman in Roman.from_int_.items():
+            while number_ >= latin:
+                result += roman
+                number_ -= latin
 
-def to_int(number: str) -> int:
-    """Converts a Roman numeral to an integer.
+        return result
 
-    Takes a Roman numeral and converts it to its integer equivalent,
-    properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+    @staticmethod
+    def to_int(number: str) -> int:
+        """Converts a Roman numeral to an integer.
 
-    Args:
-        number: The Roman numeral to convert.
+        Takes a Roman numeral and converts it to its integer equivalent,
+        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
-    Returns:
-        The integer representation of the Roman numeral.
+        Args:
+            number: The Roman numeral to convert.
 
-    Raises:
-        ValueError: If the string contains invalid Roman numerals.
+        Returns:
+            The integer representation of the Roman numeral.
 
-    Examples:
-        >>> to_int('I')
-        1
-        >>> to_int('X')
-        10
-        >>> to_int('IV')
-        4
-        >>> to_int('IX')
-        9
-        >>> to_int('XLII')
-        42
-        >>> to_int('MCMXCIV')
-        1994
-        >>> to_int('i')  # Case insensitive
-        1
-        >>> to_int('Z')
-        Traceback (most recent call last):
-            ...
-        ValueError: Invalid Roman character: Z
-    """
-    total: int = 0
-    prev_value: int = 0
-    for char in reversed(number.upper()):
-        current_value = TO_INT.get(char)
-        if current_value is None:
-            raise ValueError(f"Invalid Roman character: {char}")
-        if current_value < prev_value:
-            total -= current_value
-        else:
-            total += current_value
-        prev_value = current_value
+        Raises:
+            ValueError: If the string contains invalid Roman numerals.
 
-    return _limits(total)
+        Examples:
+            >>> to_int('I')
+            1
+            >>> to_int('X')
+            10
+            >>> to_int('IV')
+            4
+            >>> to_int('IX')
+            9
+            >>> to_int('XLII')
+            42
+            >>> to_int('MCMXCIV')
+            1994
+            >>> to_int('i')  # Case insensitive
+            1
+            >>> to_int('Z')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Roman character: Z
+        """
+        total: int = 0
+        prev_value: int = 0
+        for char in reversed(number.upper()):
+            current_value = Roman.to_int_.get(char)
+            if current_value is None:
+                raise ValueError(f"Invalid Roman character: {char}")
+            if current_value < prev_value:
+                total -= current_value
+            else:
+                total += current_value
+            prev_value = current_value
+
+        return Roman._limits(total)

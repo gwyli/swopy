@@ -1,10 +1,10 @@
-from typing import ClassVar, TypeVar
+from typing import ClassVar
 
-T = TypeVar("T", str, int)
+from pydantic import BaseModel
 
 
-class System[T]:
-    from_int_: ClassVar[list[tuple[int, str]]]
+class System[T: str | int](BaseModel):
+    from_int_: ClassVar[dict[int, str]]
     to_int_: ClassVar[dict[str, int]]
 
     minimum: ClassVar[int]
