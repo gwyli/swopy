@@ -23,17 +23,17 @@ class Egyptian(System[str]):
 
     to_int_: ClassVar[dict[str, int]] = {v: k for k, v in from_int_.items()}
 
-    minimum: ClassVar[int] = 0
+    minimum: ClassVar[int] = 1
     maximum: ClassVar[int] = 1_000_000
 
     maximum_is_many: ClassVar[bool] = True
 
-    @staticmethod
-    def _limits(number: int) -> int:
+    @classmethod
+    def _limits(cls, number: int) -> int:
         """Validates that a number is within acceptable limits for Egyptian numerals.
 
-        Checks if the given number falls within the valid range for Egyptian numeral
-        representation (1 to 9,999,999).
+        As the Egyptian numeral system typically represents numbers over 999,999 as
+        "many", this method ensures the number is at least 1 and caps it at 1,000,000.
 
         Args:
             number: The number to validate.
@@ -45,21 +45,25 @@ class Egyptian(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
+            >>> Egyptian._limits(0)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be greater than 0.
             >>> Egyptian._limits(1)
             1
-            >>> Egyptian._limits(1000000)
+            >>> Egyptian._limits(1000001)
             1000000
         """
-        if number < Egyptian.minimum:
-            raise ValueError(f"Number must be greater than {Egyptian.minimum}")
+        if number < cls.minimum:
+            raise ValueError(f"Number must be greater than {cls.minimum}.")
 
-        number_: int = min(number, Egyptian.maximum)
+        number_: int = min(number, cls.maximum)
 
         return number_
 
-    @staticmethod
-    def from_int(number: int) -> str:
-        """Converts an integer to an Egyptian hieroglyph string.
+    @classmethod
+    def from_int(cls, number: int) -> str:
+        """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
         using the base-10 system of hieroglyphic symbols.
@@ -68,7 +72,10 @@ class Egyptian(System[str]):
             number: The integer to convert.
 
         Returns:
-            The Egyptian hieroglyph string representation of the number.
+            The hieroglyphic representation of the number.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Egyptian.from_int(1) == "\U000133fa"
@@ -77,26 +84,29 @@ class Egyptian(System[str]):
             True
         """
         result = ""
-        number_ = Egyptian._limits(number)
+        number_ = cls._limits(number)
 
-        for latin, hieroglyph in Egyptian.from_int_.items():
+        for latin, hieroglyph in cls.from_int_.items():
             count, number_ = divmod(number_, latin)
             result += hieroglyph * count
 
         return result
 
-    @staticmethod
-    def to_int(number: str) -> int:
-        """Converts an Egyptian hieroglyph string to an integer.
+    @classmethod
+    def to_int(cls, number: str) -> int:
+        """Converts an Egyptian numeral to an integer.
 
-        Takes an Egyptian hieroglyph string and converts it to its integer equivalent
+        Takes an Egyptian numeral and converts it to its integer equivalent
         by summing the values of each hieroglyph.
 
         Args:
-            hieroglyphs: The Egyptian hieroglyph string to convert.
+            number: The Egyptian numeral to convert.
 
         Returns:
-            The integer representation of the Egyptian hieroglyphs.
+            The integer representation of the Egyptian numeral.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Egyptian.to_int("\U000133fa")  # Single unit hieroglyph
@@ -106,8 +116,8 @@ class Egyptian(System[str]):
         """
         total: int = 0
         for hieroglyph in number:
-            if hieroglyph not in Egyptian.to_int_:
+            if hieroglyph not in cls.to_int_:
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
-            total += Egyptian.to_int_[hieroglyph]
+            total += cls.to_int_[hieroglyph]
 
-        return Egyptian._limits(total)
+        return cls._limits(total)

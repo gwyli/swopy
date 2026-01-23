@@ -4,20 +4,12 @@ This module provides conversion utilities for Arabic numerals (1, 2, 3, ...).
 It's a placeholder module since Arabic numerals are the standard integer representation.
 """
 
-from sys import maxsize
-from typing import ClassVar
-
 from numberology.system import System
 
 
 class Arabic(System[int]):
-    minimum: ClassVar[int] = -maxsize
-    maximum: ClassVar[int] = maxsize
-
-    maximum_is_many: ClassVar[bool] = False
-
-    @staticmethod
-    def _limits(number: int) -> int:
+    @classmethod
+    def _limits(cls, number: int) -> int:
         """Placeholder function for validating Arabic numerals.
 
         Args:
@@ -25,9 +17,6 @@ class Arabic(System[int]):
 
         Returns:
             The validated number.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Arabic._limits(10)
@@ -37,8 +26,8 @@ class Arabic(System[int]):
         """
         return number
 
-    @staticmethod
-    def from_int(number: int) -> int:
+    @classmethod
+    def from_int(cls, number: int) -> int:
         """Placeholder function for converting an integer to a Arabic numeral.
 
         Args:
@@ -50,29 +39,24 @@ class Arabic(System[int]):
         Examples:
             >>> Arabic.from_int(1)
             1
-            >>> Arabic.from_int(10)
-            10
             >>> Arabic.from_int(42)
             42
         """
-        return Arabic._limits(number)
+        return cls._limits(number)
 
-    @staticmethod
-    def to_int(number: int | str) -> int:
+    @classmethod
+    def to_int(cls, number: int | str) -> int:
         """Placeholder function for converting an Arabic numeral to an integer.
 
         Args:
             number: The Arabic numeral to convert.
-
         Returns:
             The integer representation of the Arabic numeral.
 
         Examples:
             >>> Arabic.to_int(1)
             1
-            >>> Arabic.to_int(10)
-            10
             >>> Arabic.to_int(42)
             42
         """
-        return Arabic._limits(int(number))
+        return cls._limits(int(number))

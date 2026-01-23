@@ -1,3 +1,11 @@
+"""Roman numeral system conversion module.
+
+This module provides conversion utilities for Roman numerals (I, V, X, L, C, D, M).
+It implements bidirectional conversion between integers (1-3999) and Roman numeral
+string representations, with support for subtractive notation (e.g., IV for 4, IX for
+9).
+"""
+
 from typing import ClassVar
 
 from numberology.system import System
@@ -34,12 +42,12 @@ class Roman(System[str]):
 
     maximum_is_many: ClassVar[bool] = False
 
-    @staticmethod
-    def _limits(number: int) -> int:
+    @classmethod
+    def _limits(cls, number: int) -> int:
         """Validates that a number is within acceptable limits for Roman numerals.
 
         Checks if the given number falls within the valid range for Roman numeral
-        representation (1 to 3999).
+        representation.
 
         Args:
             number: The number to validate.
@@ -48,7 +56,7 @@ class Roman(System[str]):
             The validated number.
 
         Raises:
-            ValueError: If the number is not in the range 1..3999.
+            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Roman._limits(1)
@@ -65,24 +73,22 @@ class Roman(System[str]):
             ValueError: Number must be between 1 and 3999
         """
 
-        if not (Roman.minimum <= number <= Roman.maximum):
-            raise ValueError(
-                f"Number must be between {Roman.minimum} and {Roman.maximum}"
-            )
+        if not (cls.minimum <= number <= cls.maximum):
+            raise ValueError(f"Number must be between {cls.minimum} and {cls.maximum}")
         return number
 
-    @staticmethod
-    def from_int(number: int) -> str:
+    @classmethod
+    def from_int(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
         Args:
-            number: The integer to convert, must be between 1 and 3999.
+            number: The integer to convert
 
         Returns:
-            The Roman numeral string representation of the number.
+            The Roman numeral representation of the number.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -90,29 +96,23 @@ class Roman(System[str]):
         Examples:
             >>> Roman.from_int(1)
             'I'
-            >>> Roman.from_int(10)
-            'X'
-            >>> Roman.from_int(4)
-            'IV'
             >>> Roman.from_int(9)
             'IX'
-            >>> Roman.from_int(42)
-            'XLII'
             >>> Roman.from_int(1994)
             'MCMXCIV'
         """
         result: str = ""
-        number_ = Roman._limits(number)
+        number_ = cls._limits(number)
 
-        for latin, roman in Roman.from_int_.items():
+        for latin, roman in cls.from_int_.items():
             while number_ >= latin:
                 result += roman
                 number_ -= latin
 
         return result
 
-    @staticmethod
-    def to_int(number: str) -> int:
+    @classmethod
+    def to_int(cls, number: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -128,16 +128,10 @@ class Roman(System[str]):
             ValueError: If the string contains invalid Roman numerals.
 
         Examples:
-            >>> Roman.to_int('I')
-            1
             >>> Roman.to_int('X')
             10
-            >>> Roman.to_int('IV')
-            4
             >>> Roman.to_int('IX')
             9
-            >>> Roman.to_int('XLII')
-            42
             >>> Roman.to_int('MCMXCIV')
             1994
             >>> Roman.to_int('i')  # Case insensitive
@@ -149,14 +143,18 @@ class Roman(System[str]):
         """
         total: int = 0
         prev_value: int = 0
+
         for char in reversed(number.upper()):
-            current_value = Roman.to_int_.get(char)
+            current_value = cls.to_int_.get(char)
+
             if current_value is None:
                 raise ValueError(f"Invalid Roman character: {char}")
+
             if current_value < prev_value:
                 total -= current_value
             else:
                 total += current_value
+
             prev_value = current_value
 
-        return Roman._limits(total)
+        return cls._limits(total)

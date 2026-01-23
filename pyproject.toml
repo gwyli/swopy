@@ -17,9 +17,7 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICENSE"]
-dependencies = [
-    "pydantic>=2.12.5",
-]
+dependencies = []
 
 
 [dependency-groups]
