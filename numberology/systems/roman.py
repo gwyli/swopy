@@ -61,41 +61,6 @@ class Roman(System[str]):
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def _limits(cls, number: int) -> int:
-        """Validates that a number is within acceptable limits for Roman numerals.
-
-        Checks if the given number falls within the valid range for Roman numeral
-        representation.
-
-        Args:
-            number: The number to validate.
-
-        Returns:
-            The validated number.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
-
-        Examples:
-            >>> Roman._limits(1)
-            1
-            >>> Roman._limits(3999)
-            3999
-            >>> Roman._limits(0)
-            Traceback (most recent call last):
-                ...
-            ValueError: Number must be between 1 and 3999
-            >>> Roman._limits(4000)
-            Traceback (most recent call last):
-                ...
-            ValueError: Number must be between 1 and 3999
-        """
-
-        if not (cls.minimum <= number <= cls.maximum):
-            raise ValueError(f"Number must be between {cls.minimum} and {cls.maximum}")
-        return number
-
-    @classmethod
     def from_int(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
