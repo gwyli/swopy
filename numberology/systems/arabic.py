@@ -8,6 +8,23 @@ from numberology.system import System
 
 
 class Arabic(System[int]):
+    """Arabic numeral system converter.
+
+    Implements conversion for Arabic numerals (0-9), the standard modern numeral
+    system used worldwide. Since Arabic numerals are the native integer representation
+    in Python, this implementation serves as a pass-through converter.
+
+    Type Parameter:
+        int: Arabic numerals are represented as integers.
+
+    Attributes:
+        from_int_: Not used; integers are returned as-is.
+        to_int_: Not used; integers are validated and returned as-is.
+        minimum: Minimum representable value (-sys.maxsize).
+        maximum: Maximum representable value (sys.maxsize).
+        maximum_is_many: False, as the maximum is a precise limit.
+    """
+
     @classmethod
     def _limits(cls, number: int) -> int:
         """Placeholder function for validating Arabic numerals.
@@ -45,7 +62,7 @@ class Arabic(System[int]):
         return cls._limits(number)
 
     @classmethod
-    def to_int(cls, number: int | str) -> int:
+    def to_int(cls, number: int) -> int:
         """Placeholder function for converting an Arabic numeral to an integer.
 
         Args:
@@ -59,4 +76,4 @@ class Arabic(System[int]):
             >>> Arabic.to_int(42)
             42
         """
-        return cls._limits(int(number))
+        return cls._limits(number)

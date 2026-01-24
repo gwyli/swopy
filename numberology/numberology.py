@@ -1,17 +1,43 @@
-from enum import Enum
+"""Main converter module for numeral system conversions.
 
-from . import systems
+This module provides the Numberology class which serves as the primary interface
+for converting numbers between different numeral systems (Roman, Egyptian, Arabic,etc.).
+It handles bidirectional conversions by delegating to the appropriate system
+implementations.
+"""
 
+from typing import TypeVar
 
-class System(Enum):
-    EGYPTIAN = systems.Egyptian
-    ARABIC = systems.Arabic
-    ROMAN = systems.Roman
+from . import systems  # pyright: ignore[reportUnusedImport] # noqa: F401
+from .system import Numeral, System
+
+T = TypeVar("T", str, int)
 
 
 class Numberology:
+    """Universal converter for numeral system transformations.
+
+    Provides a simple interface to convert numbers between different numeral
+    systems. The converter validates input against both source and target system
+    constraints, then performs the conversion via an intermediate integer
+    representation.
+
+    The Numberology class acts as a facade that coordinates between different
+    numeral system implementations, handling both string and integer input types
+    and returning results in the appropriate format for the target system.
+
+    Examples:
+        >>> converter = Numberology()
+        >>> # Convert from Arabic to Roman numerals
+        >>> converter.convert(42, systems.Arabic, systems.Roman)
+        'XLII'
+        >>> # Convert from Roman to Egyptian hieroglyphics
+        >>> converter.convert('XLII', systems.Roman, systems.Egyptian)
+        '\U00013386\U00013386\U00013386\U00013386\U000133fa\U000133fa'
+    """
+
     def convert(
-        self, number: int | str, from_system: System, to_system: System
+        self, number: T, from_system: System[Numeral], to_system: System[Numeral]
     ) -> str | int:
         """Converts a number from one numeral system to another.
 
@@ -20,8 +46,8 @@ class Numberology:
 
         Args:
             number: The number to convert, either as an integer or string.
-            from_system: The source numeral system (System.ARABIC or System.EGYPTIAN).
-            to_system: The target numeral system (System.ARABIC or System.EGYPTIAN).
+            from_system: The source numeral system (systems.Arabic or systems.Egyptian).
+            to_system: The target numeral system (systems.Arabic or systems.Egyptian).
 
         Returns:
             The converted number as a string if to_system uses string representation,
@@ -32,18 +58,18 @@ class Numberology:
 
         Examples:
             >>> converter = Numberology()
-            >>> converter.convert(10, System.ARABIC, System.EGYPTIAN)
+            >>> converter.convert(10, systems.Arabic, systems.Egyptian)
             '\U00013386'
-            >>> converter.convert('X', System.ROMAN, System.EGYPTIAN)
+            >>> converter.convert('X', systems.Roman, systems.Egyptian)
             '\U00013386'
-            >>> converter.convert('X', System.ROMAN, System.ROMAN)
+            >>> converter.convert('X', systems.Roman, systems.Roman)
             'X'
         """
         intermediate = self._convert_to_int(number, from_system)
 
         return self._convert_from_int(intermediate, to_system)
 
-    def _convert_to_int(self, number: str | int, system: System) -> int:
+    def _convert_to_int(self, number: T, system: System[Numeral]) -> int:
         """Converts a number to an integer representation.
 
         Takes a number in either string or integer form and returns its integer
@@ -58,17 +84,17 @@ class Numberology:
 
         Examples:
             >>> converter = Numberology()
-            >>> converter._convert_to_int('X', System.ROMAN)
+            >>> converter._convert_to_int('X', systems.Roman)
             10
-            >>> converter._convert_to_int('\U00013386', System.EGYPTIAN)
+            >>> converter._convert_to_int('\U00013386', systems.Egyptian)
             10
         """
         if isinstance(number, int):
             return number
 
-        return system.value.to_int(number)
+        return system.to_int(number)
 
-    def _convert_from_int(self, number: str | int, system: System) -> str | int:
+    def _convert_from_int(self, number: T, system: System[Numeral]) -> str | int:
         """Converts an integer to the string representation of a numeral system,
         unless the system uses Arabic numerals.
 
@@ -82,12 +108,12 @@ class Numberology:
         Examples:
             >>> converter = Numberology()
             >>> from . import systems
-            >>> converter._convert_from_int(10, System.ROMAN)
+            >>> converter._convert_from_int(10, systems.Roman)
             'X'
-            >>> converter._convert_from_int(10, System.EGYPTIAN)
+            >>> converter._convert_from_int(10, systems.Egyptian)
             '\U00013386'
         """
         if isinstance(number, str):
             return number
 
-        return system.value.from_int(number)
+        return system.from_int(number)

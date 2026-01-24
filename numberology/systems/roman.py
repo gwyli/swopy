@@ -12,6 +12,24 @@ from numberology.system import System
 
 
 class Roman(System[str]):
+    """Roman numeral system converter.
+
+    Implements bidirectional conversion between integers and Roman numeral strings.
+    Supports the standard Roman numeral notation with subtractive notation for
+    efficiency (e.g., IV for 4, IX for 9, XL for 40).
+
+    Type Parameter:
+        str: Roman numerals are represented as strings (I, V, X, L, C, D, M, etc.).
+
+    Attributes:
+        from_int_: Mapping of integer values to Roman numeral components,
+                   ordered by magnitude including subtractive pairs.
+        to_int_: Mapping of Roman numeral characters to their integer values.
+        minimum: Minimum valid value (1).
+        maximum: Maximum valid value (3999), limited by Roman numeral notation.
+        maximum_is_many: False, as 3999 is a precise limit.
+    """
+
     from_int_: ClassVar[dict[int, str]] = {
         1_000: "M",
         900: "CM",

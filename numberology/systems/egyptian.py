@@ -11,6 +11,26 @@ from numberology.system import System
 
 
 class Egyptian(System[str]):
+    """Egyptian hieroglyphic numeral system converter.
+
+    Implements bidirectional conversion between integers and Egyptian hieroglyphic
+    numerals. Uses a base-10 system with individual hieroglyph symbols for powers of 10
+    (1, 10, 100, 1000, 10000, 100000, 1000000). Numbers above 999,999 are
+    considered "many" and capped at the maximum of 1,000,000.
+
+    Type Parameter:
+        str: Egyptian numerals are represented as strings of Unicode hieroglyph
+            characters.
+
+    Attributes:
+        from_int_: Mapping of powers of 10 to their corresponding hieroglyph symbols.
+        to_int_: Reverse mapping of hieroglyphs to their integer values.
+        minimum: Minimum valid value (1).
+        maximum: Maximum representable value (1,000,000).
+        maximum_is_many: True, indicating the maximum represents "many" in Egyptian
+            notation.
+    """
+
     from_int_: ClassVar[dict[int, str]] = {
         1_000_000: "\U00013069",
         100_000: "\U00013153",
