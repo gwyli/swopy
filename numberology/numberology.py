@@ -8,7 +8,7 @@ implementations.
 
 from typing import overload
 
-from . import systems  # pyright: ignore[reportUnusedImport] # noqa: F401
+from . import systems  # pyright: ignore[reportUnusedImport]
 from .system import Numeral, System
 
 
@@ -130,3 +130,40 @@ class Numberology:
             return number
 
         return system.from_int(number)
+
+    @staticmethod
+    def get_all_systems() -> dict[str, type[System[Numeral]]]:
+        """Discovers and returns all available numeral system classes.
+
+        Provides easy discovery of all supported numeral systems without
+        requiring knowledge of the systems module structure.
+
+        Returns:
+            A dictionary mapping system names to their corresponding System classes.
+            Keys are the class names (e.g., 'Roman', 'Egyptian'), values are the
+            System subclasses.
+
+        Examples:
+            >>> converter = Numberology()
+            >>> all_systems = converter.get_all_systems()
+            >>> 'Roman' in all_systems
+            True
+            >>> 'Arabic' in all_systems
+            True
+
+            Get system properties:
+            >>> all_systems = Numberology.get_all_systems()
+            >>> roman = all_systems['Roman']
+            >>> roman.minimum
+            1
+            >>> roman.maximum
+            3999
+        """
+        result: dict[str, type[System[Numeral]]] = {}
+
+        for name in getattr(systems, "__all__", []):
+            system_class = getattr(systems, name)
+            if isinstance(system_class, type) and issubclass(system_class, System):
+                result[name] = system_class
+
+        return result
