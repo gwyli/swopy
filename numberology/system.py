@@ -53,7 +53,19 @@ class System[Numeral](ABC):
         Raises:
             ValueError: If the number is outside the valid range.
         """
-        ...
+
+        number_: int = number
+
+        if number_ < cls.minimum:
+            raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
+
+        if cls.maximum_is_many:
+            number_ = min(number, cls.maximum)
+
+        if number_ > cls.maximum:
+            raise ValueError(f"Number must be less than or equal to {cls.maximum}.")
+
+        return number_
 
     @classmethod
     @abstractmethod

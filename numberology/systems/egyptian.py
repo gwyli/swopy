@@ -49,39 +49,6 @@ class Egyptian(System[str]):
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def _limits(cls, number: int) -> int:
-        """Validates that a number is within acceptable limits for Egyptian numerals.
-
-        As the Egyptian numeral system typically represents numbers over 999,999 as
-        "many", this method ensures the number is at least 1 and caps it at 1,000,000.
-
-        Args:
-            number: The number to validate.
-
-        Returns:
-            The validated number.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
-
-        Examples:
-            >>> Egyptian._limits(0)
-            Traceback (most recent call last):
-                ...
-            ValueError: Number must be greater than 0.
-            >>> Egyptian._limits(1)
-            1
-            >>> Egyptian._limits(1000001)
-            1000000
-        """
-        if number < cls.minimum:
-            raise ValueError(f"Number must be greater than {cls.minimum}.")
-
-        number_: int = min(number, cls.maximum)
-
-        return number_
-
-    @classmethod
     def from_int(cls, number: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
