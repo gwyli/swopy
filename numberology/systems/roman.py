@@ -81,8 +81,14 @@ class Roman(System[str]):
             'I'
             >>> Roman.from_int(9)
             'IX'
-            >>> Roman.from_int(1994)
-            'MCMXCIV'
+            >>> Roman.from_int(0)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be greater or equal to 1.
+            >>> Roman.from_int(4000)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be less than or equal to 3999.
         """
         result: str = ""
         number_ = cls._limits(number)

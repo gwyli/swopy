@@ -65,10 +65,12 @@ class Egyptian(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Egyptian.from_int(1) == "\U000133fa"
-            True
-            >>> Egyptian.from_int(101) == "\U00013362\U000133fa"
-            True
+            >>> Egyptian.from_int(1)
+            '\U000133fa'
+            >>> Egyptian.from_int(101)
+            '\U00013362\U000133fa'
+            >>> Egyptian.from_int(1000001)
+            '\U00013069'
         """
         result = ""
         number_ = cls._limits(number)
