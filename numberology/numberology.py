@@ -6,10 +6,14 @@ It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
 
-from typing import overload
+from typing import TypeVar
 
 from . import systems  # pyright: ignore[reportUnusedImport]
-from .system import Numeral, System
+from .system import System, TNumeral
+
+# TypeVar to maintain the relationship between number type and system type
+# The input type is imported from system.py
+TResult = TypeVar("TResult", int, str)
 
 
 class Numberology:
@@ -34,22 +38,12 @@ class Numberology:
         '\U00013386\U00013386\U00013386\U00013386\U000133fa\U000133fa'
     """
 
-    @overload
-    def convert(
-        self, number: Numeral, from_system: System[Numeral], to_system: System[int]
-    ) -> int: ...
-
-    @overload
-    def convert(
-        self, number: Numeral, from_system: System[Numeral], to_system: System[str]
-    ) -> str: ...
-
     def convert(
         self,
-        number: Numeral,
-        from_system: System[Numeral],
-        to_system: System[str] | System[int],
-    ) -> Numeral:
+        number: TNumeral,
+        from_system: System[TNumeral],
+        to_system: System[TResult],
+    ) -> int | str:
         """Converts a number from one numeral system to another.
 
         Converts a number represented in one numeral system (source) to another
@@ -76,11 +70,12 @@ class Numberology:
             >>> converter.convert('X', systems.Roman, systems.Roman)
             'X'
         """
-        intermediate = self._convert_to_int(number, from_system)
+
+        intermediate: int = self._convert_to_int(number, from_system)
 
         return self._convert_from_int(intermediate, to_system)
 
-    def _convert_to_int(self, number: Numeral, system: System[Numeral]) -> int:
+    def _convert_to_int(self, number: TNumeral, system: System[TNumeral]) -> int:
         """Converts a number to an integer representation.
 
         Takes a number in either string or integer form and returns its integer
@@ -105,9 +100,7 @@ class Numberology:
 
         return system.to_int(number)
 
-    def _convert_from_int(
-        self, number: Numeral, system: System[str] | System[int]
-    ) -> Numeral:
+    def _convert_from_int(self, number: int, system: System[TResult]) -> int | str:
         """Converts an integer to the string representation of a numeral system,
         unless the system uses Arabic numerals.
 
@@ -132,7 +125,7 @@ class Numberology:
         return system.from_int(number)
 
     @staticmethod
-    def get_all_systems() -> dict[str, type[System[Numeral]]]:
+    def get_all_systems() -> dict[str, type[System[TNumeral]]]:
         """Discovers and returns all available numeral system classes.
 
         Provides easy discovery of all supported numeral systems without
@@ -159,7 +152,7 @@ class Numberology:
             >>> roman.maximum
             3999
         """
-        result: dict[str, type[System[Numeral]]] = {}
+        result: dict[str, type[System[TNumeral]]] = {}
 
         for name in getattr(systems, "__all__", []):
             system_class = getattr(systems, name)

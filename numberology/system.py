@@ -8,12 +8,13 @@ their string/integer representations in that particular numeral system.
 
 from abc import ABC, abstractmethod
 from sys import maxsize
-from typing import ClassVar
+from typing import ClassVar, TypeVar
 
-Numeral = str | int
+# TypeVar to maintain the relationship between number type and system type
+TNumeral = TypeVar("TNumeral", int, str)
 
 
-class System[Numeral](ABC):
+class System[TNumeral](ABC):
     """Abstract base class for numeral system converters.
 
     Defines the interface that all numeral system implementations must follow,
@@ -85,7 +86,7 @@ class System[Numeral](ABC):
 
     @classmethod
     @abstractmethod
-    def to_int(cls, number: Numeral) -> int:
+    def to_int(cls, number: TNumeral) -> int:
         """Converts a numeral representation to an integer.
 
         Args:
