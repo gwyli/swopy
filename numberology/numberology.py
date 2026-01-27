@@ -6,14 +6,14 @@ It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
 
+from inspect import getmembers, isclass
 from typing import TypeVar
 
-from . import systems  # pyright: ignore[reportUnusedImport]
-from .system import System, TNumeral
+from . import systems
+from .system import System
 
-# TypeVar to maintain the relationship between number type and system type
-# The input type is imported from system.py
-TResult = TypeVar("TResult", int, str)
+TFromType = TypeVar("TFromType", int, str)
+TToType = TypeVar("TToType", int, str)
 
 
 class Numberology:
@@ -31,19 +31,19 @@ class Numberology:
     Examples:
         >>> converter = Numberology()
         >>> # Convert from Arabic to Roman numerals
-        >>> converter.convert(42, systems.Arabic, systems.Roman)
+        >>> converter.convert(42, systems.arabic.Arabic, systems.roman.Standard)
         'XLII'
         >>> # Convert from Roman to Egyptian hieroglyphics
-        >>> converter.convert('XLII', systems.Roman, systems.Egyptian)
+        >>> converter.convert('XLII', systems.roman.Standard, systems.egyptian.Egyptian)
         '\U00013386\U00013386\U00013386\U00013386\U000133fa\U000133fa'
     """
 
     def convert(
         self,
-        number: TNumeral,
-        from_system: System[TNumeral],
-        to_system: System[TResult],
-    ) -> int | str:
+        number: TFromType,
+        from_system: type[System[TFromType]],
+        to_system: type[System[TToType]],
+    ) -> TToType:
         """Converts a number from one numeral system to another.
 
         Converts a number represented in one numeral system (source) to another
@@ -51,8 +51,10 @@ class Numberology:
 
         Args:
             number: The number to convert, either as an integer or string.
-            from_system: The source numeral system (systems.Arabic or systems.Egyptian).
-            to_system: The target numeral system (systems.Arabic or systems.Egyptian).
+            from_system: The source numeral system (systems.arabic.Arabic or
+                systems.egyptian.Egyptian).
+            to_system: The target numeral system (systems.arabic.Arabic or
+                systems.egyptian.Egyptian).
 
         Returns:
             The converted number as a string if to_system uses string representation,
@@ -63,11 +65,12 @@ class Numberology:
 
         Examples:
             >>> converter = Numberology()
-            >>> converter.convert(10, systems.Arabic, systems.Egyptian)
+            >>> converter.convert(10, systems.arabic.Arabic, systems.egyptian.Egyptian)
             '\U00013386'
-            >>> converter.convert('X', systems.Roman, systems.Egyptian)
+            >>> converter.convert('X', systems.roman.Standard, \
+                systems.egyptian.Egyptian)
             '\U00013386'
-            >>> converter.convert('X', systems.Roman, systems.Roman)
+            >>> converter.convert('X', systems.roman.Standard, systems.roman.Standard)
             'X'
         """
 
@@ -75,7 +78,9 @@ class Numberology:
 
         return self._convert_from_int(intermediate, to_system)
 
-    def _convert_to_int(self, number: TNumeral, system: System[TNumeral]) -> int:
+    def _convert_to_int(
+        self, number: TFromType, system: type[System[TFromType]]
+    ) -> int:
         """Converts a number to an integer representation.
 
         Takes a number in either string or integer form and returns its integer
@@ -90,9 +95,9 @@ class Numberology:
 
         Examples:
             >>> converter = Numberology()
-            >>> converter._convert_to_int('X', systems.Roman)
+            >>> converter._convert_to_int('X', systems.roman.Standard)
             10
-            >>> converter._convert_to_int('\U00013386', systems.Egyptian)
+            >>> converter._convert_to_int('\U00013386', systems.egyptian.Egyptian)
             10
         """
         if isinstance(number, int):
@@ -100,7 +105,7 @@ class Numberology:
 
         return system.to_int(number)
 
-    def _convert_from_int(self, number: int, system: System[TResult]) -> int | str:
+    def _convert_from_int(self, number: int, system: type[System[TToType]]) -> TToType:
         """Converts an integer to the string representation of a numeral system,
         unless the system uses Arabic numerals.
 
@@ -114,18 +119,16 @@ class Numberology:
         Examples:
             >>> converter = Numberology()
             >>> from . import systems
-            >>> converter._convert_from_int(10, systems.Roman)
+            >>> converter._convert_from_int(10, systems.roman.Standard)
             'X'
-            >>> converter._convert_from_int(10, systems.Egyptian)
+            >>> converter._convert_from_int(10, systems.egyptian.Egyptian)
             '\U00013386'
         """
-        if isinstance(number, str):
-            return number
 
         return system.from_int(number)
 
     @staticmethod
-    def get_all_systems() -> dict[str, type[System[TNumeral]]]:
+    def get_all_systems() -> dict[str, type[System[int]] | type[System[str]]]:
         """Discovers and returns all available numeral system classes.
 
         Provides easy discovery of all supported numeral systems without
@@ -139,24 +142,29 @@ class Numberology:
         Examples:
             >>> converter = Numberology()
             >>> all_systems = converter.get_all_systems()
-            >>> 'Roman' in all_systems
+            >>> 'numberology.systems.roman.Standard' in all_systems
             True
-            >>> 'Arabic' in all_systems
+            >>> 'numberology.systems.arabic.Arabic' in all_systems
             True
 
             Get system properties:
             >>> all_systems = Numberology.get_all_systems()
-            >>> roman = all_systems['Roman']
+            >>> roman = all_systems['numberology.systems.roman.Standard']
             >>> roman.minimum
             1
             >>> roman.maximum
             3999
         """
-        result: dict[str, type[System[TNumeral]]] = {}
+        result: dict[str, type[System[int]] | type[System[str]]] = {}
 
-        for name in getattr(systems, "__all__", []):
-            system_class = getattr(systems, name)
-            if isinstance(system_class, type) and issubclass(system_class, System):
-                result[name] = system_class
+        for module_name in getattr(systems, "__all__", []):
+            module = getattr(systems, module_name)
+
+            for _, obj in getmembers(module):
+                if isclass(obj):
+                    if obj.__name__ == "System":
+                        continue
+
+                    result[f"{obj.__module__}.{obj.__name__}"] = obj
 
         return result

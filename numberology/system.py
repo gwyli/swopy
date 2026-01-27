@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from sys import maxsize
 from typing import ClassVar, TypeVar
 
-# TypeVar to maintain the relationship between number type and system type
+# TypeVar to maintain the relationship between numeral representation and system type.
 TNumeral = TypeVar("TNumeral", int, str)
 
 
@@ -70,7 +70,7 @@ class System[TNumeral](ABC):
 
     @classmethod
     @abstractmethod
-    def from_int(cls, number: int) -> str | int:
+    def from_int(cls, number: int) -> TNumeral:
         """Converts an integer to the numeral system's representation.
 
         Args:
