@@ -1,6 +1,13 @@
 from hypothesis import assume, given, strategies
 
-from numberology import Numberology, System, TFromType, TToType, systems
+from numberology import (
+    Numberology,
+    System,
+    TFromType,
+    TToType,
+    get_all_systems,
+    systems,
+)
 from tests.helpers import SYSTEMS
 
 
@@ -71,9 +78,6 @@ def test_get_all_systems():
     """
     Each system in systems.__all__ should be retrievable.
     """
-    converter = Numberology()
-    result: dict[str, type[System[int]] | type[System[str]]] = (
-        converter.get_all_systems()
-    )
+    result: dict[str, type[System[int]] | type[System[str]]] = get_all_systems()
 
     assert all(issubclass(x, System) for x in result.values())

@@ -199,7 +199,7 @@ class Apostrophus(Early):
     efficiency (e.g., IV for 4, IX for 9, XL for 40).
 
     Type Parameter:
-        str: Roman numerals are represented as strings (I, V, X, L, C, D, M, etc.).
+        str: Roman numerals are represented as strings (I, V, X, L, C, D, CIↃ, etc.).
 
     Attributes:
         from_int_: Mapping of integer values to Roman numeral components,

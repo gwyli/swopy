@@ -127,44 +127,43 @@ class Numberology:
 
         return system.from_int(number)
 
-    @staticmethod
-    def get_all_systems() -> dict[str, type[System[int]] | type[System[str]]]:
-        """Discovers and returns all available numeral system classes.
 
-        Provides easy discovery of all supported numeral systems without
-        requiring knowledge of the systems module structure.
+def get_all_systems() -> dict[str, type[System[int]] | type[System[str]]]:
+    """Discovers and returns all available numeral system classes.
 
-        Returns:
-            A dictionary mapping system names to their corresponding System classes.
-            Keys are the class names (e.g., 'Roman', 'Egyptian'), values are the
-            System subclasses.
+    Provides easy discovery of all supported numeral systems without
+    requiring knowledge of the systems module structure.
 
-        Examples:
-            >>> converter = Numberology()
-            >>> all_systems = converter.get_all_systems()
-            >>> 'numberology.systems.roman.Standard' in all_systems
-            True
-            >>> 'numberology.systems.arabic.Arabic' in all_systems
-            True
+    Returns:
+        A dictionary mapping system names to their corresponding System classes.
+        Keys are the class names (e.g., 'Roman', 'Egyptian'), values are the
+        System subclasses.
 
-            Get system properties:
-            >>> all_systems = Numberology.get_all_systems()
-            >>> roman = all_systems['numberology.systems.roman.Standard']
-            >>> roman.minimum
-            1
-            >>> roman.maximum
-            3999
-        """
-        result: dict[str, type[System[int]] | type[System[str]]] = {}
+    Examples:
+        >>> all_systems = get_all_systems()
+        >>> 'roman.Standard' in all_systems
+        True
+        >>> 'arabic.Arabic' in all_systems
+        True
 
-        for module_name in getattr(systems, "__all__", []):
-            module = getattr(systems, module_name)
+        Get system properties:
+        >>> all_systems = get_all_systems()
+        >>> roman = all_systems['roman.Standard']
+        >>> roman.minimum
+        1
+        >>> roman.maximum
+        3999
+    """
+    result: dict[str, type[System[int]] | type[System[str]]] = {}
 
-            for _, obj in getmembers(module):
-                if isclass(obj):
-                    if obj.__name__ == "System":
-                        continue
+    for module_name in getattr(systems, "__all__", []):
+        module = getattr(systems, module_name)
 
-                    result[f"{obj.__module__}.{obj.__name__}"] = obj
+        for _, obj in getmembers(module):
+            if isclass(obj):
+                if obj.__name__ == "System":
+                    continue
 
-        return result
+                result[f"{obj.__module__.split('.')[-1]}.{obj.__name__}"] = obj
+
+    return result
