@@ -20,8 +20,8 @@ class Arabic(System[int]):
     Attributes:
         from_int_: Not used; integers are returned as-is.
         to_int_: Not used; integers are validated and returned as-is.
-        minimum: Minimum representable value (-sys.maxsize).
-        maximum: Maximum representable value (sys.maxsize).
+        minimum: Minimum representable value (-sys.float_info.max).
+        maximum: Maximum representable value (sys.float_info.max).
         maximum_is_many: False, as the maximum is a precise limit.
     """
 

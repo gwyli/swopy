@@ -13,7 +13,7 @@ Numberology provides a simple and extensible interface to convert numbers betwee
  * Standard, supporting integers between 1 and 3,999
  * Apostrophus, supporting integers between 1 and 100,000
 * [Egyptian](umberology/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
-* Arabic, supporting integers between `-sys.maxsize` and `sys.maxsize`
+* Arabic, supporting integers between `-int(sys.float_info.max)` and `int(sys.float_info.max)`
 
 ## Installation
 

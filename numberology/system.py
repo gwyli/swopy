@@ -7,7 +7,7 @@ their string/integer representations in that particular numeral system.
 """
 
 from abc import ABC, abstractmethod
-from sys import maxsize
+from sys import float_info
 from typing import ClassVar, TypeVar
 
 # TypeVar to maintain the relationship between numeral representation and system type.
@@ -36,8 +36,8 @@ class System[TNumeral](ABC):
     from_int_: ClassVar[dict[int, str]]
     to_int_: ClassVar[dict[str, int]]
 
-    minimum: ClassVar[int] = -maxsize
-    maximum: ClassVar[int] = maxsize
+    minimum: ClassVar[int] = -int(float_info.max)
+    maximum: ClassVar[int] = int(float_info.max)
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
