@@ -5,11 +5,6 @@ env_list = ["3.15.0a5", "3.14.2", "3.13", "3.12", "lint", "typecheck", "dependen
 [env_run_base]
 runner = "uv-venv-lock-runner"
 package = "editable"
-deps = [
-    "pytest",
-    "pytest-cov",
-    "hypothesis",
-]
 commands = [
     ["pytest", "--cov-report", "term-missing", "--cov=numberology"],
     ["pytest", "--doctest-modules", "numberology/"]
@@ -18,7 +13,6 @@ commands = [
 
 [env.lint]
 description = "Run ruff for linting and formatting"
-deps = ["ruff"]
 commands = [
     ["ruff", "check", "--fix", "."],
     ["ruff", "format", "."]
@@ -26,7 +20,6 @@ commands = [
 
 [env.typecheck]
 description = "Run pyright type verification"
-deps = ["pyright", "hypothesis"]
 commands = [
     ["pyright", "--verifytypes", "numberology"]
 ]
@@ -34,7 +27,6 @@ commands = [
 
 [env.dependencycheck]
 description = "Run dependency checks"
-deps = ["deptry"]
 commands = [
     ["deptry", "."]
 ]
