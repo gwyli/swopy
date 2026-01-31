@@ -75,7 +75,7 @@ class System[TNumeral](ABC):
             ValueError: If the number is outside the valid range.
         """
 
-        number_: RealNumber = number
+        number_: RealNumber = cls._input_type_guard(number)
 
         if number_ < cls.minimum:
             raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
@@ -86,7 +86,7 @@ class System[TNumeral](ABC):
         if number_ > cls.maximum:
             raise ValueError(f"Number must be less than or equal to {cls.maximum}.")
 
-        return cls._input_type_guard(number_)
+        return number_
 
     @classmethod
     @abstractmethod
