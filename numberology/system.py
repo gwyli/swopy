@@ -7,11 +7,13 @@ their string/integer representations in that particular numeral system.
 """
 
 from abc import ABC, abstractmethod
+from fractions import Fraction
 from sys import float_info
 from typing import ClassVar, TypeVar
 
+RealNumber = float | int | Fraction
 # TypeVar to maintain the relationship between numeral representation and system type.
-TNumeral = TypeVar("TNumeral", int, str)
+TNumeral = TypeVar("TNumeral", RealNumber, Fraction | int, int, str)
 
 
 class System[TNumeral](ABC):
@@ -36,26 +38,44 @@ class System[TNumeral](ABC):
     from_int_: ClassVar[dict[int, str]]
     to_int_: ClassVar[dict[str, int]]
 
-    minimum: ClassVar[int] = -int(float_info.max)
-    maximum: ClassVar[int] = int(float_info.max)
+    minimum: ClassVar[RealNumber] = -float_info.max
+    maximum: ClassVar[RealNumber] = float_info.max
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
     @abstractmethod
-    def _limits(cls, number: int) -> int:
+    def _input_type_guard(cls, number: RealNumber) -> RealNumber:
+        """Checks if the provided number matches the numeral system's base type.
+
+        Args:
+            number: The number to check.
+        """
+        types: set[type] = {type(x) for x in cls.from_int_}
+
+        if type(number) not in types:
+            raise ValueError(
+                f"Number must be of type {', '.join(x.__name__ for x in types)}."
+            )
+
+        return number
+
+    @classmethod
+    @abstractmethod
+    def _limits(cls, number: RealNumber) -> RealNumber:
         """Validates that a number is within acceptable limits for the system.
 
         Args:
             number: The number to validate.
 
         Returns:
-            The validated number.
+            The validated number, replacing the number with maximum if the numeral
+                system uses "many" for values at or above the maximum.
 
         Raises:
             ValueError: If the number is outside the valid range.
         """
 
-        number_: int = number
+        number_: RealNumber = number
 
         if number_ < cls.minimum:
             raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
@@ -66,11 +86,11 @@ class System[TNumeral](ABC):
         if number_ > cls.maximum:
             raise ValueError(f"Number must be less than or equal to {cls.maximum}.")
 
-        return number_
+        return cls._input_type_guard(number_)
 
     @classmethod
     @abstractmethod
-    def from_int(cls, number: int) -> TNumeral:
+    def from_int(cls, number: RealNumber) -> TNumeral:
         """Converts an integer to the numeral system's representation.
 
         Args:
@@ -86,7 +106,7 @@ class System[TNumeral](ABC):
 
     @classmethod
     @abstractmethod
-    def to_int(cls, number: TNumeral) -> int:
+    def to_int(cls, number: TNumeral) -> int | RealNumber:
         """Converts a numeral representation to an integer.
 
         Args:

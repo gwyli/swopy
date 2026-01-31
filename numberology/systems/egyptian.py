@@ -7,7 +7,7 @@ values 1, 10, 100, 1000, 10000, 100000, and 1000000.
 
 from typing import ClassVar
 
-from numberology.system import System
+from numberology.system import RealNumber, System
 
 
 class Egyptian(System[str]):
@@ -43,13 +43,13 @@ class Egyptian(System[str]):
 
     to_int_: ClassVar[dict[str, int]] = {v: k for k, v in from_int_.items()}
 
-    minimum: ClassVar[int] = 1
-    maximum: ClassVar[int] = 1_000_000
+    minimum: ClassVar[RealNumber] = 1
+    maximum: ClassVar[RealNumber] = 1_000_000
 
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def from_int(cls, number: int) -> str:
+    def from_int(cls, number: RealNumber) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
@@ -72,17 +72,18 @@ class Egyptian(System[str]):
             >>> Egyptian.from_int(1000001)
             '\U00013069'
         """
-        result = ""
-        number_ = cls._limits(number)
+        result: str = ""
+        number_: RealNumber = cls._limits(number)
 
-        for latin, hieroglyph in cls.from_int_.items():
-            count, number_ = divmod(number_, latin)
+        for arabic, hieroglyph in cls.from_int_.items():
+            count, number_ = divmod(number_, arabic)
+            count = int(count)
             result += hieroglyph * count
 
         return result
 
     @classmethod
-    def to_int(cls, number: str) -> int:
+    def to_int(cls, number: str) -> RealNumber:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent

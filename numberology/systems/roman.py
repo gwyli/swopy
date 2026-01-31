@@ -8,7 +8,7 @@ string representations, with support for subtractive notation (e.g., IV for 4, I
 
 from typing import ClassVar
 
-from numberology.system import System
+from numberology.system import RealNumber, System
 
 
 class Early(System[str]):
@@ -52,13 +52,13 @@ class Early(System[str]):
         "D": 500,
     }
 
-    minimum: ClassVar[int] = 1
-    maximum: ClassVar[int] = 899
+    minimum: ClassVar[RealNumber] = 1
+    maximum: ClassVar[RealNumber] = 899
 
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def from_int(cls, number: int) -> str:
+    def from_int(cls, number: RealNumber) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -98,7 +98,7 @@ class Early(System[str]):
         return result
 
     @classmethod
-    def to_int(cls, number: str) -> int:
+    def to_int(cls, number: str) -> RealNumber:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -188,7 +188,7 @@ class Standard(Early):
         "M": 1_000,
     }
 
-    maximum: ClassVar[int] = 3_999
+    maximum: ClassVar[RealNumber] = 3_999
 
 
 class Apostrophus(Early):
@@ -237,10 +237,10 @@ class Apostrophus(Early):
         "I": 1,
     }
 
-    maximum: ClassVar[int] = 100_000
+    maximum: ClassVar[RealNumber] = 100_000
 
     @classmethod
-    def to_int(cls, number: str) -> int:
+    def to_int(cls, number: str) -> RealNumber:
         total = 0
 
         i = 0

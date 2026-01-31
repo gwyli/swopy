@@ -21,7 +21,7 @@ commands = [
 [env.typecheck]
 description = "Run pyright type verification"
 commands = [
-    ["pyright", "--verifytypes", "numberology"]
+    ["pyright", "--verifytypes", "numberology", "--ignoreexternal"]
 ]
 
 

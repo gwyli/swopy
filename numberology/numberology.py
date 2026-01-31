@@ -6,14 +6,15 @@ It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
 
+from fractions import Fraction
 from inspect import getmembers, isclass
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from . import systems
-from .system import System
+from .system import RealNumber, System
 
-TFromType = TypeVar("TFromType", int, str)
-TToType = TypeVar("TToType", int, str)
+TFromType = TypeVar("TFromType", RealNumber, Fraction | int, int, str)
+TToType = TypeVar("TToType", RealNumber, Fraction | int, int, str)
 
 
 class Numberology:
@@ -74,13 +75,13 @@ class Numberology:
             'X'
         """
 
-        intermediate: int = self._convert_to_int(number, from_system)
+        intermediate: RealNumber = self._convert_to_int(number, from_system)
 
         return self._convert_from_int(intermediate, to_system)
 
     def _convert_to_int(
         self, number: TFromType, system: type[System[TFromType]]
-    ) -> int:
+    ) -> RealNumber:
         """Converts a number to an integer representation.
 
         Takes a number in either string or integer form and returns its integer
@@ -105,7 +106,9 @@ class Numberology:
 
         return system.to_int(number)
 
-    def _convert_from_int(self, number: int, system: type[System[TToType]]) -> TToType:
+    def _convert_from_int(
+        self, number: RealNumber, system: type[System[TToType]]
+    ) -> TToType:
         """Converts an integer to the string representation of a numeral system,
         unless the system uses Arabic numerals.
 
@@ -128,7 +131,7 @@ class Numberology:
         return system.from_int(number)
 
 
-def get_all_systems() -> dict[str, type[System[int]] | type[System[str]]]:
+def get_all_systems() -> dict[str, type[System[Any]]]:
     """Discovers and returns all available numeral system classes.
 
     Provides easy discovery of all supported numeral systems without
@@ -154,16 +157,15 @@ def get_all_systems() -> dict[str, type[System[int]] | type[System[str]]]:
         >>> roman.maximum
         3999
     """
-    result: dict[str, type[System[int]] | type[System[str]]] = {}
+    result: dict[str, type[System[Any]]] = {}
 
     for module_name in getattr(systems, "__all__", []):
         module = getattr(systems, module_name)
 
         for _, obj in getmembers(module):
-            if isclass(obj):
+            if isclass(obj) and issubclass(obj, System):
                 if obj.__name__ == "System":
                     continue
-
                 result[f"{obj.__module__.split('.')[-1]}.{obj.__name__}"] = obj
 
     return result
