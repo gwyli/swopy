@@ -29,15 +29,15 @@ class System[TNumeral](ABC):
         Numeral: The representation type of the numeral system (str or int).
 
     Attributes:
-        from_int_: Mapping from integers to their numeral representation strings.
-        to_int_: Mapping from numeral strings to their integer values.
+        to_numeral_map: Mapping from integers to their numeral representation strings.
+        from_numeral_map: Mapping from numeral strings to their integer values.
         minimum: The minimum valid value for this numeral system.
         maximum: The maximum valid value for this numeral system.
         maximum_is_many: Whether the maximum is precise or represents "many".
     """
 
-    from_int_: ClassVar[dict[int, str]]
-    to_int_: ClassVar[dict[str, int]]
+    to_numeral_map: ClassVar[dict[int, str]]
+    from_numeral_map: ClassVar[dict[str, int]]
 
     minimum: ClassVar[RealNumber] = -float_info.max
     maximum: ClassVar[RealNumber] = float_info.max
@@ -69,13 +69,14 @@ class System[TNumeral](ABC):
     @classmethod
     @abstractmethod
     def _dict_types(cls) -> set[type]:
-        """Returns the set of types used in from_int_ and to_int_ dictionaries.
+        """Returns the set of types used in to_numeral_map and from_numeral_map
+        dictionaries.
 
         Returns:
             The set of types used for numeral representation in this system.
         """
-        return {type(x) for x in cls.from_int_} | {
-            type(x) for x in cls.to_int_.values()
+        return {type(x) for x in cls.to_numeral_map} | {
+            type(x) for x in cls.from_numeral_map.values()
         }
 
     @classmethod
@@ -91,7 +92,7 @@ class System[TNumeral](ABC):
         if RealNumber in cls._base_types():
             types = set(get_args(RealNumber))
         else:
-            types: set[type] = cls._dict_types()
+            types = cls._dict_types()
 
         if type(number) not in types:
             raise ValueError(
@@ -131,7 +132,7 @@ class System[TNumeral](ABC):
 
     @classmethod
     @abstractmethod
-    def from_int(cls, number: RealNumber) -> TNumeral:
+    def to_numeral(cls, number: RealNumber) -> TNumeral:
         """Converts an integer to the numeral system's representation.
 
         Args:
@@ -147,7 +148,7 @@ class System[TNumeral](ABC):
 
     @classmethod
     @abstractmethod
-    def to_int(cls, number: TNumeral) -> int | RealNumber:
+    def from_numeral(cls, number: TNumeral) -> int | RealNumber:
         """Converts a numeral representation to an integer.
 
         Args:

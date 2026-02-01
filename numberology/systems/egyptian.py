@@ -23,15 +23,15 @@ class Egyptian(System[str]):
             characters.
 
     Attributes:
-        from_int_: Mapping of powers of 10 to their corresponding hieroglyph symbols.
-        to_int_: Reverse mapping of hieroglyphs to their integer values.
+        to_numeral_map: Mapping of powers of 10 to their corresponding hieroglyph.
+        from_numeral_map: Reverse mapping of hieroglyphs to their integer values.
         minimum: Minimum valid value (1).
         maximum: Maximum representable value (1,000,000).
         maximum_is_many: True, indicating the maximum represents "many" in Egyptian
             notation.
     """
 
-    from_int_: ClassVar[dict[int, str]] = {
+    to_numeral_map: ClassVar[dict[int, str]] = {
         1_000_000: "\U00013069",
         100_000: "\U00013153",
         10_000: "\U000130ad",
@@ -41,7 +41,9 @@ class Egyptian(System[str]):
         1: "\U000133fa",
     }
 
-    to_int_: ClassVar[dict[str, int]] = {v: k for k, v in from_int_.items()}
+    from_numeral_map: ClassVar[dict[str, int]] = {
+        v: k for k, v in to_numeral_map.items()
+    }
 
     minimum: ClassVar[RealNumber] = 1
     maximum: ClassVar[RealNumber] = 1_000_000
@@ -49,7 +51,7 @@ class Egyptian(System[str]):
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def from_int(cls, number: RealNumber) -> str:
+    def to_numeral(cls, number: RealNumber) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
@@ -65,17 +67,17 @@ class Egyptian(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Egyptian.from_int(1)
+            >>> Egyptian.to_numeral(1)
             '\U000133fa'
-            >>> Egyptian.from_int(101)
+            >>> Egyptian.to_numeral(101)
             '\U00013362\U000133fa'
-            >>> Egyptian.from_int(1000001)
+            >>> Egyptian.to_numeral(1000001)
             '\U00013069'
         """
         result: str = ""
         number_: RealNumber = cls._limits(number)
 
-        for arabic, hieroglyph in cls.from_int_.items():
+        for arabic, hieroglyph in cls.to_numeral_map.items():
             count, number_ = divmod(number_, arabic)
             count = int(count)
             result += hieroglyph * count
@@ -83,7 +85,7 @@ class Egyptian(System[str]):
         return result
 
     @classmethod
-    def to_int(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> RealNumber:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent
@@ -99,15 +101,15 @@ class Egyptian(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Egyptian.to_int("\U000133fa")  # Single unit hieroglyph
+            >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
             1
-            >>> Egyptian.to_int("\U00013386")  # Ten hieroglyph
+            >>> Egyptian.from_numeral("\U00013386")  # Ten hieroglyph
             10
         """
         total: int = 0
         for hieroglyph in number:
-            if hieroglyph not in cls.to_int_:
+            if hieroglyph not in cls.from_numeral_map:
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
-            total += cls.to_int_[hieroglyph]
+            total += cls.from_numeral_map[hieroglyph]
 
         return cls._limits(total)

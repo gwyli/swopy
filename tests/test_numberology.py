@@ -77,11 +77,11 @@ def test_identity_conversion(
             )
         )
 
-        number_: TFromType = system.from_int(number)
+        number_: TFromType = system.to_numeral(number)
 
         result: TFromType = converter.convert(number_, system, system)
 
-        integer: RealNumber = system.to_int(result)
+        integer: RealNumber = system.from_numeral(result)
 
         assert integer == number
 

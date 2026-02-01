@@ -39,8 +39,8 @@ def test_reversibility(
             )
         )
 
-        encoded: TFromType = system.from_int(number)
-        decoded: RealNumber = system.to_int(encoded)
+        encoded: TFromType = system.to_numeral(number)
+        decoded: RealNumber = system.from_numeral(encoded)
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
 
@@ -62,7 +62,7 @@ def test_minima(
         number = data.draw(TYPE_STRATEGY_MAP[base_type](max_value=system.minimum - 1))
 
         with pytest.raises(ValueError):
-            system.from_int(number)
+            system.to_numeral(number)
 
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
@@ -82,10 +82,10 @@ def test_maxima(
         number = data.draw(TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1))
         # Some systems may treat values above the maximum as equivalent to the maximum.
         if system.maximum_is_many:
-            assert system.from_int(number) == system.from_int(system.maximum)
+            assert system.to_numeral(number) == system.to_numeral(system.maximum)
         else:
             with pytest.raises(ValueError):
-                system.from_int(number)
+                system.to_numeral(number)
 
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
@@ -98,12 +98,12 @@ def test_invalid_characters(system: type[System[str]], value: str) -> None:
         number: A string containing invalid characters for the numeral system.
     """
 
-    character_string: str = "".join(system.to_int_.keys())
+    character_string: str = "".join(system.from_numeral_map.keys())
 
     assume(not all(c.upper() in character_string for c in value))
 
     with pytest.raises(ValueError):
-        system.to_int(value)
+        system.from_numeral(value)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -121,7 +121,7 @@ def test_invalid_numbers(
 
     types: Container[type | UnionType] = ()
 
-    if hasattr(system, "from_int_"):
+    if hasattr(system, "to_numeral_map"):
         types = tuple(system._dict_types())  # pyright: ignore[reportPrivateUsage]
 
     types = types + tuple(system._base_types())  # pyright: ignore[reportPrivateUsage]
@@ -130,4 +130,4 @@ def test_invalid_numbers(
     number = data.draw(everything_except(excluded_types=types))
 
     with pytest.raises(ValueError):
-        system.from_int(number)
+        system.to_numeral(number)

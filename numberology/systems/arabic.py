@@ -18,15 +18,15 @@ class Arabic(System[RealNumber]):
         int: Arabic numerals are represented as integers.
 
     Attributes:
-        from_int_: Not used; integers are returned as-is.
-        to_int_: Not used; integers are validated and returned as-is.
+        to_numeral_map: Not used; integers are returned as-is.
+        from_numeral_map: Not used; integers are validated and returned as-is.
         minimum: Minimum representable value (-sys.float_info.max).
         maximum: Maximum representable value (sys.float_info.max).
         maximum_is_many: False, as the maximum is a precise limit.
     """
 
     @classmethod
-    def from_int(cls, number: RealNumber) -> RealNumber:
+    def to_numeral(cls, number: RealNumber) -> RealNumber:
         """Placeholder function for converting an integer to a Arabic numeral.
 
         Args:
@@ -36,15 +36,15 @@ class Arabic(System[RealNumber]):
             The Arabic numeral representation of the number.
 
         Examples:
-            >>> Arabic.from_int(1)
+            >>> Arabic.to_numeral(1)
             1
-            >>> Arabic.from_int(42)
+            >>> Arabic.to_numeral(42)
             42
         """
         return cls._limits(number)
 
     @classmethod
-    def to_int(cls, number: RealNumber) -> RealNumber:
+    def from_numeral(cls, number: RealNumber) -> RealNumber:
         """Placeholder function for converting an Arabic numeral to an integer.
 
         Args:
@@ -53,9 +53,9 @@ class Arabic(System[RealNumber]):
             The integer representation of the Arabic numeral.
 
         Examples:
-            >>> Arabic.to_int(1)
+            >>> Arabic.from_numeral(1)
             1
-            >>> Arabic.to_int(42)
+            >>> Arabic.from_numeral(42)
             42
         """
         return cls._limits(number)

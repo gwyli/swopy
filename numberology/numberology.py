@@ -45,6 +45,7 @@ class Numberology:
         from_system: type[System[TFromType]],
         to_system: type[System[TToType]],
     ) -> TToType:
+        # FIXME: Add a type guard to ensure a fraction isn't implicitly converted to int
         """Converts a number from one numeral system to another.
 
         Converts a number represented in one numeral system (source) to another
@@ -75,11 +76,11 @@ class Numberology:
             'X'
         """
 
-        intermediate: RealNumber = self._convert_to_int(number, from_system)
+        intermediate: RealNumber = self._convert_from_numeral(number, from_system)
 
-        return self._convert_from_int(intermediate, to_system)
+        return self._convert_to_numeral(intermediate, to_system)
 
-    def _convert_to_int(
+    def _convert_from_numeral(
         self, number: TFromType, system: type[System[TFromType]]
     ) -> RealNumber:
         """Converts a number to an integer representation.
@@ -96,17 +97,17 @@ class Numberology:
 
         Examples:
             >>> converter = Numberology()
-            >>> converter._convert_to_int('X', systems.roman.Standard)
+            >>> converter._convert_from_numeral('X', systems.roman.Standard)
             10
-            >>> converter._convert_to_int('\U00013386', systems.egyptian.Egyptian)
+            >>> converter._convert_from_numeral('\U00013386', systems.egyptian.Egyptian)
             10
         """
         if isinstance(number, int):
             return number
 
-        return system.to_int(number)
+        return system.from_numeral(number)
 
-    def _convert_from_int(
+    def _convert_to_numeral(
         self, number: RealNumber, system: type[System[TToType]]
     ) -> TToType:
         """Converts an integer to the string representation of a numeral system,
@@ -122,13 +123,13 @@ class Numberology:
         Examples:
             >>> converter = Numberology()
             >>> from . import systems
-            >>> converter._convert_from_int(10, systems.roman.Standard)
+            >>> converter._convert_to_numeral(10, systems.roman.Standard)
             'X'
-            >>> converter._convert_from_int(10, systems.egyptian.Egyptian)
+            >>> converter._convert_to_numeral(10, systems.egyptian.Egyptian)
             '\U00013386'
         """
 
-        return system.from_int(number)
+        return system.to_numeral(number)
 
 
 def get_all_systems() -> dict[str, type[System[Any]]]:

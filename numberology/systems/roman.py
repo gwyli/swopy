@@ -22,15 +22,15 @@ class Early(System[str]):
         str: Roman numerals are represented as strings (I, V, X, L, C, D, etc.).
 
     Attributes:
-        from_int_: Mapping of integer values to Roman numeral components,
+        to_numeral_map: Mapping of integer values to Roman numeral components,
                    ordered by magnitude including subtractive pairs.
-        to_int_: Mapping of Roman numeral characters to their integer values.
+        from_numeral_map: Mapping of Roman numeral characters to their integer values.
         minimum: Minimum valid value (1).
         maximum: Maximum valid value (899), limited by Roman numeral notation.
         maximum_is_many: False, as 899 is a precise limit.
     """
 
-    from_int_: ClassVar[dict[int, str]] = {
+    to_numeral_map: ClassVar[dict[int, str]] = {
         500: "D",
         400: "CD",
         100: "C",
@@ -43,7 +43,7 @@ class Early(System[str]):
         4: "IV",
         1: "I",
     }
-    to_int_: ClassVar[dict[str, int]] = {
+    from_numeral_map: ClassVar[dict[str, int]] = {
         "I": 1,
         "V": 5,
         "X": 10,
@@ -58,7 +58,7 @@ class Early(System[str]):
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def from_int(cls, number: RealNumber) -> str:
+    def to_numeral(cls, number: RealNumber) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -74,15 +74,15 @@ class Early(System[str]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Early.from_int(1)
+            >>> Early.to_numeral(1)
             'I'
-            >>> Early.from_int(9)
+            >>> Early.to_numeral(9)
             'IX'
-            >>> Early.from_int(0)
+            >>> Early.to_numeral(0)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be greater or equal to 1.
-            >>> Early.from_int(900)
+            >>> Early.to_numeral(900)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be less than or equal to 900.
@@ -90,7 +90,7 @@ class Early(System[str]):
         result: str = ""
         number_ = cls._limits(number)
 
-        for latin, roman in cls.from_int_.items():
+        for latin, roman in cls.to_numeral_map.items():
             while number_ >= latin:
                 result += roman
                 number_ -= latin
@@ -98,7 +98,7 @@ class Early(System[str]):
         return result
 
     @classmethod
-    def to_int(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> RealNumber:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -114,13 +114,13 @@ class Early(System[str]):
             ValueError: If the string contains invalid Roman numerals.
 
         Examples:
-            >>> Early.to_int('X')
+            >>> Early.from_numeral('X')
             10
-            >>> Early.to_int('IX')
+            >>> Early.from_numeral('IX')
             9
-            >>> Early.to_int('i')  # Case insensitive
+            >>> Early.from_numeral('i')  # Case insensitive
             1
-            >>> Early.to_int('Z')
+            >>> Early.from_numeral('Z')
             Traceback (most recent call last):
                 ...
             ValueError: Invalid Roman character: Z
@@ -129,7 +129,7 @@ class Early(System[str]):
         prev_value: int = 0
 
         for char in reversed(number.upper()):
-            current_value = cls.to_int_.get(char)
+            current_value = cls.from_numeral_map.get(char)
 
             if current_value is None:
                 raise ValueError(f"Invalid Roman character: {char}")
@@ -144,6 +144,7 @@ class Early(System[str]):
         return cls._limits(total)
 
 
+# FIXME: Add fractions
 class Standard(Early):
     """Roman numeral system converter.
 
@@ -155,15 +156,15 @@ class Standard(Early):
         str: Roman numerals are represented as strings (I, V, X, L, C, D, M, etc.).
 
     Attributes:
-        from_int_: Mapping of integer values to Roman numeral components,
+        to_numeral_map: Mapping of integer values to Roman numeral components,
                    ordered by magnitude including subtractive pairs.
-        to_int_: Mapping of Roman numeral characters to their integer values.
+        from_numeral_map: Mapping of Roman numeral characters to their integer values.
         minimum: Minimum valid value (1).
         maximum: Maximum valid value (3999), limited by Roman numeral notation.
         maximum_is_many: False, as 3999 is a precise limit.
     """
 
-    from_int_: ClassVar[dict[int, str]] = {
+    to_numeral_map: ClassVar[dict[int, str]] = {
         1_000: "M",
         900: "CM",
         500: "D",
@@ -178,7 +179,7 @@ class Standard(Early):
         4: "IV",
         1: "I",
     }
-    to_int_: ClassVar[dict[str, int]] = {
+    from_numeral_map: ClassVar[dict[str, int]] = {
         "I": 1,
         "V": 5,
         "X": 10,
@@ -202,15 +203,15 @@ class Apostrophus(Early):
         str: Roman numerals are represented as strings (I, V, X, L, C, D, CIↃ, etc.).
 
     Attributes:
-        from_int_: Mapping of integer values to Roman numeral components,
+        to_numeral_map: Mapping of integer values to Roman numeral components,
                    ordered by magnitude including subtractive pairs.
-        to_int_: Mapping of Roman numeral characters to their integer values.
+        from_numeral_map: Mapping of Roman numeral characters to their integer values.
         minimum: Minimum valid value (1).
         maximum: Maximum valid value (3999), limited by Roman numeral notation.
         maximum_is_many: False, as 3999 is a precise limit.
     """
 
-    from_int_: ClassVar[dict[int, str]] = {
+    to_numeral_map: ClassVar[dict[int, str]] = {
         100_000: "CCCIↃↃↃ",
         50_000: "IↃↃↃ",
         10_000: "CCIↃↃ",
@@ -223,7 +224,7 @@ class Apostrophus(Early):
         5: "V",
         1: "I",
     }
-    to_int_: ClassVar[dict[str, int]] = {
+    from_numeral_map: ClassVar[dict[str, int]] = {
         "CCCIↃↃↃ": 100_000,
         "IↃↃↃ": 50_000,
         "CCIↃↃ": 10_000,
@@ -240,14 +241,17 @@ class Apostrophus(Early):
     maximum: ClassVar[RealNumber] = 100_000
 
     @classmethod
-    def to_int(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> RealNumber:
+        """
+        #FIXME: Add docstring
+        """
         total = 0
 
         i = 0
         while i < len(number):
             matched = False
             # Check for multi-character symbols first (greedy match)
-            for symbol, value in cls.to_int_.items():
+            for symbol, value in cls.from_numeral_map.items():
                 if number.startswith(symbol, i):
                     total += value
                     i += len(symbol)
