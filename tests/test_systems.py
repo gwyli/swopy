@@ -5,11 +5,21 @@ and Roman numeral system converters. Tests verify bidirectional conversion accur
 and validate range constraints for each numeral system.
 """
 
+from collections.abc import Container
+from types import UnionType
+from typing import get_args
+
 import pytest
 from hypothesis import assume, given, strategies
 
 from numberology import RealNumber, System, TFromType
-from tests.helpers import SYSTEMS, SYSTEMS_WITHOUT_ARABIC, TYPE_STRATEGY_MAP, base_types
+from tests.helpers import (
+    SYSTEMS,
+    SYSTEMS_WITHOUT_ARABIC,
+    TYPE_STRATEGY_MAP,
+    base_types,
+    everything_except,
+)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -94,3 +104,30 @@ def test_invalid_characters(system: type[System[str]], value: str) -> None:
 
     with pytest.raises(ValueError):
         system.to_int(value)
+
+
+@pytest.mark.parametrize("system", SYSTEMS)
+@given(strategies.data())
+def test_invalid_numbers(
+    system: type[System[TFromType]],
+    data: strategies.DataObject,
+) -> None:
+    """Verifies that a ValueError is raised when attempting to convert a number
+    of an invalid type for the numeral system.
+
+    Args:
+        number: A number of an invalid type for the numeral system.
+    """
+
+    types: Container[type | UnionType] = ()
+
+    if hasattr(system, "from_int_"):
+        types = tuple(system._dict_types())  # pyright: ignore[reportPrivateUsage]
+
+    types = types + tuple(system._base_types())  # pyright: ignore[reportPrivateUsage]
+    types = types + get_args(next(iter(system._base_types())))  # pyright: ignore[reportPrivateUsage]
+
+    number = data.draw(everything_except(excluded_types=types))
+
+    with pytest.raises(ValueError):
+        system.from_int(number)

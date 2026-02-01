@@ -9,7 +9,8 @@ their string/integer representations in that particular numeral system.
 from abc import ABC, abstractmethod
 from fractions import Fraction
 from sys import float_info
-from typing import ClassVar, TypeVar
+from types import NoneType, UnionType, get_original_bases
+from typing import ClassVar, TypeVar, get_args
 
 RealNumber = float | int | Fraction
 # TypeVar to maintain the relationship between numeral representation and system type.
@@ -44,13 +45,53 @@ class System[TNumeral](ABC):
 
     @classmethod
     @abstractmethod
+    def _base_types(cls, obj: type | None = None) -> set[type | UnionType]:
+        """Returns the base type of the numeral system. When multiple types are
+        supported, unfurl the UnionType and return all base types.
+
+        Returns:
+            The base type(s) used for numeral representation in this system.
+        """
+        type_ = obj or cls
+        original_base: type = get_original_bases(type_)[0]
+        types: tuple[type | NoneType | UnionType] = get_args(original_base)
+
+        # Occurs if the class is subclassed without specifying a type parameter.
+        # Walk back to the original base to get the correct type parameter.
+        if types == ():
+            return cls._base_types(obj=original_base)
+
+        if isinstance(types[0], NoneType):
+            raise ValueError("Numeral system base type cannot be NoneType.")
+
+        return {types[0]}
+
+    @classmethod
+    @abstractmethod
+    def _dict_types(cls) -> set[type]:
+        """Returns the set of types used in from_int_ and to_int_ dictionaries.
+
+        Returns:
+            The set of types used for numeral representation in this system.
+        """
+        return {type(x) for x in cls.from_int_} | {
+            type(x) for x in cls.to_int_.values()
+        }
+
+    @classmethod
+    @abstractmethod
     def _input_type_guard(cls, number: RealNumber) -> RealNumber:
         """Checks if the provided number matches the numeral system's base type.
 
         Args:
             number: The number to check.
         """
-        types: set[type] = {type(x) for x in cls.from_int_}
+        types: set[type]
+
+        if RealNumber in cls._base_types():
+            types = set(get_args(RealNumber))
+        else:
+            types: set[type] = cls._dict_types()
 
         if type(number) not in types:
             raise ValueError(

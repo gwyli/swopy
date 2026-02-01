@@ -26,18 +26,6 @@ class Arabic(System[RealNumber]):
     """
 
     @classmethod
-    def _input_type_guard(cls, number: RealNumber) -> RealNumber:
-        """Checks if the provided number matches the numeral system's base type.
-
-        Args:
-            number: The number to check.
-        """
-        if not isinstance(number, RealNumber):  # pyright: ignore[reportUnnecessaryIsInstance]
-            raise ValueError("Number must be of type RealNumber.")
-
-        return number
-
-    @classmethod
     def from_int(cls, number: RealNumber) -> RealNumber:
         """Placeholder function for converting an integer to a Arabic numeral.
 

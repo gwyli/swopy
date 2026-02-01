@@ -43,3 +43,21 @@ def base_types(obj: type) -> tuple[type]:
         raise ValueError("Numeral system base type cannot be NoneType.")
 
     return (types[0],)
+
+
+def everything_except(
+    excluded_types: tuple[type | UnionType, ...],
+) -> strategies.SearchStrategy[Any]:
+    """Generate arbitrary values excluding instances of specified types.
+
+    Args:
+        excluded_types: A type or tuple of types to exclude from generation.
+
+    Returns:
+        A strategy that generates values not matching the excluded type(s).
+    """
+    return (
+        strategies.from_type(object)
+        .map(type)
+        .filter(lambda x: not isinstance(x, excluded_types))
+    )
