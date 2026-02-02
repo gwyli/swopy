@@ -6,6 +6,7 @@ and validate range constraints for each numeral system.
 """
 
 from collections.abc import Container
+from sys import float_info
 from types import UnionType
 
 import pytest
@@ -44,7 +45,7 @@ def test_reversibility(
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_minima(
     system: type[System[TFromNumeral, TDenotation]],
@@ -60,11 +61,15 @@ def test_minima(
     for base_type in base_types(system):
         number = data.draw(TYPE_STRATEGY_MAP[base_type](max_value=system.minimum - 1))
 
+        # For unbounded systems adding 1 is not enough to exceed the bound
+        if system.maximum == float_info.max:
+            number = number * 2
+
         with pytest.raises(ValueError):
             system.to_numeral(number)
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_maxima(
     system: type[System[TFromNumeral, TDenotation]],
@@ -79,6 +84,11 @@ def test_maxima(
 
     for base_type in base_types(system):
         number = data.draw(TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1))
+
+        # For unbounded systems adding 1 is not enough to exceed the bound
+        if system.maximum == float_info.max:
+            number = number * 2
+
         # Some systems may treat values above the maximum as equivalent to the maximum.
         if system.maximum_is_many:
             assert system.to_numeral(number) == system.to_numeral(system.maximum)  # pyright: ignore[reportArgumentType]
