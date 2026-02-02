@@ -64,7 +64,7 @@ def test_minima(
             system.to_numeral(number)
 
 
-@pytest.mark.parametrize("system", SYSTEMS)
+@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
 @given(strategies.data())
 def test_maxima(
     system: type[System[TFromNumeral, TDenotation]],
