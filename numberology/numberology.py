@@ -11,10 +11,10 @@ from inspect import getmembers, isclass
 from typing import Any, TypeVar
 
 from . import systems
-from .system import RealNumber, System
+from .system import System, TDenotation
 
-TFromType = TypeVar("TFromType", RealNumber, Fraction | int, int, str)
-TToType = TypeVar("TToType", RealNumber, Fraction | int, int, str)
+TFromNumeral = TypeVar("TFromNumeral")
+TToNumeral = TypeVar("TToNumeral")
 
 
 class Numberology:
@@ -41,10 +41,10 @@ class Numberology:
 
     def convert(
         self,
-        number: TFromType,
-        from_system: type[System[TFromType]],
-        to_system: type[System[TToType]],
-    ) -> TToType:
+        number: TFromNumeral,
+        from_system: type[System[TFromNumeral, TDenotation]],
+        to_system: type[System[TToNumeral, TDenotation]],
+    ) -> TToNumeral:
         # FIXME: Add a type guard to ensure a fraction isn't implicitly converted to int
         """Converts a number from one numeral system to another.
 
@@ -76,63 +76,12 @@ class Numberology:
             'X'
         """
 
-        intermediate: RealNumber = self._convert_from_numeral(number, from_system)
+        intermediate: int | float | Fraction = from_system.from_numeral(number)
 
-        return self._convert_to_numeral(intermediate, to_system)
-
-    def _convert_from_numeral(
-        self, number: TFromType, system: type[System[TFromType]]
-    ) -> RealNumber:
-        """Converts a number to an integer representation.
-
-        Takes a number in either string or integer form and returns its integer
-        equivalent in the provided system.
-
-        Args:
-            number: The number to convert, either as an integer or string.
-            module: The numeral system to use.
-
-        Returns:
-            The integer representation of the number.
-
-        Examples:
-            >>> converter = Numberology()
-            >>> converter._convert_from_numeral('X', systems.roman.Standard)
-            10
-            >>> converter._convert_from_numeral('\U00013386', systems.egyptian.Egyptian)
-            10
-        """
-        if isinstance(number, int):
-            return number
-
-        return system.from_numeral(number)
-
-    def _convert_to_numeral(
-        self, number: RealNumber, system: type[System[TToType]]
-    ) -> TToType:
-        """Converts an integer to the string representation of a numeral system,
-        unless the system uses Arabic numerals.
-
-        Args:
-            number: The number to convert, either as an integer or string.
-            system: The numeral system.
-
-        Returns:
-            The string representation of the number in the target system.
-
-        Examples:
-            >>> converter = Numberology()
-            >>> from . import systems
-            >>> converter._convert_to_numeral(10, systems.roman.Standard)
-            'X'
-            >>> converter._convert_to_numeral(10, systems.egyptian.Egyptian)
-            '\U00013386'
-        """
-
-        return system.to_numeral(number)
+        return to_system.to_numeral(intermediate)
 
 
-def get_all_systems() -> dict[str, type[System[Any]]]:
+def get_all_systems() -> dict[str, type[System[Any, Any]]]:
     """Discovers and returns all available numeral system classes.
 
     Provides easy discovery of all supported numeral systems without
@@ -158,7 +107,7 @@ def get_all_systems() -> dict[str, type[System[Any]]]:
         >>> roman.maximum
         3999
     """
-    result: dict[str, type[System[Any]]] = {}
+    result: dict[str, type[System[Any, Any]]] = {}
 
     for module_name in getattr(systems, "__all__", []):
         module = getattr(systems, module_name)

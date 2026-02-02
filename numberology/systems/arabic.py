@@ -4,10 +4,10 @@ This module provides conversion utilities for Arabic numerals (1, 2, 3, ...).
 It's a placeholder module since Arabic numerals are the standard integer representation.
 """
 
-from numberology.system import RealNumber, System
+from numberology.system import System, TDenotation
 
 
-class Arabic(System[RealNumber]):
+class Arabic(System[TDenotation, TDenotation]):
     """Arabic numeral system converter.
 
     Implements conversion for Arabic numerals (0-9), the standard modern numeral
@@ -26,7 +26,7 @@ class Arabic(System[RealNumber]):
     """
 
     @classmethod
-    def to_numeral(cls, number: RealNumber) -> RealNumber:
+    def to_numeral(cls, number: TDenotation) -> TDenotation:
         """Placeholder function for converting an integer to a Arabic numeral.
 
         Args:
@@ -44,7 +44,7 @@ class Arabic(System[RealNumber]):
         return cls._limits(number)
 
     @classmethod
-    def from_numeral(cls, number: RealNumber) -> RealNumber:
+    def from_numeral(cls, number: TDenotation) -> TDenotation:
         """Placeholder function for converting an Arabic numeral to an integer.
 
         Args:

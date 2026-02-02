@@ -7,12 +7,11 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from types import UnionType
-from typing import get_args
 
 import pytest
 from hypothesis import assume, given, strategies
 
-from numberology import RealNumber, System, TFromType
+from numberology import RealNumber, System, TDenotation, TFromNumeral
 from tests.helpers import (
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
@@ -25,7 +24,7 @@ from tests.helpers import (
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_reversibility(
-    system: type[System[TFromType]],
+    system: type[System[TFromNumeral, TDenotation]],
     data: strategies.DataObject,
 ) -> None:
     """
@@ -39,7 +38,7 @@ def test_reversibility(
             )
         )
 
-        encoded: TFromType = system.to_numeral(number)
+        encoded: TFromNumeral = system.to_numeral(number)
         decoded: RealNumber = system.from_numeral(encoded)
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
@@ -48,7 +47,7 @@ def test_reversibility(
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
 @given(strategies.data())
 def test_minima(
-    system: type[System[TFromType]],
+    system: type[System[TFromNumeral, TDenotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
@@ -68,7 +67,7 @@ def test_minima(
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
 @given(strategies.data())
 def test_maxima(
-    system: type[System[TFromType]],
+    system: type[System[TFromNumeral, TDenotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
@@ -82,7 +81,7 @@ def test_maxima(
         number = data.draw(TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1))
         # Some systems may treat values above the maximum as equivalent to the maximum.
         if system.maximum_is_many:
-            assert system.to_numeral(number) == system.to_numeral(system.maximum)
+            assert system.to_numeral(number) == system.to_numeral(system.maximum)  # pyright: ignore[reportArgumentType]
         else:
             with pytest.raises(ValueError):
                 system.to_numeral(number)
@@ -90,7 +89,7 @@ def test_maxima(
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
 @given(strategies.text())
-def test_invalid_characters(system: type[System[str]], value: str) -> None:
+def test_invalid_characters(system: type[System[str, TDenotation]], value: str) -> None:
     """Verifies that a ValueError is raised when attempting to convert a string
     containing invalid characters for the numeral system.
 
@@ -109,7 +108,7 @@ def test_invalid_characters(system: type[System[str]], value: str) -> None:
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_invalid_numbers(
-    system: type[System[TFromType]],
+    system: type[System[TFromNumeral, TDenotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert a number
@@ -121,13 +120,9 @@ def test_invalid_numbers(
 
     types: Container[type | UnionType] = ()
 
-    if hasattr(system, "to_numeral_map"):
-        types = tuple(system._dict_types())  # pyright: ignore[reportPrivateUsage]
-
-    types = types + tuple(system._base_types())  # pyright: ignore[reportPrivateUsage]
-    types = types + get_args(next(iter(system._base_types())))  # pyright: ignore[reportPrivateUsage]
+    types = types + tuple(base_types(system))
 
     number = data.draw(everything_except(excluded_types=types))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         system.to_numeral(number)

@@ -8,10 +8,10 @@ string representations, with support for subtractive notation (e.g., IV for 4, I
 
 from typing import ClassVar
 
-from numberology.system import RealNumber, System
+from numberology.system import System
 
 
-class Early(System[str]):
+class Early(System[str, int]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -52,13 +52,13 @@ class Early(System[str]):
         "D": 500,
     }
 
-    minimum: ClassVar[RealNumber] = 1
-    maximum: ClassVar[RealNumber] = 899
+    minimum: ClassVar[float] = 1
+    maximum: ClassVar[float] = 899
 
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def to_numeral(cls, number: RealNumber) -> str:
+    def to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -98,7 +98,7 @@ class Early(System[str]):
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -189,7 +189,7 @@ class Standard(Early):
         "M": 1_000,
     }
 
-    maximum: ClassVar[RealNumber] = 3_999
+    maximum: ClassVar[float] = 3_999
 
 
 class Apostrophus(Early):
@@ -238,10 +238,10 @@ class Apostrophus(Early):
         "I": 1,
     }
 
-    maximum: ClassVar[RealNumber] = 100_000
+    maximum: ClassVar[float] = 100_000
 
     @classmethod
-    def from_numeral(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> int:
         """
         #FIXME: Add docstring
         """

@@ -6,8 +6,9 @@ from numberology import (
     Numberology,
     RealNumber,
     System,
-    TFromType,
-    TToType,
+    TDenotation,
+    TFromNumeral,
+    TToNumeral,
     get_all_systems,
     systems,
 )
@@ -20,8 +21,8 @@ from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP, base_types
     strategies.data(),
 )
 def test_round_trip(
-    from_system: type[System[TFromType]],
-    to_system: type[System[TToType]],
+    from_system: type[System[TFromNumeral, TDenotation]],
+    to_system: type[System[TToNumeral, TDenotation]],
     data: strategies.DataObject,
 ):
     """
@@ -46,13 +47,13 @@ def test_round_trip(
 
         # We always start with a numeric strategy, so first convert to from_system
         # from Arabic numerals
-        source_input: TFromType = converter.convert(
+        source_input: TFromNumeral = converter.convert(
             number, from_system=systems.arabic.Arabic, to_system=from_system
         )
         # Intermediate conversion
-        result: TToType = converter.convert(source_input, from_system, to_system)
+        result: TToNumeral = converter.convert(source_input, from_system, to_system)
         # Back to start
-        final: TFromType = converter.convert(result, to_system, from_system)
+        final: TFromNumeral = converter.convert(result, to_system, from_system)
         # Last, convert back to Arabic to compare
         int_result: RealNumber = converter.convert(
             final, from_system, systems.arabic.Arabic
@@ -63,7 +64,7 @@ def test_round_trip(
 
 @given(strategies.sampled_from(SYSTEMS), strategies.data())
 def test_identity_conversion(
-    system: type[System[TFromType]],
+    system: type[System[TFromNumeral, TDenotation]],
     data: strategies.DataObject,
 ):
     """
@@ -77,9 +78,9 @@ def test_identity_conversion(
             )
         )
 
-        number_: TFromType = system.to_numeral(number)
+        number_: TFromNumeral = system.to_numeral(number)
 
-        result: TFromType = converter.convert(number_, system, system)
+        result: TFromNumeral = converter.convert(number_, system, system)
 
         integer: RealNumber = system.from_numeral(result)
 
@@ -90,6 +91,6 @@ def test_get_all_systems():
     """
     Each system in systems.__all__ should be retrievable.
     """
-    result: dict[str, type[System[Any]]] = get_all_systems()
+    result: dict[str, type[System[Any, Any]]] = get_all_systems()
 
     assert all(issubclass(x, System) for x in result.values())

@@ -7,10 +7,10 @@ values 1, 10, 100, 1000, 10000, 100000, and 1000000.
 
 from typing import ClassVar
 
-from numberology.system import RealNumber, System
+from numberology.system import System
 
 
-class Egyptian(System[str]):
+class Egyptian(System[str, int]):
     """Egyptian hieroglyphic numeral system converter.
 
     Implements bidirectional conversion between integers and Egyptian hieroglyphic
@@ -45,13 +45,13 @@ class Egyptian(System[str]):
         v: k for k, v in to_numeral_map.items()
     }
 
-    minimum: ClassVar[RealNumber] = 1
-    maximum: ClassVar[RealNumber] = 1_000_000
+    minimum: ClassVar[float] = 1
+    maximum: ClassVar[float] = 1_000_000
 
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def to_numeral(cls, number: RealNumber) -> str:
+    def to_numeral(cls, number: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
@@ -75,7 +75,7 @@ class Egyptian(System[str]):
             '\U00013069'
         """
         result: str = ""
-        number_: RealNumber = cls._limits(number)
+        number_: int = cls._limits(number)
 
         for arabic, hieroglyph in cls.to_numeral_map.items():
             count, number_ = divmod(number_, arabic)
@@ -85,7 +85,7 @@ class Egyptian(System[str]):
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> RealNumber:
+    def from_numeral(cls, number: str) -> int:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent
