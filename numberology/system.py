@@ -11,13 +11,14 @@ from fractions import Fraction
 from sys import float_info
 from typing import ClassVar, TypeVar, cast
 
-RealNumber = float | int | Fraction
+type Numeral = int | float | Fraction | str
+type Denotation = int | float | Fraction
 # TypeVars to maintain the relationship between numeral representation and system type.
-TNumeral = TypeVar("TNumeral", float | int | Fraction, int, str)
+TNumeral = TypeVar("TNumeral", bound=float | int | Fraction | str)
 TDenotation = TypeVar("TDenotation", bound=float | int | Fraction)
 
 
-class System[TNumeral, TDenotation](ABC):
+class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     """Abstract base class for numeral system converters.
 
     Defines the interface that all numeral system implementations must follow,

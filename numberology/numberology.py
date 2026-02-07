@@ -6,15 +6,11 @@ It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
 
-from fractions import Fraction
 from inspect import getmembers, isclass
-from typing import Any, TypeVar
+from typing import Any
 
 from . import systems
-from .system import System, TDenotation
-
-TFromNumeral = TypeVar("TFromNumeral")
-TToNumeral = TypeVar("TToNumeral")
+from .system import Denotation, Numeral, System
 
 
 class Numberology:
@@ -39,11 +35,14 @@ class Numberology:
         '\U00013386\U00013386\U00013386\U00013386\U000133fa\U000133fa'
     """
 
-    def convert(
+    def convert[
+        TFromNumeral: Numeral,
+        TToNumeral: Numeral,
+    ](
         self,
         number: TFromNumeral,
-        from_system: type[System[TFromNumeral, TDenotation]],
-        to_system: type[System[TToNumeral, TDenotation]],
+        from_system: type[System[TFromNumeral, Denotation]],
+        to_system: type[System[TToNumeral, Denotation]],
     ) -> TToNumeral:
         # FIXME: Add a type guard to ensure a fraction isn't implicitly converted to int
         """Converts a number from one numeral system to another.
@@ -76,7 +75,7 @@ class Numberology:
             'X'
         """
 
-        intermediate: int | float | Fraction = from_system.from_numeral(number)
+        intermediate: Numeral = from_system.from_numeral(number)
 
         return to_system.to_numeral(intermediate)
 

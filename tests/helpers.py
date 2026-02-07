@@ -4,7 +4,7 @@ from typing import Any, TypeVar, get_args
 
 from hypothesis import strategies
 
-from numberology import RealNumber, System, get_all_systems
+from numberology import System, get_all_systems
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 SYSTEMS_WITHOUT_ARABIC: list[type[System[Any, Any]]] = [
@@ -14,7 +14,6 @@ SYSTEMS_WITHOUT_ARABIC: list[type[System[Any, Any]]] = [
 TYPE_STRATEGY_MAP: dict[UnionType | type, FunctionType] = {
     str: strategies.integers,
     int: strategies.integers,
-    RealNumber: strategies.floats,
     float: strategies.floats,
     Fraction: strategies.fractions,
 }

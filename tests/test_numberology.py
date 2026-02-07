@@ -3,12 +3,10 @@ from typing import Any
 from hypothesis import assume, given, strategies
 
 from numberology import (
+    Denotation,
     Numberology,
-    RealNumber,
+    Numeral,
     System,
-    TDenotation,
-    TFromNumeral,
-    TToNumeral,
     get_all_systems,
     systems,
 )
@@ -20,9 +18,12 @@ from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP, base_types
     strategies.sampled_from(SYSTEMS),
     strategies.data(),
 )
-def test_round_trip(
-    from_system: type[System[TFromNumeral, TDenotation]],
-    to_system: type[System[TToNumeral, TDenotation]],
+def test_round_trip[
+    TFromNumeral: Numeral,
+    TToNumeral: Numeral,
+](
+    from_system: type[System[TFromNumeral, Denotation]],
+    to_system: type[System[TToNumeral, Denotation]],
     data: strategies.DataObject,
 ):
     """
@@ -55,7 +56,7 @@ def test_round_trip(
         # Back to start
         final: TFromNumeral = converter.convert(result, to_system, from_system)
         # Last, convert back to Arabic to compare
-        int_result: RealNumber = converter.convert(
+        int_result: Numeral = converter.convert(
             final, from_system, systems.arabic.Arabic
         )
 
@@ -64,7 +65,7 @@ def test_round_trip(
 
 @given(strategies.sampled_from(SYSTEMS), strategies.data())
 def test_identity_conversion(
-    system: type[System[TFromNumeral, TDenotation]],
+    system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ):
     """
@@ -78,11 +79,11 @@ def test_identity_conversion(
             )
         )
 
-        number_: TFromNumeral = system.to_numeral(number)
+        number_: Numeral = system.to_numeral(number)
 
-        result: TFromNumeral = converter.convert(number_, system, system)
+        result: Numeral = converter.convert(number_, system, system)
 
-        integer: RealNumber = system.from_numeral(result)
+        integer: Denotation = system.from_numeral(result)
 
         assert integer == number
 

@@ -6,12 +6,13 @@ string representations, with support for subtractive notation (e.g., IV for 4, I
 9).
 """
 
+from fractions import Fraction
 from typing import ClassVar
 
 from numberology.system import System
 
 
-class Early(System[str, int]):
+class Early[TNumeral: str, TDenotation: int](System[str, int]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -145,7 +146,9 @@ class Early(System[str, int]):
 
 
 # FIXME: Add fractions
-class Standard(Early):
+class Standard[TNumeral: str, TDenotation: (int | Fraction)](
+    System[str, int | Fraction]
+):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -189,10 +192,97 @@ class Standard(Early):
         "M": 1_000,
     }
 
+    minimum: ClassVar[float] = 1
     maximum: ClassVar[float] = 3_999
 
+    @classmethod
+    def to_numeral(cls, number: int | Fraction) -> str:
+        """Converts an integer to a Roman numeral string.
 
-class Apostrophus(Early):
+        Takes an integer and converts it to its Roman numeral representation,
+        using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
+
+        Args:
+            number: The integer to convert
+
+        Returns:
+            The Roman numeral representation of the number.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
+
+        Examples:
+            >>> Early.to_numeral(1)
+            'I'
+            >>> Early.to_numeral(9)
+            'IX'
+            >>> Early.to_numeral(0)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be greater or equal to 1.
+            >>> Early.to_numeral(900)
+            Traceback (most recent call last):
+                ...
+            ValueError: Number must be less than or equal to 900.
+        """
+        result: str = ""
+        number_ = cls._limits(number)
+
+        for latin, roman in cls.to_numeral_map.items():
+            while number_ >= latin:
+                result += roman
+                number_ -= latin
+
+        return result
+
+    @classmethod
+    def from_numeral(cls, number: str) -> int | Fraction:
+        """Converts a Roman numeral to an integer.
+
+        Takes a Roman numeral and converts it to its integer equivalent,
+        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+
+        Args:
+            number: The Roman numeral to convert.
+
+        Returns:
+            The integer representation of the Roman numeral.
+
+        Raises:
+            ValueError: If the string contains invalid Roman numerals.
+
+        Examples:
+            >>> Early.from_numeral('X')
+            10
+            >>> Early.from_numeral('IX')
+            9
+            >>> Early.from_numeral('i')  # Case insensitive
+            1
+            >>> Early.from_numeral('Z')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Roman character: Z
+        """
+        total: int = 0
+        prev_value: int = 0
+
+        for char in reversed(number.upper()):
+            current_value = cls.from_numeral_map.get(char)
+
+            if current_value is None:
+                raise ValueError(f"Invalid Roman character: {char}")
+
+            if current_value < prev_value:
+                total -= current_value
+            else:
+                total += current_value
+
+            prev_value = current_value
+
+        return cls._limits(total)
+
+
+class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.

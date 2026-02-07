@@ -1,21 +1,17 @@
 from . import systems
 from .numberology import (
+    Denotation,
     Numberology,
+    Numeral,
     System,
-    TDenotation,
-    TFromNumeral,
-    TToNumeral,
     get_all_systems,
 )
-from .system import RealNumber
 
 __all__ = [
+    "Denotation",
     "Numberology",
-    "RealNumber",
+    "Numeral",
     "System",
-    "TDenotation",
-    "TFromNumeral",
-    "TToNumeral",
     "get_all_systems",
     "systems",
 ]

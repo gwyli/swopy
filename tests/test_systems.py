@@ -6,13 +6,14 @@ and validate range constraints for each numeral system.
 """
 
 from collections.abc import Container
+from fractions import Fraction
 from sys import float_info
 from types import UnionType
 
 import pytest
 from hypothesis import assume, given, strategies
 
-from numberology import RealNumber, System, TDenotation, TFromNumeral
+from numberology import Denotation, Numeral, System
 from tests.helpers import (
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
@@ -25,7 +26,7 @@ from tests.helpers import (
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_reversibility(
-    system: type[System[TFromNumeral, TDenotation]],
+    system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """
@@ -39,8 +40,8 @@ def test_reversibility(
             )
         )
 
-        encoded: TFromNumeral = system.to_numeral(number)
-        decoded: RealNumber = system.from_numeral(encoded)
+        encoded: Numeral = system.to_numeral(number)
+        decoded: str | int | float | Fraction = system.from_numeral(encoded)
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
 
@@ -48,7 +49,7 @@ def test_reversibility(
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_minima(
-    system: type[System[TFromNumeral, TDenotation]],
+    system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
@@ -72,7 +73,7 @@ def test_minima(
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_maxima(
-    system: type[System[TFromNumeral, TDenotation]],
+    system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
@@ -99,7 +100,7 @@ def test_maxima(
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
 @given(strategies.text())
-def test_invalid_characters(system: type[System[str, TDenotation]], value: str) -> None:
+def test_invalid_characters(system: type[System[str, Denotation]], value: str) -> None:
     """Verifies that a ValueError is raised when attempting to convert a string
     containing invalid characters for the numeral system.
 
@@ -118,7 +119,7 @@ def test_invalid_characters(system: type[System[str, TDenotation]], value: str) 
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
 def test_invalid_numbers(
-    system: type[System[TFromNumeral, TDenotation]],
+    system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert a number
