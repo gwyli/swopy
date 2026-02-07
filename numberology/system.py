@@ -12,7 +12,7 @@ from sys import float_info
 from typing import ClassVar, cast
 
 type Numeral = int | float | Fraction | str
-type Denotation = int | float | Fraction
+type Denotation = int | Fraction | float
 
 
 class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
@@ -57,9 +57,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             ValueError: If the number is outside the valid range.
         """
 
-        # Unnecessary cast to satisfy type checker as Python cannot infer that
-        # float, int and Fraction are comparable.
-        number_: float | int | Fraction = cast(float | int | Fraction, number)
+        number_: float | Fraction | int = number
 
         if number_ < cls.minimum:
             raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
