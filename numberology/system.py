@@ -9,13 +9,10 @@ their string/integer representations in that particular numeral system.
 from abc import ABC, abstractmethod
 from fractions import Fraction
 from sys import float_info
-from typing import ClassVar, TypeVar, cast
+from typing import ClassVar, cast
 
 type Numeral = int | float | Fraction | str
 type Denotation = int | float | Fraction
-# TypeVars to maintain the relationship between numeral representation and system type.
-TNumeral = TypeVar("TNumeral", bound=float | int | Fraction | str)
-TDenotation = TypeVar("TDenotation", bound=float | int | Fraction)
 
 
 class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
