@@ -53,11 +53,9 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Add .local/bin to Windows PATH
-        if: steps.check_changes.outputs.relevant == 'true'
-        if: runner.os == 'Windows'
+        if: steps.check_changes.outputs.relevant == 'true' && runner.os == 'Windows'
         shell: bash
         run: echo "$USERPROFILE/.local/bin" >> $GITHUB_PATH
       
