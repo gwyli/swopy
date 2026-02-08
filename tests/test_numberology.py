@@ -20,10 +20,12 @@ from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP, base_types
 )
 def test_round_trip[
     TFromNumeral: Numeral,
+    TFromDenotation: Denotation,
     TToNumeral: Numeral,
+    TToDenotation: Denotation,
 ](
-    from_system: type[System[TFromNumeral, Denotation]],
-    to_system: type[System[TToNumeral, Denotation]],
+    from_system: type[System[TFromNumeral, TFromDenotation]],
+    to_system: type[System[TToNumeral, TToDenotation]],
     data: strategies.DataObject,
 ):
     """
@@ -56,11 +58,12 @@ def test_round_trip[
         # Back to start
         final: TFromNumeral = converter.convert(result, to_system, from_system)
         # Last, convert back to Arabic to compare
-        int_result: Numeral = converter.convert(
+        final_number: Numeral = converter.convert(
             final, from_system, systems.arabic.Arabic
         )
 
-        assert int_result == number
+        assert final_number == number
+        assert type(final_number) is type(number)
 
 
 @given(strategies.sampled_from(SYSTEMS), strategies.data())
@@ -83,9 +86,10 @@ def test_identity_conversion(
 
         result: Numeral = converter.convert(number_, system, system)
 
-        integer: Denotation = system.from_numeral(result)
+        final: Denotation = system.from_numeral(result)
 
-        assert integer == number
+        assert final == number
+        assert type(final) is type(number)
 
 
 def test_get_all_systems():

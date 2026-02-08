@@ -37,12 +37,14 @@ class Numberology:
 
     def convert[
         TFromNumeral: Numeral,
+        TFromDenotation: Denotation,
         TToNumeral: Numeral,
+        TToDenotation: Denotation,
     ](
         self,
         number: TFromNumeral,
-        from_system: type[System[TFromNumeral, Denotation]],
-        to_system: type[System[TToNumeral, Denotation]],
+        from_system: type[System[TFromNumeral, TFromDenotation]],
+        to_system: type[System[TToNumeral, TToDenotation]],
     ) -> TToNumeral:
         # FIXME: Add a type guard to ensure a fraction isn't implicitly converted to int
         """Converts a number from one numeral system to another.
@@ -75,9 +77,14 @@ class Numberology:
             'X'
         """
 
-        intermediate: Numeral = from_system.from_numeral(number)
+        intermediate: TFromDenotation = from_system.from_numeral(number)
 
-        return to_system.to_numeral(intermediate)
+        if to_system.is_valid_denotation(intermediate):
+            return to_system.to_numeral(intermediate)
+
+        raise TypeError(
+            f"{number} of type {type(number)} cannot be represented in {to_system.__name__}."  # noqa: E501
+        )
 
 
 def get_all_systems() -> dict[str, type[System[Any, Any]]]:

@@ -9,7 +9,8 @@ their string/integer representations in that particular numeral system.
 from abc import ABC, abstractmethod
 from fractions import Fraction
 from sys import float_info
-from typing import ClassVar, cast
+from types import UnionType, get_original_bases
+from typing import Any, ClassVar, TypeIs, cast, get_args
 
 type Numeral = int | float | Fraction | str
 type Denotation = int | Fraction | float
@@ -40,9 +41,42 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     minimum: ClassVar[float] = -float_info.max
     maximum: ClassVar[float] = float_info.max
     maximum_is_many: ClassVar[bool] = False
+    _denotation_runtime_type: ClassVar[tuple[type, ...]]
+
+    def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
+        """Returns the base type(s) of the numeral system.
+
+        Returns:
+            The base type(s) used for numeral representation in this system.
+        """
+        super().__init_subclass__(**kwargs)
+
+        cls._denotation_runtime_type = cls._get_base_types()
 
     @classmethod
-    @abstractmethod
+    def _get_base_types(cls) -> tuple[type]:
+        """Returns the base type of the numeral system. When multiple types are
+        supported, unfurl the UnionType and return all base types.
+
+        Returns:
+            The base type(s) used for numeral representation in this system.
+        """
+
+        base: type | UnionType = get_original_bases(cls)[0]
+
+        denotation: type | UnionType = get_args(base)[1]
+
+        if isinstance(denotation, UnionType):
+            return get_args(denotation)
+
+        return (denotation,)
+
+    @classmethod
+    def is_valid_denotation(cls, val: Any) -> TypeIs[TDenotation]:
+        # This works for single types like int or tuples of types
+        return isinstance(val, cls._denotation_runtime_type)
+
+    @classmethod
     def _limits(cls, number: TDenotation) -> TDenotation:
         """Validates that a number is within acceptable limits for the system.
 
@@ -57,7 +91,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             ValueError: If the number is outside the valid range.
         """
 
-        number_: float | Fraction | int = number
+        number_: Denotation = number
 
         if number_ < cls.minimum:
             raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
