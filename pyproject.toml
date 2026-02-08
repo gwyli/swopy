@@ -29,6 +29,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "ruff",
+    "tzdata>=2025.3 ; sys_platform == 'win32'",
 ]
 
 [tool.coverage.run]
@@ -44,6 +45,7 @@ pyright="pyright"
 pytest="pytest"
 pytest-cov="pytest_cov"
 ruff="ruff"
+tzdata="tzdata"
 
 [tool.pyright]
 reportMissingTypeStubs=false
