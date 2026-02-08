@@ -173,7 +173,7 @@ wheels = [
 ]
 
 [[package]]
-name = "numberology"
+name = "swopy"
 version = "0.1.0"
 source = { editable = "." }
 

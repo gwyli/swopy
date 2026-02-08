@@ -6,8 +6,8 @@ env_list = ["3.15.0a5", "3.14.2", "3.14.1", "3.14.0", "3.13", "lint", "typecheck
 runner = "uv-venv-lock-runner"
 package = "editable"
 commands = [
-    ["pytest", "--cov-report", "term-missing", "--cov=numberology"],
-    ["pytest", "--doctest-modules", "numberology/"]
+    ["pytest", "--cov-report", "term-missing", "--cov=swopy"],
+    ["pytest", "--doctest-modules", "swopy/"]
 ]
 
 
@@ -21,7 +21,7 @@ commands = [
 [env.typecheck]
 description = "Run pyright type verification"
 commands = [
-    ["pyright", "--verifytypes", "numberology", "--ignoreexternal"]
+    ["pyright", "--verifytypes", "swopy", "--ignoreexternal"]
 ]
 
 

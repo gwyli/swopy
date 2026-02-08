@@ -1,5 +1,5 @@
 [project]
-name = "numberology"
+name = "swopy"
 version = "0.1.0"
 description = "A collection of numeral system converters."
 readme = "README.md"
@@ -50,7 +50,7 @@ ruff="ruff"
 reportMissingTypeStubs=false
 reportMissingImports=false # Ignore external dependencies
 typeCheckingMode="strict"
-include = ["numberology"]
+include = ["swopy"]
 
 [tool.pytest.ini_options]
 doctest_optionflags = "NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL ELLIPSIS"
@@ -67,9 +67,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["numberology"]
+packages = ["swopy"]
 include = [
-    "/numberology/py.typed",
+    "/swopy/py.typed",
 ]
 
 [[tool.uv.index]]
@@ -115,7 +115,7 @@ select = [
 extend-fixable = ["UP015"]
 
 [tool.ruff.lint.isort]
-known-first-party=["numberology"]
+known-first-party=["swopy"]
 
 [tool.ruff.lint.per-file-ignores]
 # Disable certain checks in tests

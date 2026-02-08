@@ -12,7 +12,7 @@ from sys import float_info
 import pytest
 from hypothesis import assume, given, strategies
 
-from numberology import Denotation, Numeral, System
+from swopy import Denotation, Numeral, System
 from tests.helpers import (
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,

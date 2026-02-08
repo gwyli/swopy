@@ -4,7 +4,7 @@ from typing import Any
 
 from hypothesis import strategies
 
-from numberology import System, get_all_systems
+from swopy import System, get_all_systems
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 SYSTEMS_WITHOUT_ARABIC: list[type[System[Any, Any]]] = [

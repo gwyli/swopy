@@ -1,14 +1,14 @@
-# Numberology
+# Swopy
 
 A Python library for converting between different numeral systems.
 
 ## Overview
 
-Numberology provides a simple and extensible interface to convert numbers between various numeral systems, including Roman numerals and Egyptian hieroglyphic numerals. The library supports bidirectional conversion—you can convert from any supported system to any other.
+Swopy provides a simple and extensible interface to convert numbers between various numeral systems, including Roman numerals and Egyptian hieroglyphic numerals. The library supports bidirectional conversion—you can convert from any supported system to any other.
 
 ## Supported Numeral Systems
 
-* [Roman](numberology/systems/roman.py), in the forms
+* [Roman](swopy/systems/roman.py), in the forms
  * Early, supporting integers between 1 and 899
  * Standard, supporting integers between 1 and 3,999
  * Apostrophus, supporting integers between 1 and 100,000
@@ -20,8 +20,8 @@ Numberology provides a simple and extensible interface to convert numbers betwee
 Install the package:
 
 ```bash
-pip install numberology # or
-uv add numberology
+pip install swopy # or
+uv add swopy
 ```
 
 ## Usage
@@ -29,9 +29,9 @@ uv add numberology
 ### Basic Conversion
 
 ```python
-from numberology import Numberology, systems
+from swopy import Swopy, systems
 
-converter = Numberology()
+converter = Swopy()
 
 # Convert integer Roman numeral to Egyptian hieroglyphic
 converter.convert('IX', systems.roman.Standard, systems.egyptian.Egyptian)
@@ -45,17 +45,17 @@ converter.convert('IↃI', systems.roman.Apostrophus, systems.arabic.Arabic)
 ### Available Systems
 
 ```python
-from numberology import Numberology, get_all_systems
+from swopy import Swopy, get_all_systems
 import pprint
 systems = get_all_systems()
 pprint.pprint(systems)
-#{'arabic.Arabic': <class 'numberology.systems.arabic.Arabic'>,
-# 'egyptian.Egyptian': <class 'numberology.systems.egyptian.Egyptian'>,
-# 'roman.Apostrophus': <class 'numberology.systems.roman.Apostrophus'>,
-# 'roman.Early': <class 'numberology.systems.roman.Early'>,
-# 'roman.Standard': <class 'numberology.systems.roman.Standard'>}
+#{'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
+# 'egyptian.Egyptian': <class 'swopy.systems.egyptian.Egyptian'>,
+# 'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
+# 'roman.Early': <class 'swopy.systems.roman.Early'>,
+# 'roman.Standard': <class 'swopy.systems.roman.Standard'>}
 
-converter = Numberology()
+converter = Swopy()
 converter.convert(42, systems['arabic.Arabic'], systems['roman.Early'])
 # 'XLII'
 
@@ -66,9 +66,9 @@ converter.convert(42, systems['arabic.Arabic'], systems['roman.Early'])
 The library validates numbers against the acceptable range for each system:
 
 ```python
-from numberology import Numberology, systems
+from swopy import Swopy, systems
 
-converter = Numberology()
+converter = Swopy()
 
 # This will raise ValueError (4000 is outside the valid range)
 try:

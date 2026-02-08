@@ -3,10 +3,10 @@ from typing import Any
 import pytest
 from hypothesis import assume, given, strategies
 
-from numberology import (
+from swopy import (
     Denotation,
-    Numberology,
     Numeral,
+    Swopy,
     System,
     get_all_systems,
     systems,
@@ -32,7 +32,7 @@ def test_round_trip[
     """
     Converting A -> B -> A should return the original value.
     """
-    converter = Numberology()
+    converter = Swopy()
 
     # Calculate the overlapping valid range
     min_val = max(from_system.minimum, to_system.minimum)
@@ -95,7 +95,7 @@ def test_round_trip_failure[
     Converting A -> B -> A should raise a TypeError if the systems have no overlapping
     valid types.
     """
-    converter = Numberology()
+    converter = Swopy()
 
     # Calculate the overlapping valid range
     min_val = max(from_system.minimum, to_system.minimum)
@@ -133,7 +133,7 @@ def test_identity_conversion(
     """
     Converting from a system to itself should return the input.
     """
-    converter = Numberology()
+    converter = Swopy()
     base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
