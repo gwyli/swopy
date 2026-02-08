@@ -6,7 +6,6 @@ string representations, with support for subtractive notation (e.g., IV for 4, I
 9).
 """
 
-from fractions import Fraction
 from typing import ClassVar
 
 from numberology.system import System
@@ -146,9 +145,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
 
 # FIXME: Add fractions
-class Standard[TNumeral: str, TDenotation: (int | Fraction)](
-    System[str, int | Fraction]
-):
+class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -196,7 +193,7 @@ class Standard[TNumeral: str, TDenotation: (int | Fraction)](
     maximum: ClassVar[float] = 3_999
 
     @classmethod
-    def to_numeral(cls, number: int | Fraction) -> str:
+    def to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -236,7 +233,7 @@ class Standard[TNumeral: str, TDenotation: (int | Fraction)](
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int | Fraction:
+    def from_numeral(cls, number: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,

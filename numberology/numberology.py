@@ -46,7 +46,6 @@ class Numberology:
         from_system: type[System[TFromNumeral, TFromDenotation]],
         to_system: type[System[TToNumeral, TToDenotation]],
     ) -> TToNumeral:
-        # FIXME: Add a type guard to ensure a fraction isn't implicitly converted to int
         """Converts a number from one numeral system to another.
 
         Converts a number represented in one numeral system (source) to another

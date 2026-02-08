@@ -1,5 +1,6 @@
 from typing import Any
 
+import pytest
 from hypothesis import assume, given, strategies
 
 from numberology import (
@@ -10,7 +11,7 @@ from numberology import (
     get_all_systems,
     systems,
 )
-from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP, base_types
+from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP
 
 
 @given(
@@ -41,9 +42,13 @@ def test_round_trip[
     if min_val > max_val:
         assume(False)
 
-    for base_type in base_types(from_system):
-        assume(base_type in base_types(to_system))
+    to_base_types: tuple[type] = to_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    assert len(to_base_types) >= 1, "System must have at least one base type"
 
+    from_base_types: tuple[type] = from_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    assert len(from_base_types) >= 1, "System must have at least one base type"
+
+    for base_type in set(from_base_types) & set(to_base_types):
         number = data.draw(
             TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
         )
@@ -62,8 +67,62 @@ def test_round_trip[
             final, from_system, systems.arabic.Arabic
         )
 
-        assert final_number == number
-        assert type(final_number) is type(number)
+        assert final_number == number, (
+            "{number} incorrectly converted to {final_number}."
+        )
+
+        assert type(final_number) is type(number), (
+            "{number} is not of the same type as {final_number}"
+        )
+
+
+@given(
+    strategies.sampled_from(SYSTEMS),
+    strategies.sampled_from(SYSTEMS),
+    strategies.data(),
+)
+def test_round_trip_failure[
+    TFromNumeral: Numeral,
+    TFromDenotation: Denotation,
+    TToNumeral: Numeral,
+    TToDenotation: Denotation,
+](
+    from_system: type[System[TFromNumeral, TFromDenotation]],
+    to_system: type[System[TToNumeral, TToDenotation]],
+    data: strategies.DataObject,
+):
+    """
+    Converting A -> B -> A should raise a TypeError if the systems have no overlapping
+    valid types.
+    """
+    converter = Numberology()
+
+    # Calculate the overlapping valid range
+    min_val = max(from_system.minimum, to_system.minimum)
+    max_val = min(from_system.maximum, to_system.maximum)
+
+    # Guard against systems with no overlap
+    if min_val > max_val:
+        assume(False)
+
+    to_base_types: tuple[type] = to_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    assert len(to_base_types) >= 1, "System must have at least one base type"
+
+    from_base_types: tuple[type] = from_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    assert len(from_base_types) >= 1, "System must have at least one base type"
+
+    for base_type in set(from_base_types) ^ set(to_base_types):
+        number = data.draw(
+            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
+        )
+
+        with pytest.raises(TypeError):
+            # We always start with a numeric strategy, so first convert to from_system
+            # from Arabic numerals
+            source_input: TFromNumeral = converter.convert(
+                number, from_system=systems.arabic.Arabic, to_system=from_system
+            )
+            converter.convert(source_input, from_system, to_system)
 
 
 @given(strategies.sampled_from(SYSTEMS), strategies.data())
@@ -75,7 +134,11 @@ def test_identity_conversion(
     Converting from a system to itself should return the input.
     """
     converter = Numberology()
-    for base_type in base_types(system):
+    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+
+    assert len(base_types) >= 1, "System must have at least one base type"
+
+    for base_type in base_types:
         number = data.draw(
             TYPE_STRATEGY_MAP[base_type](
                 min_value=system.minimum, max_value=system.maximum
@@ -83,13 +146,15 @@ def test_identity_conversion(
         )
 
         number_: Numeral = system.to_numeral(number)
-
         result: Numeral = converter.convert(number_, system, system)
-
         final: Denotation = system.from_numeral(result)
 
-        assert final == number
-        assert type(final) is type(number)
+        assert final == number, (
+            "Failed identity conversion for {system} with value {number}"
+        )
+        assert type(final) is type(number), (
+            "Type mismatch in identity conversion for {system} with value {number}"
+        )
 
 
 def test_get_all_systems():
@@ -99,3 +164,4 @@ def test_get_all_systems():
     result: dict[str, type[System[Any, Any]]] = get_all_systems()
 
     assert all(issubclass(x, System) for x in result.values())
+    assert len(result) > 0, "No systems found. Ensure systems.__all__ is populated."

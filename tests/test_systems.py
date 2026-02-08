@@ -8,7 +8,6 @@ and validate range constraints for each numeral system.
 from collections.abc import Container
 from fractions import Fraction
 from sys import float_info
-from types import UnionType
 
 import pytest
 from hypothesis import assume, given, strategies
@@ -18,7 +17,6 @@ from tests.helpers import (
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
     TYPE_STRATEGY_MAP,
-    base_types,
     everything_except,
 )
 
@@ -33,7 +31,11 @@ def test_reversibility(
     Verifies that numeral systems can be converted to their representation
     and back without loss of precision.
     """
-    for base_type in base_types(system):
+    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+
+    assert len(base_types) >= 1, "System must have at least one base type"
+
+    for base_type in base_types:
         number = data.draw(
             TYPE_STRATEGY_MAP[base_type](
                 min_value=system.minimum, max_value=system.maximum
@@ -58,8 +60,11 @@ def test_minima(
     Args:
         number: An integer below the minimum valid value for the numeral system.
     """
+    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
 
-    for base_type in base_types(system):
+    assert len(base_types) >= 1, "System must have at least one base type"
+
+    for base_type in base_types:
         number = data.draw(TYPE_STRATEGY_MAP[base_type](max_value=system.minimum - 1))
 
         # For unbounded systems adding 1 is not enough to exceed the bound
@@ -82,8 +87,11 @@ def test_maxima(
     Args:
         number: An integer above the maximum valid value for the numeral system.
     """
+    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
 
-    for base_type in base_types(system):
+    assert len(base_types) >= 1, "System must have at least one base type"
+
+    for base_type in base_types:
         number = data.draw(TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1))
 
         # For unbounded systems adding 1 is not enough to exceed the bound
@@ -129,11 +137,10 @@ def test_invalid_numbers(
         number: A number of an invalid type for the numeral system.
     """
 
-    types: Container[type | UnionType] = ()
+    base_types: Container[type] = tuple(system._get_base_types())  # pyright: ignore[reportPrivateUsage]
+    assert len(base_types) >= 1, "System must have at least one base type"
 
-    types = types + tuple(base_types(system))
-
-    number = data.draw(everything_except(excluded_types=types))
+    number = data.draw(everything_except(excluded_types=base_types))
 
     with pytest.raises(TypeError):
         system.to_numeral(number)
