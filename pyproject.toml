@@ -38,7 +38,6 @@ omit=[
 ]
 
 [tool.deptry.package_module_name_map]
-pydantic="pydantic"
 hypothesis="hypothesis"
 pre_commit="pre_commit"
 pyright="pyright"
