@@ -6,9 +6,9 @@ from hypothesis import assume, given, strategies
 from swopy import (
     Denotation,
     Numeral,
-    Swopy,
     System,
     get_all_systems,
+    swop,
     systems,
 )
 from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP
@@ -32,8 +32,6 @@ def test_round_trip[
     """
     Converting A -> B -> A should return the original value.
     """
-    converter = Swopy()
-
     # Calculate the overlapping valid range
     min_val = max(from_system.minimum, to_system.minimum)
     max_val = min(from_system.maximum, to_system.maximum)
@@ -55,17 +53,15 @@ def test_round_trip[
 
         # We always start with a numeric strategy, so first convert to from_system
         # from Arabic numerals
-        source_input: TFromNumeral = converter.convert(
+        source_input: TFromNumeral = swop(
             number, from_system=systems.arabic.Arabic, to_system=from_system
         )
         # Intermediate conversion
-        result: TToNumeral = converter.convert(source_input, from_system, to_system)
+        result: TToNumeral = swop(source_input, from_system, to_system)
         # Back to start
-        final: TFromNumeral = converter.convert(result, to_system, from_system)
+        final: TFromNumeral = swop(result, to_system, from_system)
         # Last, convert back to Arabic to compare
-        final_number: Numeral = converter.convert(
-            final, from_system, systems.arabic.Arabic
-        )
+        final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
 
         assert final_number == number, (
             "{number} incorrectly converted to {final_number}."
@@ -95,8 +91,6 @@ def test_round_trip_failure[
     Converting A -> B -> A should raise a TypeError if the systems have no overlapping
     valid types.
     """
-    converter = Swopy()
-
     # Calculate the overlapping valid range
     min_val = max(from_system.minimum, to_system.minimum)
     max_val = min(from_system.maximum, to_system.maximum)
@@ -119,10 +113,10 @@ def test_round_trip_failure[
         with pytest.raises(TypeError):
             # We always start with a numeric strategy, so first convert to from_system
             # from Arabic numerals
-            source_input: TFromNumeral = converter.convert(
+            source_input: TFromNumeral = swop(
                 number, from_system=systems.arabic.Arabic, to_system=from_system
             )
-            converter.convert(source_input, from_system, to_system)
+            swop(source_input, from_system, to_system)
 
 
 @given(strategies.sampled_from(SYSTEMS), strategies.data())
@@ -133,7 +127,6 @@ def test_identity_conversion(
     """
     Converting from a system to itself should return the input.
     """
-    converter = Swopy()
     base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
@@ -146,7 +139,7 @@ def test_identity_conversion(
         )
 
         number_: Numeral = system.to_numeral(number)
-        result: Numeral = converter.convert(number_, system, system)
+        result: Numeral = swop(number_, system, system)
         final: Denotation = system.from_numeral(result)
 
         assert final == number, (

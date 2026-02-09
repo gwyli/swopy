@@ -4,14 +4,15 @@ A Python library for converting between different numeral systems.
 
 ## Overview
 
-Swopy provides a simple and extensible interface to convert numbers between various numeral systems, including Roman numerals and Egyptian hieroglyphic numerals. The library supports bidirectional conversion—you can convert from any supported system to any other.
+Swopy provides a simple and extensible interface to convert numbers between various numeral systems.
+The library supports bidirectional conversion — you can convert from any supported system to any other.
 
 ## Supported Numeral Systems
 
-* [Roman](swopy/systems/roman.py), in the forms
- * Early, supporting integers between 1 and 899
- * Standard, supporting integers between 1 and 3,999
- * Apostrophus, supporting integers between 1 and 100,000
+* [Roman](swopy/systems/roman.py), in the forms:
+   * Early, supporting integers between 1 and 899
+   * Standard, supporting integers between 1 and 3,999
+   * Apostrophus, supporting integers between 1 and 100,000
 * [Egyptian](umberology/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
 * Arabic, supporting integers between `-int(sys.float_info.max)` and `int(sys.float_info.max)`
 
@@ -29,25 +30,24 @@ uv add swopy
 ### Basic Conversion
 
 ```python
-from swopy import Swopy, systems
-
-converter = Swopy()
+import swopy
+from swopy import systems
 
 # Convert integer Roman numeral to Egyptian hieroglyphic
-converter.convert('IX', systems.roman.Standard, systems.egyptian.Egyptian)
+swopy.swop('IX', systems.roman.Standard, systems.egyptian.Egyptian)
 # '𓏺𓏺𓏺𓏺𓏺𓏺𓏺𓏺𓏺'
 
 # Convert Apostrophus to an Arabic integer
-converter.convert('IↃI', systems.roman.Apostrophus, systems.arabic.Arabic)
+swopy.swop('IↃI', systems.roman.Apostrophus, systems.arabic.Arabic)
 # 501
 ```
 
 ### Available Systems
 
 ```python
-from swopy import Swopy, get_all_systems
+import swopy
 import pprint
-systems = get_all_systems()
+systems = swopy.get_all_systems()
 pprint.pprint(systems)
 #{'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
 # 'egyptian.Egyptian': <class 'swopy.systems.egyptian.Egyptian'>,
@@ -55,8 +55,7 @@ pprint.pprint(systems)
 # 'roman.Early': <class 'swopy.systems.roman.Early'>,
 # 'roman.Standard': <class 'swopy.systems.roman.Standard'>}
 
-converter = Swopy()
-converter.convert(42, systems['arabic.Arabic'], systems['roman.Early'])
+swopy.swop(42, systems['arabic.Arabic'], systems['roman.Early'])
 # 'XLII'
 
 ```
@@ -66,19 +65,20 @@ converter.convert(42, systems['arabic.Arabic'], systems['roman.Early'])
 The library validates numbers against the acceptable range for each system:
 
 ```python
-from swopy import Swopy, systems
-
-converter = Swopy()
+import swopy
+from swopy import systems
 
 # This will raise ValueError (4000 is outside the valid range)
 try:
-    result = converter.convert(4000, systems.arabic.Arabic, systems.roman.Standard)
+    swopy.swop(4000, systems.arabic.Arabic, systems.roman.Standard)
 except ValueError as e:
     print(f"Conversion failed: {e}")
 # Conversion failed: Number must be less than or equal to 3999.
 ```
 
 ## Requirements
+
+Swopy only relies on the standard library.
 
 - Python 3.13 or higher
 
