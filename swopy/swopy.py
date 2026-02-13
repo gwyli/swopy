@@ -19,7 +19,7 @@ def swop[
     TToNumeral: Numeral,
     TToDenotation: Denotation,
 ](
-    number: TFromNumeral,
+    numeral: TFromNumeral,
     from_system: type[System[TFromNumeral, TFromDenotation]],
     to_system: type[System[TToNumeral, TToDenotation]],
 ) -> TToNumeral:
@@ -52,13 +52,13 @@ def swop[
         'X'
     """
 
-    intermediate: TFromDenotation = from_system.from_numeral(number)
+    intermediate: TFromDenotation = from_system.from_numeral(numeral)
 
     if to_system.is_valid_denotation(intermediate):
         return to_system.to_numeral(intermediate)
 
     raise TypeError(
-        f"{number} of type {type(number)} cannot be represented in {to_system.__name__}."  # noqa: E501
+        f"{numeral} of type {type(numeral)} cannot be represented in {to_system.__name__}."  # noqa: E501
     )
 
 
