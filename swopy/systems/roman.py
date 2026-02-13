@@ -111,6 +111,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
         Raises:
             ValueError: If the string contains invalid Roman numerals.
+            TypeError: If the input is not a valid type for Roman numerals.
 
         Examples:
             >>> Early.from_numeral('X')
@@ -251,6 +252,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
 
         Raises:
             ValueError: If the string contains invalid Roman numerals.
+            TypeError: If the input is not a valid type for Roman numerals.
 
         Examples:
             >>> Early.from_numeral('X')
@@ -338,8 +340,36 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
 
     @classmethod
     def from_numeral(cls, number: str) -> int:
-        """
-        #FIXME: Add docstring
+        """Converts a Roman numeral of the Apostrophus form to an integer.
+
+        Takes a Roman numeral and converts it to its integer equivalent,
+        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+
+        Args:
+            number: The Roman numeral to convert.
+
+        Returns:
+            The integer representation of the Roman numeral.
+
+        Raises:
+            ValueError: If the string contains invalid Roman numerals.
+            TypeError: If the input is not a valid type for Roman numerals.
+
+        Examples:
+            >>> Apostrophus.from_numeral('X')
+            10
+            >>> Apostrophus.from_numeral('IↃI')
+            501
+            >>> Apostrophus.from_numeral('i')  # Case insensitive
+            1
+            >>> Apostrophus.from_numeral('Z')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Roman character: Z
+            >>> Apostrophus.from_numeral('IIↃI')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid sequence I cannot follow a smaller value.
         """
         if not cls.is_valid_numeral(number):
             raise TypeError(
@@ -347,14 +377,25 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
             )
 
         total = 0
+        numeral_ = number.upper()
+        # Start with a value larger than the maximum to allow any numeral
+        last_value = cls.maximum + 1
 
         i = 0
-        while i < len(number):
+        while i < len(numeral_):
             matched = False
-            # Check for multi-character symbols first (greedy match)
-            for symbol, value in cls.from_numeral_map.items():
-                if number.startswith(symbol, i):
-                    total += value
+            for symbol in cls.from_numeral_map:
+                if numeral_.startswith(symbol, i):
+                    current_value = cls.from_numeral_map[symbol]
+
+                    # Ensure we aren't seeing a larger symbol after a smaller one
+                    if current_value > last_value:
+                        raise ValueError(
+                            f"Invalid sequence {symbol} cannot follow a smaller value."
+                        )
+
+                    total += current_value
+                    last_value = current_value
                     i += len(symbol)
                     matched = True
                     break

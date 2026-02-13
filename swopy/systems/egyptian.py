@@ -94,6 +94,7 @@ class Egyptian(System[str, int]):
 
         Raises:
             ValueError: If the number is outside the valid range.
+            TypeError: If the input is not a valid type for Egyptian numerals.
 
         Examples:
             >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
