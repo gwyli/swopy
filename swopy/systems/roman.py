@@ -1,9 +1,8 @@
 """Roman numeral system conversion module.
 
-This module provides conversion utilities for Roman numerals (I, V, X, L, C, D, M).
-It implements bidirectional conversion between integers (1-3999) and Roman numeral
-string representations, with support for subtractive notation (e.g., IV for 4, IX for
-9).
+This module provides conversion utilities for Roman numerals. It implements
+bidirectional conversion between Arabic numbers and Roman numerals, with support
+for subtractive notation (e.g., IV for 4, IX for 9).
 """
 
 from typing import ClassVar

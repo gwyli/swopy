@@ -2,8 +2,8 @@
 
 This module defines the System abstract base class that serves as the foundation
 for implementing different numeral systems (e.g., Roman, Egyptian, Arabic). Each
-concrete system implementation defines how to convert between integer values and
-their string/integer representations in that particular numeral system.
+concrete system implementation defines how to convert between Arabic numerals and
+their representations in that particular numeral system.
 """
 
 from abc import ABC, abstractmethod
@@ -21,15 +21,17 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     Defines the interface that all numeral system implementations must follow,
     including conversion methods and range constraints. Subclasses implement
-    specific numeral systems (Roman, Egyptian, Arabic, Latin, etc.) with their
+    specific numeral systems (Roman, Egyptian, Arabic, etc.) with their
     own conversion logic and valid ranges.
 
     Type Parameters:
-        Numeral: The representation type of the numeral system (str or int).
+        Numeral: The representation type of the numeral system.
 
     Attributes:
-        to_numeral_map: Mapping from integers to their numeral representation strings.
-        from_numeral_map: Mapping from numeral strings to their integer values.
+        to_numeral_map: Mapping from Arabic numbers to their representations in the
+            numeral system.
+        from_numeral_map: Mapping from the representation in the numeral system to
+            Arabic numbers.
         minimum: The minimum valid value for this numeral system.
         maximum: The maximum valid value for this numeral system.
         maximum_is_many: Whether the maximum is precise or represents "many".
@@ -44,10 +46,8 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
 
     def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
-        """Returns the base type(s) of the numeral system.
-
-        Returns:
-            The base type(s) used for numeral representation in this system.
+        """Appends the base types of the numeral system to the class variable for
+        runtime type checking.
         """
         super().__init_subclass__(**kwargs)
 
@@ -73,7 +73,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     @classmethod
     def is_valid_denotation(cls, val: Any) -> TypeIs[TDenotation]:
-        # This works for single types like int or tuples of types
+        """Checks if a value is a valid denotation for this numeral system."""
         return isinstance(val, cls._denotation_runtime_type)
 
     @classmethod
@@ -108,10 +108,10 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     @classmethod
     @abstractmethod
     def to_numeral(cls, number: TDenotation) -> TNumeral:
-        """Converts an integer to the numeral system's representation.
+        """Converts an Arabic number to the numeral system's representation.
 
         Args:
-            number: The integer to convert.
+            number: The Arabic number to convert.
 
         Returns:
             The representation of the number in this numeral system.
@@ -124,13 +124,13 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     @classmethod
     @abstractmethod
     def from_numeral(cls, number: TNumeral) -> TDenotation:
-        """Converts a numeral representation to an integer.
+        """Converts a numeral representation to an Arabic number.
 
         Args:
-            number: The numeral to convert (string or int depending on system).
+            number: The numeral to convert.
 
         Returns:
-            The integer value of the numeral.
+            The denotation of the number in Arabic numerals.
 
         Raises:
             ValueError: If the number is outside the valid range.

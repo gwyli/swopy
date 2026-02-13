@@ -1,8 +1,7 @@
 """Egyptian numeral system conversion module.
 
 This module provides conversion utilities for Egyptian hieroglyphic numerals.
-Egyptian numerals use a base-10 system with unique hieroglyph symbols for
-values 1, 10, 100, 1000, 10000, 100000, and 1000000.
+It implements bidirectional conversion between Arabic numbers and Egyptian numerals.
 """
 
 from typing import ClassVar
@@ -17,10 +16,6 @@ class Egyptian(System[str, int]):
     numerals. Uses a base-10 system with individual hieroglyph symbols for powers of 10
     (1, 10, 100, 1000, 10000, 100000, 1000000). Numbers above 999,999 are
     considered "many" and capped at the maximum of 1,000,000.
-
-    Type Parameter:
-        str: Egyptian numerals are represented as strings of Unicode hieroglyph
-            characters.
 
     Attributes:
         to_numeral_map: Mapping of powers of 10 to their corresponding hieroglyph.
