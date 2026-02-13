@@ -46,7 +46,7 @@ class Egyptian(System[str, int]):
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
@@ -70,17 +70,16 @@ class Egyptian(System[str, int]):
             '\U00013069'
         """
         result: str = ""
-        number_: int = cls._limits(number)
 
         for arabic, hieroglyph in cls.to_numeral_map.items():
-            count, number_ = divmod(number_, arabic)
+            count, number = divmod(number, arabic)
             count = int(count)
             result += hieroglyph * count
 
         return result
 
     @classmethod
-    def from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent
@@ -103,16 +102,11 @@ class Egyptian(System[str, int]):
             >>> Egyptian.from_numeral("\U00013386")  # Ten hieroglyph
             10
         """
-
-        if not cls.is_valid_numeral(numeral):
-            raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
-            )
-
         total: int = 0
+
         for hieroglyph in numeral:
             if hieroglyph not in cls.from_numeral_map:
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
             total += cls.from_numeral_map[hieroglyph]
 
-        return cls._limits(total)
+        return total

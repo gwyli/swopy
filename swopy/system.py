@@ -114,8 +114,13 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     @classmethod
     @abstractmethod
-    def to_numeral(cls, number: TDenotation) -> TNumeral:
-        """Converts an Arabic number to the numeral system's representation.
+    def _to_numeral(cls, number: TDenotation) -> TNumeral:
+        """Internal method to convert an Arabic number to the numeral system's
+        representation.
+
+        This method is intended to be implemented by subclasses with the actual
+        conversion logic, while the public `to_numeral` method handles validation
+        and type checking.
 
         Args:
             number: The Arabic number to convert.
@@ -129,7 +134,50 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         ...
 
     @classmethod
+    def to_numeral(cls, number: TDenotation) -> TNumeral:
+        """Converts an Arabic number to the numeral system's representation.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
+        """
+
+        if not cls.is_valid_denotation(number):
+            raise TypeError(
+                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
+        number_: TDenotation = cls._limits(number)
+
+        return cls._to_numeral(number_)
+
+    @classmethod
     @abstractmethod
+    def _from_numeral(cls, numeral: TNumeral) -> TDenotation:
+        """Converts a numeral representation to an Arabic number.
+
+        This method is intended to be implemented by subclasses with the actual
+        conversion logic, while the public `from_numeral` method handles validation
+        and type checking.
+
+        AArgs:
+            numeral: The numeral to convert.
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
+        """
+
+    @classmethod
     def from_numeral(cls, numeral: TNumeral) -> TDenotation:
         """Converts a numeral representation to an Arabic number.
 
@@ -144,4 +192,11 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
                 range.
             ValueError: If the numeral representation is invalid.
         """
-        ...
+        if not cls.is_valid_numeral(numeral):
+            raise TypeError(
+                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
+        number: TDenotation = cls._from_numeral(numeral)
+
+        return cls._limits(number)

@@ -57,7 +57,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -87,17 +87,16 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
             ValueError: Number must be less than or equal to 900.
         """
         result: str = ""
-        number_ = cls._limits(number)
 
         for latin, roman in cls.to_numeral_map.items():
-            while number_ >= latin:
+            while number >= latin:
                 result += roman
-                number_ -= latin
+                number -= latin
 
         return result
 
     @classmethod
-    def from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -126,10 +125,6 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
-        if not cls.is_valid_numeral(numeral):
-            raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
-            )
 
         total: int = 0
         prev_value: int = 0
@@ -147,7 +142,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
             prev_value = current_value
 
-        return cls._limits(total)
+        return total
 
 
 # FIXME: Add fractions
@@ -199,7 +194,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
     maximum: ClassVar[float] = 3_999
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -215,31 +210,30 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Early.to_numeral(1)
+            >>> Standard.to_numeral(1)
             'I'
-            >>> Early.to_numeral(9)
+            >>> Standard.to_numeral(9)
             'IX'
-            >>> Early.to_numeral(0)
+            >>> Standard.to_numeral(0)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be greater or equal to 1.
-            >>> Early.to_numeral(900)
+            >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be less than or equal to 900.
         """
         result: str = ""
-        number_ = cls._limits(number)
 
         for latin, roman in cls.to_numeral_map.items():
-            while number_ >= latin:
+            while number >= latin:
                 result += roman
-                number_ -= latin
+                number -= latin
 
         return result
 
     @classmethod
-    def from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -257,22 +251,17 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
             ValueError: If the numeral representation is invalid.
 
         Examples:
-            >>> Early.from_numeral('X')
+            >>> Standard.from_numeral('X')
             10
-            >>> Early.from_numeral('IX')
+            >>> Standard.from_numeral('IX')
             9
-            >>> Early.from_numeral('i')  # Case insensitive
+            >>> Standard.from_numeral('i')  # Case insensitive
             1
-            >>> Early.from_numeral('Z')
+            >>> Standard.from_numeral('Z')
             Traceback (most recent call last):
                 ...
             ValueError: Invalid Roman character: Z
         """
-        if not cls.is_valid_numeral(numeral):
-            raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
-            )
-
         total: int = 0
         prev_value: int = 0
 
@@ -289,7 +278,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
 
             prev_value = current_value
 
-        return cls._limits(total)
+        return total
 
 
 class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
@@ -341,7 +330,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     maximum: ClassVar[float] = 100_000
 
     @classmethod
-    def from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral of the Apostrophus form to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -374,11 +363,6 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
                 ...
             ValueError: Invalid sequence I cannot follow a smaller value.
         """
-        if not cls.is_valid_numeral(numeral):
-            raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
-            )
-
         total = 0
         numeral_ = numeral.upper()
         # Start with a value larger than the maximum to allow any numeral
@@ -406,4 +390,4 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
             if not matched:
                 raise ValueError(f"Invalid Apostrophus characters at position {i}")
 
-        return cls._limits(total)
+        return total

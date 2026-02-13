@@ -28,7 +28,7 @@ class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | i
     """
 
     @classmethod
-    def to_numeral(cls, number: float | Fraction | int) -> float | Fraction | int:
+    def _to_numeral(cls, number: float | Fraction | int) -> float | Fraction | int:
         """Placeholder function for converting a number to a Arabic numeral.
 
         Args:
@@ -46,10 +46,10 @@ class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | i
             >>> Arabic.to_numeral(42)
             42
         """
-        return cls._limits(number)
+        return number
 
     @classmethod
-    def from_numeral(cls, numeral: float | Fraction | int) -> float | Fraction | int:
+    def _from_numeral(cls, numeral: float | Fraction | int) -> float | Fraction | int:
         """Placeholder function for converting an Arabic numeral to an number.
 
         Args:
@@ -69,4 +69,4 @@ class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | i
              >>> Arabic.from_numeral(42)
              42
         """
-        return cls._limits(numeral)
+        return numeral
