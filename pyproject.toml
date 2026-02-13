@@ -11,14 +11,18 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Topic :: Software Development",
+    "Programming Language :: Python :: 3.15",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Topic :: Text Processing :: Linguistic",
     "Typing :: Typed",
 ]
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = []
-
 
 [dependency-groups]
 dev = [

@@ -1,8 +1,7 @@
 """Egyptian numeral system conversion module.
 
 This module provides conversion utilities for Egyptian hieroglyphic numerals.
-Egyptian numerals use a base-10 system with unique hieroglyph symbols for
-values 1, 10, 100, 1000, 10000, 100000, and 1000000.
+It implements bidirectional conversion between Arabic numbers and Egyptian numerals.
 """
 
 from typing import ClassVar
@@ -17,10 +16,6 @@ class Egyptian(System[str, int]):
     numerals. Uses a base-10 system with individual hieroglyph symbols for powers of 10
     (1, 10, 100, 1000, 10000, 100000, 1000000). Numbers above 999,999 are
     considered "many" and capped at the maximum of 1,000,000.
-
-    Type Parameter:
-        str: Egyptian numerals are represented as strings of Unicode hieroglyph
-            characters.
 
     Attributes:
         to_numeral_map: Mapping of powers of 10 to their corresponding hieroglyph.
@@ -51,17 +46,17 @@ class Egyptian(System[str, int]):
     maximum_is_many: ClassVar[bool] = True
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
         using the base-10 system of hieroglyphic symbols.
 
         Args:
-            number: The integer to convert.
+            number: The Arabic number to convert.
 
         Returns:
-            The hieroglyphic representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -75,30 +70,31 @@ class Egyptian(System[str, int]):
             '\U00013069'
         """
         result: str = ""
-        number_: int = cls._limits(number)
 
         for arabic, hieroglyph in cls.to_numeral_map.items():
-            count, number_ = divmod(number_, arabic)
+            count, number = divmod(number, arabic)
             count = int(count)
             result += hieroglyph * count
 
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent
         by summing the values of each hieroglyph.
 
         Args:
-            number: The Egyptian numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Egyptian numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
@@ -107,9 +103,10 @@ class Egyptian(System[str, int]):
             10
         """
         total: int = 0
-        for hieroglyph in number:
+
+        for hieroglyph in numeral:
             if hieroglyph not in cls.from_numeral_map:
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
             total += cls.from_numeral_map[hieroglyph]
 
-        return cls._limits(total)
+        return total

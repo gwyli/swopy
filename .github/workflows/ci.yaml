@@ -3,6 +3,14 @@ name: Checks
 on:
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '.github/**'
+      - 'scripts/**'
+      - '.gitignore'
+      - '.pre-commit-config.yaml'
+      - 'pyproject.toml'
+      - 'tox.toml'
+      - 'uv.lock'
 
 permissions:
   contents: read
@@ -31,46 +39,29 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
-        id: check_changes
-        with:
-          filters: |
-            relevant:
-              - '**/*.py'
-              - '.python-version'
-      
-      - name: Skip message
-        if: ${{ !(steps.check_changes.outputs.relevant == 'true') }}
-        run: echo "Skipping Python checks - no relevant changes detected"
-
       - name: Install the latest version of uv
-        if: steps.check_changes.outputs.relevant == 'true'
         uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v6.8.0
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
       
       - name: Add .local/bin to Windows PATH
-        if: steps.check_changes.outputs.relevant == 'true' && runner.os == 'Windows'
+        if: runner.os == 'Windows'
         shell: bash
         run: echo "$USERPROFILE/.local/bin" >> $GITHUB_PATH
       
       - name: Install tox
-        if: steps.check_changes.outputs.relevant == 'true'
         run: uv tool install --python-preference only-managed --python 3.14 tox --with tox-uv --with tox-gh
       
       - name: Install Python
-        if: steps.check_changes.outputs.relevant == 'true'
         run: uv python install --python-preference only-managed ${{ matrix.env }}
       
       - name: Setup test suite
-        if: steps.check_changes.outputs.relevant == 'true'
         run: tox run -vv --notest --skip-missing-interpreters false
         env:
           TOX_GH_MAJOR_MINOR: ${{ matrix.env }}
       
       - name: Run test suite
-        if: steps.check_changes.outputs.relevant == 'true'
         run: tox run --skip-pkg-install
         env:
           TOX_GH_MAJOR_MINOR: ${{ matrix.env }}

@@ -1,9 +1,8 @@
 """Roman numeral system conversion module.
 
-This module provides conversion utilities for Roman numerals (I, V, X, L, C, D, M).
-It implements bidirectional conversion between integers (1-3999) and Roman numeral
-string representations, with support for subtractive notation (e.g., IV for 4, IX for
-9).
+This module provides conversion utilities for Roman numerals. It implements
+bidirectional conversion between Arabic numbers and Roman numerals, with support
+for subtractive notation (e.g., IV for 4, IX for 9).
 """
 
 from typing import ClassVar
@@ -58,17 +57,17 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
         Args:
-            number: The integer to convert
+            number: The Arabic number to convert.
 
         Returns:
-            The Roman numeral representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -88,30 +87,31 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
             ValueError: Number must be less than or equal to 900.
         """
         result: str = ""
-        number_ = cls._limits(number)
 
         for latin, roman in cls.to_numeral_map.items():
-            while number_ >= latin:
+            while number >= latin:
                 result += roman
-                number_ -= latin
+                number -= latin
 
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
         Args:
-            number: The Roman numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Roman numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the string contains invalid Roman numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Early.from_numeral('X')
@@ -125,10 +125,11 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
+
         total: int = 0
         prev_value: int = 0
 
-        for char in reversed(number.upper()):
+        for char in reversed(numeral.upper()):
             current_value = cls.from_numeral_map.get(char)
 
             if current_value is None:
@@ -141,7 +142,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
             prev_value = current_value
 
-        return cls._limits(total)
+        return total
 
 
 # FIXME: Add fractions
@@ -193,69 +194,70 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
     maximum: ClassVar[float] = 3_999
 
     @classmethod
-    def to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
         Args:
-            number: The integer to convert
+            number: The Arabic number to convert.
 
         Returns:
-            The Roman numeral representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
 
         Examples:
-            >>> Early.to_numeral(1)
+            >>> Standard.to_numeral(1)
             'I'
-            >>> Early.to_numeral(9)
+            >>> Standard.to_numeral(9)
             'IX'
-            >>> Early.to_numeral(0)
+            >>> Standard.to_numeral(0)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be greater or equal to 1.
-            >>> Early.to_numeral(900)
+            >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
             ValueError: Number must be less than or equal to 900.
         """
         result: str = ""
-        number_ = cls._limits(number)
 
         for latin, roman in cls.to_numeral_map.items():
-            while number_ >= latin:
+            while number >= latin:
                 result += roman
-                number_ -= latin
+                number -= latin
 
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
         Args:
-            number: The Roman numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Roman numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the string contains invalid Roman numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
-            >>> Early.from_numeral('X')
+            >>> Standard.from_numeral('X')
             10
-            >>> Early.from_numeral('IX')
+            >>> Standard.from_numeral('IX')
             9
-            >>> Early.from_numeral('i')  # Case insensitive
+            >>> Standard.from_numeral('i')  # Case insensitive
             1
-            >>> Early.from_numeral('Z')
+            >>> Standard.from_numeral('Z')
             Traceback (most recent call last):
                 ...
             ValueError: Invalid Roman character: Z
@@ -263,7 +265,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         total: int = 0
         prev_value: int = 0
 
-        for char in reversed(number.upper()):
+        for char in reversed(numeral.upper()):
             current_value = cls.from_numeral_map.get(char)
 
             if current_value is None:
@@ -276,7 +278,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
 
             prev_value = current_value
 
-        return cls._limits(total)
+        return total
 
 
 class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
@@ -328,19 +330,59 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     maximum: ClassVar[float] = 100_000
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
-        """
-        #FIXME: Add docstring
+    def _from_numeral(cls, numeral: str) -> int:
+        """Converts a Roman numeral of the Apostrophus form to an integer.
+
+        Takes a Roman numeral and converts it to its integer equivalent,
+        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+
+        Args:
+            numeral: The numeral to convert.
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
+
+        Examples:
+            >>> Apostrophus.from_numeral('X')
+            10
+            >>> Apostrophus.from_numeral('IↃI')
+            501
+            >>> Apostrophus.from_numeral('i')  # Case insensitive
+            1
+            >>> Apostrophus.from_numeral('Z')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Roman character: Z
+            >>> Apostrophus.from_numeral('IIↃI')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid sequence I cannot follow a smaller value.
         """
         total = 0
+        numeral_ = numeral.upper()
+        # Start with a value larger than the maximum to allow any numeral
+        last_value = cls.maximum + 1
 
         i = 0
-        while i < len(number):
+        while i < len(numeral_):
             matched = False
-            # Check for multi-character symbols first (greedy match)
-            for symbol, value in cls.from_numeral_map.items():
-                if number.startswith(symbol, i):
-                    total += value
+            for symbol in cls.from_numeral_map:
+                if numeral_.startswith(symbol, i):
+                    current_value = cls.from_numeral_map[symbol]
+
+                    # Ensure we aren't seeing a larger symbol after a smaller one
+                    if current_value > last_value:
+                        raise ValueError(
+                            f"Invalid sequence {symbol} cannot follow a smaller value."
+                        )
+
+                    total += current_value
+                    last_value = current_value
                     i += len(symbol)
                     matched = True
                     break
@@ -348,4 +390,4 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
             if not matched:
                 raise ValueError(f"Invalid Apostrophus characters at position {i}")
 
-        return cls._limits(total)
+        return total
