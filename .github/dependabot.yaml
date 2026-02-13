@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -12,3 +16,7 @@ updates:
     allow:
       - dependency-type: "direct"
       - dependency-type: "indirect"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
