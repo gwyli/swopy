@@ -5,7 +5,7 @@ A Python library for converting between different numeral systems.
 ## Overview
 
 Swopy provides a simple and extensible interface to convert numbers between various numeral systems.
-The library supports bidirectional conversion — you can convert from any supported system to any other.
+Swopy supports bidirectional conversion — you can convert from any supported system to any other.
 
 ## Supported Numeral Systems
 
@@ -13,8 +13,8 @@ The library supports bidirectional conversion — you can convert from any suppo
    * Early, supporting integers between 1 and 899
    * Standard, supporting integers between 1 and 3,999
    * Apostrophus, supporting integers between 1 and 100,000
-* [Egyptian](umberology/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
-* Arabic, supporting integers between `-int(sys.float_info.max)` and `int(sys.float_info.max)`
+* [Egyptian](swopy/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
+* [Arabic](swopy/systems/arabic.py), supporting integers between `-int(sys.float_info.max)` and `int(sys.float_info.max)`
 
 ## Installation
 
@@ -62,25 +62,51 @@ swopy.swop(42, systems['arabic.Arabic'], systems['roman.Early'])
 
 ### Error Handling
 
-The library validates numbers against the acceptable range for each system:
+Swopy will raise a `ValueError` if there is a number is not representable in a numeral system
 
 ```python
 import swopy
 from swopy import systems
 
-# This will raise ValueError (4000 is outside the valid range)
-try:
-    swopy.swop(4000, systems.arabic.Arabic, systems.roman.Standard)
-except ValueError as e:
-    print(f"Conversion failed: {e}")
-# Conversion failed: Number must be less than or equal to 3999.
+swopy.swop(4000, systems.arabic.Arabic, systems.roman.Standard)
+# ValueError: Number must be less than or equal to 3999.
+
+systems.roman.Early.to_numeral(900)
+# ValueError: Number must be less than or equal to 899.
+```
+
+or if a numeral is invalid
+
+```python
+import swopy
+from swopy import systems
+
+swopy.swop('IIIII', systems.egyptian.Egyptian, systems.roman.Early)
+# ValueError: Invalid Egyptian hieroglyph: I
+
+systems.roman.Apostrophus.from_numeral('P')
+# ValueError: Invalid Apostrophus characters at position 0
+```
+
+and will raise a `TypeError` if a numeral is not representable in a system.
+
+```python
+import swopy
+from swopy import systems
+
+swopy.swop('I', systems.arabic.Arabic, systems.roman.Early)
+# TypeError: 1.2 of type <class 'float'> cannot be represented in Early.
+
+swopy.swop('I', systems.arabic.Arabic, systems.roman.Early)
+# TypeError: I of type <class 'str'> cannot be represented in Arabic.
+
+systems.egyptian.Egyptian.to_numeral(1.2)
+# TypeError: 1.2 of type <class 'float'> cannot be represented in Egyptian.
 ```
 
 ## Requirements
 
-Swopy only relies on the standard library.
-
-- Python 3.13 or higher
+Swopy only relies on the standard library and needs Python 3.13 or higher. Swopy is currently tested on the latest versions of Windows, MacOS and Ubuntu for Python versions 3.13, 3.14.0, 3.14.3, and 3.15.0a5.
 
 ## Development
 
