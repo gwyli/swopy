@@ -32,11 +32,13 @@ class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | i
         """Placeholder function for converting a number to a Arabic numeral.
 
         Args:
-            number: The number to convert.
+            number: The Arabic number to convert.
 
         Returns:
-            The input as Arabic numerals are the standard numeral representation in
-            Python.
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Arabic.to_numeral(1)
@@ -47,19 +49,24 @@ class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | i
         return cls._limits(number)
 
     @classmethod
-    def from_numeral(cls, number: float | Fraction | int) -> float | Fraction | int:
+    def from_numeral(cls, numeral: float | Fraction | int) -> float | Fraction | int:
         """Placeholder function for converting an Arabic numeral to an number.
 
         Args:
-            number: The Arabic numeral to convert.
-        Returns:
-            The input as Arabic numerals are the standard numeral representation in
-            Python.
+            numeral: The numeral to convert.
 
-        Examples:
-            >>> Arabic.from_numeral(1)
-            1
-            >>> Arabic.from_numeral(42)
-            42
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
+
+         Examples:
+             >>> Arabic.from_numeral(1)
+             1
+             >>> Arabic.from_numeral(42)
+             42
         """
-        return cls._limits(number)
+        return cls._limits(numeral)

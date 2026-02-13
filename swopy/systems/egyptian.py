@@ -53,10 +53,10 @@ class Egyptian(System[str, int]):
         using the base-10 system of hieroglyphic symbols.
 
         Args:
-            number: The integer to convert.
+            number: The Arabic number to convert.
 
         Returns:
-            The hieroglyphic representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -80,21 +80,22 @@ class Egyptian(System[str, int]):
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def from_numeral(cls, numeral: str) -> int:
         """Converts an Egyptian numeral to an integer.
 
         Takes an Egyptian numeral and converts it to its integer equivalent
         by summing the values of each hieroglyph.
 
         Args:
-            number: The Egyptian numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Egyptian numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the number is outside the valid range.
-            TypeError: If the input is not a valid type for Egyptian numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
@@ -103,13 +104,13 @@ class Egyptian(System[str, int]):
             10
         """
 
-        if not cls.is_valid_numeral(number):
+        if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         total: int = 0
-        for hieroglyph in number:
+        for hieroglyph in numeral:
             if hieroglyph not in cls.from_numeral_map:
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
             total += cls.from_numeral_map[hieroglyph]

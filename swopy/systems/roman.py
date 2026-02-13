@@ -64,10 +64,10 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
         Args:
-            number: The integer to convert
+            number: The Arabic number to convert.
 
         Returns:
-            The Roman numeral representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -97,21 +97,22 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
         Args:
-            number: The Roman numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Roman numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the string contains invalid Roman numerals.
-            TypeError: If the input is not a valid type for Roman numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Early.from_numeral('X')
@@ -125,15 +126,15 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
-        if not cls.is_valid_numeral(number):
+        if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         total: int = 0
         prev_value: int = 0
 
-        for char in reversed(number.upper()):
+        for char in reversed(numeral.upper()):
             current_value = cls.from_numeral_map.get(char)
 
             if current_value is None:
@@ -205,10 +206,10 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
 
         Args:
-            number: The integer to convert
+            number: The Arabic number to convert.
 
         Returns:
-            The Roman numeral representation of the number.
+            The representation of the number in this numeral system.
 
         Raises:
             ValueError: If the number is outside the valid range.
@@ -238,21 +239,22 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         return result
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
         Args:
-            number: The Roman numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Roman numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the string contains invalid Roman numerals.
-            TypeError: If the input is not a valid type for Roman numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Early.from_numeral('X')
@@ -266,15 +268,15 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
-        if not cls.is_valid_numeral(number):
+        if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         total: int = 0
         prev_value: int = 0
 
-        for char in reversed(number.upper()):
+        for char in reversed(numeral.upper()):
             current_value = cls.from_numeral_map.get(char)
 
             if current_value is None:
@@ -339,21 +341,22 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     maximum: ClassVar[float] = 100_000
 
     @classmethod
-    def from_numeral(cls, number: str) -> int:
+    def from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral of the Apostrophus form to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
 
         Args:
-            number: The Roman numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The integer representation of the Roman numeral.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the string contains invalid Roman numerals.
-            TypeError: If the input is not a valid type for Roman numerals.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Apostrophus.from_numeral('X')
@@ -371,13 +374,13 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
                 ...
             ValueError: Invalid sequence I cannot follow a smaller value.
         """
-        if not cls.is_valid_numeral(number):
+        if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         total = 0
-        numeral_ = number.upper()
+        numeral_ = numeral.upper()
         # Start with a value larger than the maximum to allow any numeral
         last_value = cls.maximum + 1
 

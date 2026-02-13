@@ -130,17 +130,18 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     @classmethod
     @abstractmethod
-    def from_numeral(cls, number: TNumeral) -> TDenotation:
+    def from_numeral(cls, numeral: TNumeral) -> TDenotation:
         """Converts a numeral representation to an Arabic number.
 
         Args:
-            number: The numeral to convert.
+            numeral: The numeral to convert.
 
         Returns:
-            The denotation of the number in Arabic numerals.
+            The denotation of the numeral in Arabic numerals.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
             ValueError: If the numeral representation is invalid.
         """
         ...
