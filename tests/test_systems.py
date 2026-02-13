@@ -31,7 +31,7 @@ def test_reversibility(
     Verifies that numeral systems can be converted to their representation
     and back without loss of precision.
     """
-    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
@@ -60,7 +60,7 @@ def test_minima(
     Args:
         number: An integer below the minimum valid value for the numeral system.
     """
-    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
@@ -87,7 +87,7 @@ def test_maxima(
     Args:
         number: An integer above the maximum valid value for the numeral system.
     """
-    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
@@ -126,7 +126,7 @@ def test_invalid_characters(system: type[System[str, Denotation]], value: str) -
 
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
-def test_invalid_numbers(
+def test_invalid_denotations(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
@@ -137,10 +137,32 @@ def test_invalid_numbers(
         number: A number of an invalid type for the numeral system.
     """
 
-    base_types: Container[type] = tuple(system._get_base_types())  # pyright: ignore[reportPrivateUsage]
+    base_types: Container[type] = tuple(system._get_base_types(1))  # pyright: ignore[reportPrivateUsage]
     assert len(base_types) >= 1, "System must have at least one base type"
 
     number = data.draw(everything_except(excluded_types=base_types))
 
     with pytest.raises(TypeError):
         system.to_numeral(number)
+
+
+@pytest.mark.parametrize("system", SYSTEMS)
+@given(strategies.data())
+def test_invalid_numerals(
+    system: type[System[Numeral, Denotation]],
+    data: strategies.DataObject,
+) -> None:
+    """Verifies that a ValueError is raised when attempting to convert a number
+    of an invalid type for the numeral system.
+
+    Args:
+        number: A number of an invalid type for the numeral system.
+    """
+
+    base_types: Container[type] = tuple(system._get_base_types(0))  # pyright: ignore[reportPrivateUsage]
+    assert len(base_types) >= 1, "System must have at least one base type"
+
+    number = data.draw(everything_except(excluded_types=base_types))
+
+    with pytest.raises(TypeError):
+        system.from_numeral(number)

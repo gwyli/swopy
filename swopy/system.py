@@ -43,6 +43,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     minimum: ClassVar[float] = -float_info.max
     maximum: ClassVar[float] = float_info.max
     maximum_is_many: ClassVar[bool] = False
+    _numeral_runtime_type: ClassVar[tuple[type, ...]]
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
 
     def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
@@ -51,10 +52,11 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         super().__init_subclass__(**kwargs)
 
-        cls._denotation_runtime_type = cls._get_base_types()
+        cls._numeral_runtime_type = cls._get_base_types(0)
+        cls._denotation_runtime_type = cls._get_base_types(1)
 
     @classmethod
-    def _get_base_types(cls) -> tuple[type]:
+    def _get_base_types(cls, position: int) -> tuple[type]:
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.
 
@@ -64,7 +66,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
         base: type | UnionType = get_original_bases(cls)[0]
 
-        denotation: type | UnionType = get_args(base)[1]
+        denotation: type | UnionType = get_args(base)[position]
 
         if isinstance(denotation, UnionType):
             return get_args(denotation)
@@ -72,8 +74,13 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         return (denotation,)
 
     @classmethod
+    def is_valid_numeral(cls, val: Any) -> TypeIs[TNumeral]:
+        """Checks if a numeral has a valid type for this numeral system."""
+        return isinstance(val, cls._numeral_runtime_type)
+
+    @classmethod
     def is_valid_denotation(cls, val: Any) -> TypeIs[TDenotation]:
-        """Checks if a value is a valid denotation for this numeral system."""
+        """Checks if a denotation has a valid type for this numeral system."""
         return isinstance(val, cls._denotation_runtime_type)
 
     @classmethod

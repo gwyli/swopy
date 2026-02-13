@@ -124,6 +124,11 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
+        if not cls.is_valid_numeral(number):
+            raise TypeError(
+                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
         total: int = 0
         prev_value: int = 0
 
@@ -259,6 +264,11 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
+        if not cls.is_valid_numeral(number):
+            raise TypeError(
+                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
         total: int = 0
         prev_value: int = 0
 
@@ -331,6 +341,11 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
         """
         #FIXME: Add docstring
         """
+        if not cls.is_valid_numeral(number):
+            raise TypeError(
+                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
         total = 0
 
         i = 0

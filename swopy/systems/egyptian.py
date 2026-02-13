@@ -101,6 +101,12 @@ class Egyptian(System[str, int]):
             >>> Egyptian.from_numeral("\U00013386")  # Ten hieroglyph
             10
         """
+
+        if not cls.is_valid_numeral(number):
+            raise TypeError(
+                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
         total: int = 0
         for hieroglyph in number:
             if hieroglyph not in cls.from_numeral_map:

@@ -40,10 +40,10 @@ def test_round_trip[
     if min_val > max_val:
         assume(False)
 
-    to_base_types: tuple[type] = to_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
     assert len(to_base_types) >= 1, "System must have at least one base type"
 
-    from_base_types: tuple[type] = from_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
     assert len(from_base_types) >= 1, "System must have at least one base type"
 
     for base_type in set(from_base_types) & set(to_base_types):
@@ -99,10 +99,10 @@ def test_round_trip_failure[
     if min_val > max_val:
         assume(False)
 
-    to_base_types: tuple[type] = to_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
     assert len(to_base_types) >= 1, "System must have at least one base type"
 
-    from_base_types: tuple[type] = from_system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
     assert len(from_base_types) >= 1, "System must have at least one base type"
 
     for base_type in set(from_base_types) ^ set(to_base_types):
@@ -127,7 +127,7 @@ def test_identity_conversion(
     """
     Converting from a system to itself should return the input.
     """
-    base_types: tuple[type] = system._get_base_types()  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
