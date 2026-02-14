@@ -94,14 +94,14 @@ and will raise a `TypeError` if a numeral is not representable in a system.
 import swopy
 from swopy import systems
 
-swopy.swop('I', systems.arabic.Arabic, systems.roman.Early)
-# TypeError: 1.2 of type <class 'float'> cannot be represented in Early.
+swopy.swop(1.2, systems.arabic.Arabic, systems.roman.Early)
+# TypeError: 1.2 of type float cannot be represented in Early.
 
 swopy.swop('I', systems.arabic.Arabic, systems.roman.Early)
-# TypeError: I of type <class 'str'> cannot be represented in Arabic.
+# TypeError: I of type str cannot be represented in Arabic.
 
-systems.egyptian.Egyptian.to_numeral(1.2)
-# TypeError: 1.2 of type <class 'float'> cannot be represented in Egyptian.
+systems.egyptian.Egyptian.to_numeral(10.1)
+# TypeError: 10.1 of type float cannot be represented in Egyptian.
 ```
 
 ## Requirements

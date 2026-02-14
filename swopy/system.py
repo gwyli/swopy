@@ -149,7 +149,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
         if not cls.is_valid_denotation(number):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{number} of type {type(number).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         number_: TDenotation = cls._limits(number)
@@ -194,7 +194,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         number: TDenotation = cls._from_numeral(numeral)
