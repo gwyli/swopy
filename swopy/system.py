@@ -10,7 +10,9 @@ from abc import ABC, abstractmethod
 from fractions import Fraction
 from sys import float_info
 from types import UnionType, get_original_bases
-from typing import Any, ClassVar, TypeIs, cast, get_args
+from typing import Any, ClassVar, Literal, TypeIs, cast, get_args
+
+from .systems._translations import ASCII
 
 type Numeral = int | float | Fraction | str
 type Denotation = int | Fraction | float
@@ -45,6 +47,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     maximum_is_many: ClassVar[bool] = False
     _numeral_runtime_type: ClassVar[tuple[type, ...]]
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
+    encodings: ClassVar[set[Literal["utf8", "ascii"]]] = {"utf8", "ascii"}
 
     def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
         """Appends the base types of the numeral system to the class variable for
@@ -134,8 +137,16 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         ...
 
     @classmethod
-    def to_numeral(cls, number: TDenotation) -> TNumeral:
+    def to_numeral(
+        cls,
+        number: TDenotation,
+        encode: Literal["utf8", "ascii"] = "utf8",
+    ) -> TNumeral:
         """Converts an Arabic number to the numeral system's representation.
+
+        Where applicable, to_numeral() returns a UTF-8 string representation of the
+        numeral by default. The 'ascii', encoding can be used to return a pure ASCII
+        representation instead.
 
         Args:
             number: The Arabic number to convert.
@@ -149,12 +160,22 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
         if not cls.is_valid_denotation(number):
             raise TypeError(
-                f"{number} of type {type(number)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{number} of type {type(number).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
+        if encode not in cls.encodings:
+            raise ValueError(
+                f"Encoding '{encode}' is not supported for {cls.__name__}."
             )
 
         number_: TDenotation = cls._limits(number)
 
-        return cls._to_numeral(number_)
+        numeral: TNumeral = cls._to_numeral(number_)
+
+        if encode == "ascii" and isinstance(numeral, str):
+            return cast(TNumeral, numeral.translate(ASCII))
+
+        return numeral
 
     @classmethod
     @abstractmethod
@@ -178,8 +199,15 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
 
     @classmethod
-    def from_numeral(cls, numeral: TNumeral) -> TDenotation:
+    def from_numeral(
+        cls,
+        numeral: TNumeral,
+        encode: Literal["utf8", "ascii"] = "utf8",
+    ) -> TDenotation:
         """Converts a numeral representation to an Arabic number.
+
+        Where applicable, from_numeral() accepts either UTF-8 string or ASCII
+        representation of the numeral by default.
 
         Args:
             numeral: The numeral to convert.
@@ -194,7 +222,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{numeral} of type {type(numeral)} cannot be represented in {cls.__name__}."  # noqa: E501
+                f"{numeral} of type {type(numeral).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
+            )
+
+        if encode not in cls.encodings:
+            raise ValueError(
+                f"Encoding '{encode}' is not supported for {cls.__name__}."
             )
 
         number: TDenotation = cls._from_numeral(numeral)

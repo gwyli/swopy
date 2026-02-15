@@ -1,3 +1,9 @@
+"""Tests for swopy.swop.
+
+This module contains property-based tests using Hypothesis for main swopy API to
+convert between different numeral systems.
+"""
+
 from typing import Any
 
 import pytest
@@ -131,23 +137,24 @@ def test_identity_conversion(
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
-    for base_type in base_types:
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](
-                min_value=system.minimum, max_value=system.maximum
+    for encoding in system.encodings:
+        for base_type in base_types:
+            number = data.draw(
+                TYPE_STRATEGY_MAP[base_type](
+                    min_value=system.minimum, max_value=system.maximum
+                )
             )
-        )
 
-        number_: Numeral = system.to_numeral(number)
-        result: Numeral = swop(number_, system, system)
-        final: Denotation = system.from_numeral(result)
+            number_: Numeral = system.to_numeral(number, encode=encoding)
+            result: Numeral = swop(number_, system, system)
+            final: Denotation = system.from_numeral(result, encode=encoding)
 
-        assert final == number, (
-            "Failed identity conversion for {system} with value {number}"
-        )
-        assert type(final) is type(number), (
-            "Type mismatch in identity conversion for {system} with value {number}"
-        )
+            assert final == number, (
+                "Failed identity conversion for {system} with value {number}"
+            )
+            assert type(final) is type(number), (
+                "Type mismatch in identity conversion for {system} with value {number}"
+            )
 
 
 def test_get_all_systems():
@@ -158,3 +165,59 @@ def test_get_all_systems():
 
     assert all(issubclass(x, System) for x in result.values())
     assert len(result) > 0, "No systems found. Ensure systems.__all__ is populated."
+
+
+@given(
+    strategies.sampled_from(SYSTEMS),
+    strategies.sampled_from(SYSTEMS),
+    strategies.data(),
+)
+def test_encodings[
+    TFromNumeral: Numeral,
+    TFromDenotation: Denotation,
+    TToNumeral: Numeral,
+    TToDenotation: Denotation,
+](
+    from_system: type[System[TFromNumeral, TFromDenotation]],
+    to_system: type[System[TToNumeral, TToDenotation]],
+    data: strategies.DataObject,
+):
+    """
+    Verifies that a value error is raised when an encoding which both
+    numeral systems don't support is used.
+    """
+
+    # Calculate the overlapping valid range
+    min_val = max(from_system.minimum, to_system.minimum)
+    max_val = min(from_system.maximum, to_system.maximum)
+
+    # Guard against systems with no overlap
+    if min_val > max_val:
+        assume(False)
+
+    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
+    assert len(to_base_types) >= 1, "System must have at least one base type"
+
+    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
+    assert len(from_base_types) >= 1, "System must have at least one base type"
+
+    for base_type in set(from_base_types) & set(to_base_types):
+        number = data.draw(
+            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
+        )
+
+        # We always start with a numeric strategy, so first convert to from_system
+        # from Arabic numerals
+        source_input: TFromNumeral = swop(
+            number, from_system=systems.arabic.Arabic, to_system=from_system
+        )
+
+        for encoding in from_system.encodings:
+            if encoding not in to_system.encodings:
+                with pytest.raises(ValueError):
+                    swop(source_input, from_system, to_system, encode=encoding)
+
+        for encoding in to_system.encodings:
+            if encoding not in from_system.encodings:
+                with pytest.raises(ValueError):
+                    swop(source_input, from_system, to_system, encode=encoding)
