@@ -5,9 +5,11 @@ for converting numbers between different numeral systems (Roman, Egyptian, Arabi
 It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
+# Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
+# ruff: noqa: RUF002 RUF003
 
 from inspect import getmembers, isclass
-from typing import Any
+from typing import Any, Literal
 
 from . import systems
 from .system import Denotation, Numeral, System
@@ -22,6 +24,7 @@ def swop[
     numeral: TFromNumeral,
     from_system: type[System[TFromNumeral, TFromDenotation]],
     to_system: type[System[TToNumeral, TToDenotation]],
+    encode: Literal["utf8", "ascii"] = "utf8",
 ) -> TToNumeral:
     """Universal converter for numeral system transformations.
 
@@ -45,17 +48,27 @@ def swop[
     Examples:
         >>> swop(10, systems.arabic.Arabic, systems.egyptian.Egyptian)
         '\U00013386'
-        >>> swop('X', systems.roman.Standard, \
+        >>> swop('Ⅹ', systems.roman.Standard, \
             systems.egyptian.Egyptian)
         '\U00013386'
-        >>> swop('X', systems.roman.Standard, systems.roman.Standard)
-        'X'
+        >>> swop('Ⅹ', systems.roman.Standard, systems.roman.Standard)
+        'Ⅹ'
     """
 
-    intermediate: TFromDenotation = from_system.from_numeral(numeral)
+    if encode not in from_system.encodings:
+        raise ValueError(
+            f"Encoding '{encode}' is not supported for {from_system.__name__}."
+        )
+
+    if encode not in to_system.encodings:
+        raise ValueError(
+            f"Encoding '{encode}' is not supported for {to_system.__name__}."
+        )
+
+    intermediate: TFromDenotation = from_system.from_numeral(numeral, encode=encode)
 
     if to_system.is_valid_denotation(intermediate):
-        return to_system.to_numeral(intermediate)
+        return to_system.to_numeral(intermediate, encode=encode)
 
     raise TypeError(
         f"{numeral} of type {type(numeral).__name__} cannot be represented in {to_system.__name__}."  # noqa: E501

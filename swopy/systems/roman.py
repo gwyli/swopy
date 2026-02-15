@@ -2,10 +2,12 @@
 
 This module provides conversion utilities for Roman numerals. It implements
 bidirectional conversion between Arabic numbers and Roman numerals, with support
-for subtractive notation (e.g., IV for 4, IX for 9).
+for subtractive notation (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 """
+# Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
+# ruff: noqa: RUF001 RUF002 RUF003
 
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 from swopy.system import System
 
@@ -15,10 +17,10 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
     Implements bidirectional conversion between integers and Roman numeral strings.
     Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., IV for 4, IX for 9, XL for 40).
+    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
 
     Type Parameter:
-        str: Roman numerals are represented as strings (I, V, X, L, C, D, etc.).
+        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, Ⅽ, Ⅾ, etc.).
 
     Attributes:
         to_numeral_map: Mapping of integer values to Roman numeral components,
@@ -30,24 +32,30 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
     """
 
     to_numeral_map: ClassVar[dict[int, str]] = {
-        500: "D",
-        400: "CD",
-        100: "C",
-        90: "XC",
-        50: "L",
-        40: "XL",
-        10: "X",
-        9: "IX",
-        5: "V",
-        4: "IV",
-        1: "I",
+        500: "\u216e",
+        400: "\u216d\u216e",
+        100: "\u216d",
+        90: "\u2169\u216d",
+        50: "\u216c",
+        40: "\u2169\u216c",
+        10: "\u2169",
+        9: "\u2160\u2169",
+        5: "\u2164",
+        4: "\u2160\u2164",
+        1: "\u2160",
     }
     from_numeral_map: ClassVar[dict[str, int]] = {
+        "\u2160": 1,
         "I": 1,
+        "\u2164": 5,
         "V": 5,
+        "\u2169": 10,
         "X": 10,
+        "\u216c": 50,
         "L": 50,
+        "\u216d": 100,
         "C": 100,
+        "\u216e": 500,
         "D": 500,
     }
 
@@ -61,7 +69,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
-        using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
+        using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 
         Args:
             number: The Arabic number to convert.
@@ -74,9 +82,9 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
 
         Examples:
             >>> Early.to_numeral(1)
-            'I'
+            'Ⅰ'
             >>> Early.to_numeral(9)
-            'IX'
+            'ⅠⅩ'
             >>> Early.to_numeral(0)
             Traceback (most recent call last):
                 ...
@@ -100,7 +108,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
-        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+        properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
 
         Args:
             numeral: The numeral to convert.
@@ -114,11 +122,11 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
             ValueError: If the numeral representation is invalid.
 
         Examples:
-            >>> Early.from_numeral('X')
+            >>> Early.from_numeral('Ⅹ')
             10
-            >>> Early.from_numeral('IX')
+            >>> Early.from_numeral('ⅠⅩ')
             9
-            >>> Early.from_numeral('i')  # Case insensitive
+            >>> Early.from_numeral('ⅰ')  # Case insensitive
             1
             >>> Early.from_numeral('Z')
             Traceback (most recent call last):
@@ -151,10 +159,10 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
 
     Implements bidirectional conversion between integers and Roman numeral strings.
     Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., IV for 4, IX for 9, XL for 40).
+    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
 
     Type Parameter:
-        str: Roman numerals are represented as strings (I, V, X, L, C, D, M, etc.).
+        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, Ⅽ, Ⅾ, Ⅿ, etc.).
 
     Attributes:
         to_numeral_map: Mapping of integer values to Roman numeral components,
@@ -166,27 +174,34 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
     """
 
     to_numeral_map: ClassVar[dict[int, str]] = {
-        1_000: "M",
-        900: "CM",
-        500: "D",
-        400: "CD",
-        100: "C",
-        90: "XC",
-        50: "L",
-        40: "XL",
-        10: "X",
-        9: "IX",
-        5: "V",
-        4: "IV",
-        1: "I",
+        1_000: "\u216f",
+        900: "\u216d\u216f",
+        500: "\u216e",
+        400: "\u216d\u216e",
+        100: "\u216d",
+        90: "\u2169\u216d",
+        50: "\u216c",
+        40: "\u2169\u216c",
+        10: "\u2169",
+        9: "\u2160\u2169",
+        5: "\u2164",
+        4: "\u2160\u2164",
+        1: "\u2160",
     }
     from_numeral_map: ClassVar[dict[str, int]] = {
+        "\u2160": 1,
         "I": 1,
+        "\u2164": 5,
         "V": 5,
+        "\u2169": 10,
         "X": 10,
+        "\u216c": 50,
         "L": 50,
+        "\u216d": 100,
         "C": 100,
+        "\u216e": 500,
         "D": 500,
+        "\u216f": 1_000,
         "M": 1_000,
     }
 
@@ -198,7 +213,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
-        using subtractive notation where appropriate (e.g., IV for 4, IX for 9).
+        using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 
         Args:
             number: The Arabic number to convert.
@@ -211,9 +226,9 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
 
         Examples:
             >>> Standard.to_numeral(1)
-            'I'
+            'Ⅰ'
             >>> Standard.to_numeral(9)
-            'IX'
+            'ⅠⅩ'
             >>> Standard.to_numeral(0)
             Traceback (most recent call last):
                 ...
@@ -237,7 +252,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
-        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+        properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
 
         Args:
             numeral: The numeral to convert.
@@ -251,11 +266,11 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
             ValueError: If the numeral representation is invalid.
 
         Examples:
-            >>> Standard.from_numeral('X')
+            >>> Standard.from_numeral('Ⅹ')
             10
-            >>> Standard.from_numeral('IX')
+            >>> Standard.from_numeral('ⅠⅩ')
             9
-            >>> Standard.from_numeral('i')  # Case insensitive
+            >>> Standard.from_numeral('ⅰ')  # Case insensitive
             1
             >>> Standard.from_numeral('Z')
             Traceback (most recent call last):
@@ -286,10 +301,10 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
 
     Implements bidirectional conversion between integers and Roman numeral strings.
     Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., IV for 4, IX for 9, XL for 40).
+    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
 
     Type Parameter:
-        str: Roman numerals are represented as strings (I, V, X, L, C, D, CIↃ, etc.).
+        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, C, Ⅾ, CⅠↃ, etc.).
 
     Attributes:
         to_numeral_map: Mapping of integer values to Roman numeral components,
@@ -301,40 +316,45 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     """
 
     to_numeral_map: ClassVar[dict[int, str]] = {
-        100_000: "CCCIↃↃↃ",
-        50_000: "IↃↃↃ",
-        10_000: "CCIↃↃ",
-        5_000: "IↃↃ",
-        1_000: "CIↃ",
-        500: "IↃ",
+        100_000: "CCCⅠↃↃↃ",
+        50_000: "ⅠↃↃↃ",
+        10_000: "CCⅠↃↃ",
+        5_000: "ⅠↃↃ",
+        1_000: "CⅠↃ",
+        500: "ⅠↃ",
         100: "C",
-        50: "L",
-        10: "X",
-        5: "V",
-        1: "I",
+        50: "\u216c",
+        10: "\u2169",
+        5: "\u2164",
+        1: "\u2160",
     }
     from_numeral_map: ClassVar[dict[str, int]] = {
-        "CCCIↃↃↃ": 100_000,
-        "IↃↃↃ": 50_000,
-        "CCIↃↃ": 10_000,
-        "IↃↃ": 5_000,
-        "CIↃ": 1_000,
-        "IↃ": 500,
+        "CCCⅠↃↃↃ": 100_000,
+        "ⅠↃↃↃ": 50_000,
+        "CCⅠↃↃ": 10_000,
+        "ⅠↃↃ": 5_000,
+        "CⅠↃ": 1_000,
+        "ⅠↃ": 500,
         "C": 100,
+        "\u216c": 50,
         "L": 50,
+        "\u2169": 10,
         "X": 10,
+        "\u2164": 5,
         "V": 5,
+        "\u2160": 1,
         "I": 1,
     }
 
     maximum: ClassVar[float] = 100_000
+    encodings: ClassVar[set[Literal["utf8", "ascii"]]] = {"utf8"}
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
         """Converts a Roman numeral of the Apostrophus form to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
-        properly handling subtractive notation (e.g., IV -> 4, IX -> 9).
+        properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
 
         Args:
             numeral: The numeral to convert.
@@ -348,17 +368,17 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
             ValueError: If the numeral representation is invalid.
 
         Examples:
-            >>> Apostrophus.from_numeral('X')
+            >>> Apostrophus.from_numeral('Ⅹ')
             10
-            >>> Apostrophus.from_numeral('IↃI')
+            >>> Apostrophus.from_numeral('ⅠↃⅠ')
             501
-            >>> Apostrophus.from_numeral('i')  # Case insensitive
+            >>> Apostrophus.from_numeral('ⅰ')  # Case insensitive
             1
             >>> Apostrophus.from_numeral('Z')
             Traceback (most recent call last):
                 ...
-            ValueError: Invalid Roman character: Z
-            >>> Apostrophus.from_numeral('IIↃI')
+            ValueError: Ⅰnvalid Roman character: Z
+            >>> Apostrophus.from_numeral('ⅠⅠↃⅠ')
             Traceback (most recent call last):
                 ...
             ValueError: Invalid sequence I cannot follow a smaller value.
