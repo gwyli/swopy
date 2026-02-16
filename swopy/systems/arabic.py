@@ -7,7 +7,7 @@ implementation serves as a pass-through converter.
 
 from fractions import Fraction
 
-from swopy.system import System
+from ..system import System
 
 
 class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | int](
