@@ -8,6 +8,7 @@ their representations in that particular numeral system.
 
 from abc import ABC, abstractmethod
 from fractions import Fraction
+from functools import lru_cache
 from sys import float_info
 from types import UnionType, get_original_bases
 from typing import Any, ClassVar, Literal, TypeIs, cast, get_args
@@ -60,6 +61,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         cls._denotation_runtime_type = cls._get_base_types(1)
 
     @classmethod
+    @lru_cache
     def _get_base_types(cls, position: int) -> tuple[type]:
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.

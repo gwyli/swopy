@@ -8,6 +8,7 @@ and validate range constraints for each numeral system.
 from collections.abc import Container
 from fractions import Fraction
 from sys import float_info
+from typing import cast
 
 import pytest
 from hypothesis import assume, given, strategies
@@ -19,6 +20,18 @@ from tests.helpers import (
     TYPE_STRATEGY_MAP,
     everything_except,
 )
+
+_STRATEGY_CACHE: dict[type[System[Numeral, Denotation]], strategies.SearchStrategy] = {}
+
+
+def load_strategies(
+    system: type[System[Numeral, Denotation]], base_types: Container[type]
+):
+    base_types_: tuple[type] = cast(tuple[type], base_types)
+    if system not in _STRATEGY_CACHE:
+        _STRATEGY_CACHE[system] = everything_except(excluded_types=base_types_)
+
+    return _STRATEGY_CACHE[system]
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -143,7 +156,7 @@ def test_invalid_denotations(
     base_types: Container[type] = tuple(system._get_base_types(1))  # pyright: ignore[reportPrivateUsage]
     assert len(base_types) >= 1, "System must have at least one base type"
 
-    number = data.draw(everything_except(excluded_types=base_types))
+    number = data.draw(load_strategies(system, base_types))
 
     for encoding in system.encodings:
         with pytest.raises(TypeError):
@@ -163,7 +176,7 @@ def test_invalid_numerals(
     base_types: Container[type] = tuple(system._get_base_types(0))  # pyright: ignore[reportPrivateUsage]
     assert len(base_types) >= 1, "System must have at least one base type"
 
-    number = data.draw(everything_except(excluded_types=base_types))
+    number = data.draw(load_strategies(system, base_types))
 
     for encoding in system.encodings:
         with pytest.raises(TypeError):
