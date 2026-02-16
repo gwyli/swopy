@@ -11,7 +11,7 @@ from fractions import Fraction
 from functools import lru_cache
 from sys import float_info
 from types import UnionType, get_original_bases
-from typing import Any, ClassVar, Literal, TypeIs, cast, get_args
+from typing import Any, ClassVar, Literal, TypeIs, get_args
 
 from .systems._translations import ASCII
 
@@ -104,19 +104,22 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             ValueError: If the number is outside the valid range.
         """
 
-        number_: Denotation = number
+        number_: TDenotation = number
 
         if number_ < cls.minimum:
             raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
 
         if cls.maximum_is_many:
-            number_ = min(number_, cls.maximum)
+            # cls.maximum is a float, which is not assignable to number_
+            # Ignore the type checker to remove an average of two cast() calls per call
+            # to swopy.swop(), which was taking 4.6-12.5% of execution time.
+            number_ = min(number_, cls.maximum)  # pyright: ignore[reportAssignmentType]
 
         if number_ > cls.maximum:
             raise ValueError(f"Number must be less than or equal to {cls.maximum}.")
 
         # and back again to the expected type
-        return cast(TDenotation, number_)
+        return number_
 
     @classmethod
     @abstractmethod
@@ -176,7 +179,10 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         numeral: TNumeral = cls._to_numeral(number_)
 
         if encode == "ascii" and isinstance(numeral, str):
-            return cast(TNumeral, numeral.translate(ASCII))
+            # numeral.translate is a str, which is a subset of TNumeral
+            # Ignore the type checker to remove an average of two cast() calls per call
+            # to swopy.swop(), which was taking 4.6-12.5% of execution time.
+            return numeral.translate(ASCII)  # pyright: ignore[reportReturnType]
 
         return numeral
 
