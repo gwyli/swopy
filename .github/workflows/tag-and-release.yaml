@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   bump-version-and-release:
+    name: Bump version and create a release
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
