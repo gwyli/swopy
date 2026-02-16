@@ -59,7 +59,9 @@ jobs:
         run: uv tool install --python-preference only-managed --python 3.14 tox --with tox-uv --with tox-gh
       
       - name: Install Python
-        run: uv python install --python-preference only-managed ${{ matrix.env }}
+        run: uv python install --python-preference only-managed $PYTHON_VERSION
+        env:
+          PYTHON_VERSION: ${{ matrix.env }}
       
       - name: Setup test suite
         run: tox run -vv --notest --skip-missing-interpreters false
