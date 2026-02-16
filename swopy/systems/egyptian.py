@@ -4,9 +4,9 @@ This module provides conversion utilities for Egyptian hieroglyphic numerals.
 It implements bidirectional conversion between Arabic numbers and Egyptian numerals.
 """
 
-from typing import ClassVar, Literal
+from typing import ClassVar
 
-from swopy.system import System
+from ..system import Encodings, System
 
 
 class Egyptian(System[str, int]):
@@ -44,7 +44,7 @@ class Egyptian(System[str, int]):
     maximum: ClassVar[float] = 1_000_000
 
     maximum_is_many: ClassVar[bool] = True
-    encodings: ClassVar[set[Literal["utf8", "ascii"]]] = {"utf8"}
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     @classmethod
     def _to_numeral(cls, number: int) -> str:

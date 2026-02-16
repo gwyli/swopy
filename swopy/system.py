@@ -16,6 +16,7 @@ from .systems._translations import ASCII
 
 type Numeral = int | float | Fraction | str
 type Denotation = int | Fraction | float
+type Encodings = set[Literal["utf8", "ascii"]]
 
 
 class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
@@ -47,7 +48,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     maximum_is_many: ClassVar[bool] = False
     _numeral_runtime_type: ClassVar[tuple[type, ...]]
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
-    encodings: ClassVar[set[Literal["utf8", "ascii"]]] = {"utf8", "ascii"}
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
         """Appends the base types of the numeral system to the class variable for

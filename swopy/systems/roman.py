@@ -7,9 +7,9 @@ for subtractive notation (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF001 RUF002 RUF003
 
-from typing import ClassVar, Literal
+from typing import ClassVar
 
-from swopy.system import System
+from ..system import Encodings, System
 
 
 class Early[TNumeral: str, TDenotation: int](System[str, int]):
@@ -347,7 +347,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
     }
 
     maximum: ClassVar[float] = 100_000
-    encodings: ClassVar[set[Literal["utf8", "ascii"]]] = {"utf8"}
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
