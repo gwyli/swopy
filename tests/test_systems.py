@@ -27,6 +27,12 @@ _STRATEGY_CACHE: dict[type[System[Numeral, Denotation]], strategies.SearchStrate
 def load_strategies(
     system: type[System[Numeral, Denotation]], base_types: Container[type]
 ):
+    """
+    When running everything_except Hypothesis was refiltering the list of strategies on
+    each call. Caching the list of strategies on a per system basis removes 12s (50%) of
+    the execution time from Python 3.13 tests and 2s (16%) from Python 3.14+, likely due
+    to Python 3.14s tail-call optimisations.
+    """
     base_types_: tuple[type] = cast(tuple[type], base_types)
     if system not in _STRATEGY_CACHE:
         _STRATEGY_CACHE[system] = everything_except(excluded_types=base_types_)
