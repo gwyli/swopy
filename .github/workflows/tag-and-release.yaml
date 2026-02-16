@@ -31,6 +31,7 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for proper tag creation
           token: ${{ secrets.BOT_TOKEN }}
+          persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
 
@@ -58,19 +59,24 @@ jobs:
         run: |
           git config --local user.email "218805929+amati-bot@users.noreply.github.com"
           git config --local user.name "amati[bot]"
-          git commit uv.lock pyproject.toml -m "Bump version to ${{ steps.new_version.outputs.tag }}"
+          git commit uv.lock pyproject.toml -m "Bump version to ${STEPS_NEW_VERSION_OUTPUTS_TAG}"
           git push origin
+        env:
+          STEPS_NEW_VERSION_OUTPUTS_TAG: ${{ steps.new_version.outputs.tag }}
 
       - name: Create and push tag
         run: |
-          git tag ${{ steps.new_version.outputs.tag }}
+          git tag ${STEPS_NEW_VERSION_OUTPUTS_TAG}
           git push --tags
+        env:
+          STEPS_NEW_VERSION_OUTPUTS_TAG: ${{ steps.new_version.outputs.tag }}
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          STEPS_NEW_VERSION_OUTPUTS_TAG: ${{ steps.new_version.outputs.tag }}
         run: |
-          gh release create ${{ steps.new_version.outputs.tag }} \
-            --title "${{ steps.new_version.outputs.tag }}" \
+          gh release create ${STEPS_NEW_VERSION_OUTPUTS_TAG} \
+            --title "${STEPS_NEW_VERSION_OUTPUTS_TAG}" \
             --generate-notes \
             --latest
