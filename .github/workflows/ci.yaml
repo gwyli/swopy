@@ -19,6 +19,9 @@ jobs:
   test:
     name: test with ${{ matrix.env }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }} - {{matrix.os}}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -38,6 +41,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v6.8.0
@@ -54,7 +59,9 @@ jobs:
         run: uv tool install --python-preference only-managed --python 3.14 tox --with tox-uv --with tox-gh
       
       - name: Install Python
-        run: uv python install --python-preference only-managed ${{ matrix.env }}
+        run: uv python install --python-preference only-managed $PYTHON_VERSION
+        env:
+          PYTHON_VERSION: ${{ matrix.env }}
       
       - name: Setup test suite
         run: tox run -vv --notest --skip-missing-interpreters false
