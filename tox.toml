@@ -1,5 +1,5 @@
 requires = ["tox-uv"]
-env_list = ["3.15.0a6", "3.14.3", "3.14.0", "3.13", "lint", "typecheck", "dependencycheck"]
+env_list = ["3.15.0a6", "3.14.3", "3.14.0", "3.13", "lint", "typecheck", "dependencycheck", "zizmor"]
 
 [gh.python]
 "3.15.0a6" = ["3.15.0a6"]
@@ -35,4 +35,10 @@ commands = [
 description = "Run dependency checks"
 commands = [
     ["deptry", "."]
+]
+
+[env.zizmor]
+description = "Run Zizmor on GitHub Actions files"
+commands = [
+    ["zizmor", "--pedantic", ".github/"]
 ]
