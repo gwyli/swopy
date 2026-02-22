@@ -7,11 +7,12 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from fractions import Fraction
+from math import ceil
 from sys import float_info
 from typing import cast
 
 import pytest
-from hypothesis import assume, given, strategies
+from hypothesis import HealthCheck, assume, given, settings, strategies
 
 from swopy import Denotation, Numeral, System
 from tests.helpers import (
@@ -42,6 +43,7 @@ def load_strategies(
 
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
+@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_reversibility(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
@@ -56,11 +58,19 @@ def test_reversibility(
 
     for encoding in system.encodings:
         for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](
-                    min_value=system.minimum, max_value=system.maximum
-                )
-            )
+            kwargs: dict[str, int | float | Fraction] = {
+                "min_value": ceil(system.minimum),
+                "max_value": system.maximum,
+            }
+
+            if base_type is Fraction:
+                kwargs["max_denominator"] = 12
+
+            number = data.draw(TYPE_STRATEGY_MAP[base_type](**kwargs))
+
+            # Roman numerals only supported base-12 fractions
+            if isinstance(number, Fraction) and system.__name__ == "Standard":
+                assume(number.denominator in (2, 3, 4, 6, 12))
 
             encoded: Numeral = system.to_numeral(number, encode=encoding)
             decoded: str | int | float | Fraction = system.from_numeral(
@@ -87,11 +97,15 @@ def test_minima(
 
     for encoding in system.encodings:
         for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](max_value=system.minimum - 1)
-            )
+            if system.minimum == -float_info.max:
+                min_val = system.minimum
+            else:
+                min_val = ceil(system.minimum)
+
+            number = data.draw(TYPE_STRATEGY_MAP[base_type](max_value=min_val - 1))
 
             # For unbounded systems adding 1 is not enough to exceed the bound
+            #
             if system.maximum == float_info.max:
                 number = number * 2
 
@@ -140,7 +154,7 @@ def test_invalid_characters(system: type[System[str, Denotation]], value: str) -
     containing invalid characters for the numeral system.
     """
 
-    character_string: str = "".join(system.from_numeral_map.keys())
+    character_string: str = "".join(system.from_numeral_map().keys())
 
     assume(not all(c.upper() in character_string for c in value))
 
@@ -205,7 +219,7 @@ def test_invalid_encodings_to_numeral(
     for base_type in base_types:
         number = data.draw(
             TYPE_STRATEGY_MAP[base_type](
-                min_value=system.minimum, max_value=system.maximum
+                min_value=ceil(system.minimum), max_value=system.maximum
             )
         )
 
@@ -231,7 +245,9 @@ def test_invalid_encodings_from_numeral(
     base_types: Container[type] = system._get_base_types(0)  # pyright: ignore[reportPrivateUsage]
     assert len(base_types) >= 1, "System must have at least one base type"
 
-    alphabet = [x for x in system.from_numeral_map if len(x) == 1]
+    alphabet = [
+        x for x in system.from_numeral_map() if isinstance(x, str) and len(x) == 1
+    ]
     numeral = data.draw(strategies.text(alphabet=alphabet))
 
     for encoding in System.encodings:

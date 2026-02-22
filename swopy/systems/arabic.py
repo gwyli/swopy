@@ -10,9 +10,7 @@ from fractions import Fraction
 from ..system import System
 
 
-class Arabic[TNumeral: float | Fraction | int, TDenotation: float | Fraction | int](
-    System[float | Fraction | int, float | Fraction | int]
-):
+class Arabic(System[float | Fraction | int, float | Fraction | int]):
     """Arabic numeral system converter.
 
     Implements conversion for Arabic numerals (0-9), the standard modern numeral

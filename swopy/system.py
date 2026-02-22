@@ -7,6 +7,7 @@ their representations in that particular numeral system.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from fractions import Fraction
 from sys import float_info
 from types import UnionType, get_original_bases
@@ -40,12 +41,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         maximum_is_many: Whether the maximum is precise or represents "many".
     """
 
-    to_numeral_map: ClassVar[dict[int, str]]
-    from_numeral_map: ClassVar[dict[str, int]]
-
-    minimum: ClassVar[float] = -float_info.max
-    maximum: ClassVar[float] = float_info.max
+    minimum: ClassVar[int | float | Fraction] = -float_info.max
+    maximum: ClassVar[int | float | Fraction] = float_info.max
     maximum_is_many: ClassVar[bool] = False
+    _to_numeral_map: Mapping[TDenotation, TNumeral]
+    _from_numeral_map: Mapping[TNumeral, TDenotation]
+
     _numeral_runtime_type: ClassVar[tuple[type, ...]]
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
     encodings: ClassVar[Encodings] = {"utf8", "ascii"}
@@ -60,6 +61,34 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         cls._denotation_runtime_type = cls._get_base_types(1)
 
     @classmethod
+    def to_numeral_map(cls) -> Mapping[TDenotation, TNumeral]:
+        """Returns the map for converting from Arabic numbers to this systems numerals.
+
+        This method exists as a typed accessor for the ``_map`` class variable rather
+        than exposing ``_map`` directly. PEP 526 prohibits ``ClassVar`` from containing
+        type variables, and PEP 484's invariance rule for mutable bindings means a
+        subclass cannot narrow ``Mapping[str, object]`` to ``Mapping[str, int]`` without
+        a type error. Returning ``TDenotation`` from a classmethod is valid because
+        PEP 695 type parameters on a generic class are resolved through the instance-
+        typed generic machinery introduced in PEP 484.
+
+        Returns:
+            A mapping from Arabic numerals to their denotation in this system.
+        """
+        return cls._to_numeral_map
+
+    @classmethod
+    def from_numeral_map(cls) -> Mapping[TNumeral, TDenotation]:
+        """Returns the map for converting to Arabic numbers from this systems numerals.
+
+        Additional rationale detailed in ``to_numeral_map()``
+
+        Returns:
+            A mapping from the numberal systems denotation to Arabic numerals
+        """
+        return cls._from_numeral_map
+
+    @classmethod
     def _get_base_types(cls, position: int) -> tuple[type]:
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.
@@ -68,14 +97,19 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             The base type(s) used for numeral representation in this system.
         """
 
-        base: type | UnionType = get_original_bases(cls)[0]
+        base: type[System[TNumeral, TDenotation]] = get_original_bases(cls)[0]
 
-        denotation: type | UnionType = get_args(base)[position]
+        types: tuple[type | UnionType] = get_args(base)
 
-        if isinstance(denotation, UnionType):
-            return get_args(denotation)
+        if types == ():
+            types = get_args(get_original_bases(base)[0])
 
-        return (denotation,)
+        types_: type | UnionType = types[position]
+
+        if isinstance(types_, UnionType):
+            return get_args(types_)
+
+        return (types_,)
 
     @classmethod
     def is_valid_numeral(cls, val: Any) -> TypeIs[TNumeral]:

@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from fractions import Fraction
+from math import ceil, floor
 from types import FunctionType, UnionType
 from typing import Any
 
@@ -35,3 +37,13 @@ def everything_except(
         .map(type)
         .filter(lambda x: not isinstance(x, excluded_types))
     )
+
+
+def min_max(
+    operator: Callable[..., Any],
+    min_val: int | Fraction | float,
+    max_val: int | Fraction | float,
+) -> int:
+    """ """
+
+    return operator(ceil(min_val), floor(max_val))
