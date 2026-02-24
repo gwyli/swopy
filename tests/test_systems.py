@@ -8,7 +8,6 @@ and validate range constraints for each numeral system.
 from collections.abc import Container
 from fractions import Fraction
 from math import ceil
-from sys import float_info
 from typing import cast
 
 import pytest
@@ -16,6 +15,7 @@ from hypothesis import assume, given, strategies
 
 from swopy import Denotation, Numeral, System
 from tests.helpers import (
+    NEGATIVE_STRATEGY_CACHE,
     POSITIVE_STRATEGY_CACHE,
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
@@ -69,67 +69,37 @@ def test_reversibility(
 
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
-def test_minima(
+def test_minima_and_maxima(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
-    below the minimum valid value for the numeral system.
+    below the minimum valid value or above the maximum valid value for the numeral
+    system.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            if system.minimum == -float_info.max:
-                min_val = system.minimum
-            else:
-                min_val = ceil(system.minimum)
+        number = data.draw(NEGATIVE_STRATEGY_CACHE[system])
 
-            number = data.draw(TYPE_STRATEGY_MAP[base_type](max_value=min_val - 1))
-
-            # For unbounded systems adding 1 is not enough to exceed the bound
-            #
-            if system.maximum == float_info.max:
-                number = number * 2
-
-            with pytest.raises(ValueError):
-                system.to_numeral(number, encode=encoding)
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
 
 
-@pytest.mark.parametrize("system", SYSTEMS)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if x.maximum_is_many])
 @given(strategies.data())
-def test_maxima(
+def test_maximum_is_many(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
-    """Verifies that a ValueError is raised when attempting to convert numbers
-    above the maximum valid value for the numeral system.
+    """Verifies that where the maximum of a numeral system represents "many" the
+    value returned is the maximum.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
-
     for encoding in system.encodings:
-        for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1)
-            )
+        number = system.maximum * data.draw(strategies.integers(min_value=1))
 
-            # For unbounded systems adding 1 is not enough to exceed the bound
-            if system.maximum == float_info.max:
-                number = number * 2
-
-            # Some systems may treat values above the maximum as equivalent to the
-            # maximum.
-            if system.maximum_is_many:
-                assert system.to_numeral(number, encode=encoding) == system.to_numeral(
-                    system.maximum, encode=encoding
-                )
-            else:
-                with pytest.raises(ValueError):
-                    system.to_numeral(number, encode=encoding)
+        assert system.to_numeral(number, encode=encoding) == system.to_numeral(
+            system.maximum, encode=encoding
+        )
 
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)

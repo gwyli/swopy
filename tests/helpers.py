@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from fractions import Fraction
-from math import ceil, floor, log
+from math import ceil, floor
 from types import FunctionType, UnionType
 from typing import Any
 
@@ -46,9 +46,9 @@ POSITIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
 
 NEGATIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
     arabic.Arabic: st.one_of(
-        st.integers(max_value=int(arabic.Arabic.minimum) * -2),
+        st.integers(max_value=int(arabic.Arabic.minimum) * 2),
         st.integers(min_value=int(arabic.Arabic.maximum) * 2),
-        st.floats(max_value=arabic.Arabic.minimum * -2),
+        st.floats(max_value=arabic.Arabic.minimum * 2),
         st.floats(min_value=arabic.Arabic.maximum * 2),
     ),
     egyptian.Egyptian: st.integers(max_value=int(egyptian.Egyptian.minimum) - 1),
@@ -64,9 +64,7 @@ NEGATIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
         st.integers(max_value=int(roman.Standard.minimum) - 1),
         st.integers(min_value=int(roman.Standard.maximum) + 1),
         # not base 12
-        st.fractions().filter(
-            lambda f: 12 ** round(log(f.denominator, 12)) != f.denominator
-        ),
+        st.fractions().filter(lambda f: f.denominator not in (1, 2, 3, 4, 6, 12)),
     ),
 }
 
