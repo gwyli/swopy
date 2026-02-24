@@ -1,29 +1,86 @@
 from collections.abc import Callable
 from fractions import Fraction
-from math import ceil, floor
+from math import ceil, floor, log
 from types import FunctionType, UnionType
 from typing import Any
 
-from hypothesis import strategies
+from hypothesis import strategies as st
 
 from swopy import System, get_all_systems
+from swopy.systems import arabic, egyptian, roman
+
+from .strategies import base12_fractions
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 SYSTEMS_WITHOUT_ARABIC: list[type[System[Any, Any]]] = [
     s for s in get_all_systems().values() if s.__name__ != "Arabic"
 ]
 
+POSITIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
+    arabic.Arabic: st.one_of(
+        st.integers(
+            min_value=int(arabic.Arabic.minimum), max_value=int(arabic.Arabic.maximum)
+        ),
+        st.floats(min_value=arabic.Arabic.minimum, max_value=arabic.Arabic.maximum),
+        st.fractions(),
+    ),
+    egyptian.Egyptian: st.integers(
+        min_value=int(egyptian.Egyptian.minimum),
+        max_value=int(egyptian.Egyptian.maximum),
+    ),
+    roman.Early: st.integers(
+        min_value=int(roman.Early.minimum), max_value=int(roman.Early.maximum)
+    ),
+    roman.Standard: st.one_of(
+        st.integers(min_value=1, max_value=int(roman.Standard.maximum)),
+        base12_fractions(
+            min_value=Fraction(roman.Standard.minimum),
+            max_value=Fraction(roman.Standard.maximum),
+        ),
+    ),
+    roman.Apostrophus: st.integers(
+        min_value=int(roman.Apostrophus.minimum),
+        max_value=int(roman.Apostrophus.maximum),
+    ),
+}
+
+NEGATIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
+    arabic.Arabic: st.one_of(
+        st.integers(max_value=int(arabic.Arabic.minimum) * -2),
+        st.integers(min_value=int(arabic.Arabic.maximum) * 2),
+        st.floats(max_value=arabic.Arabic.minimum * -2),
+        st.floats(min_value=arabic.Arabic.maximum * 2),
+    ),
+    egyptian.Egyptian: st.integers(max_value=int(egyptian.Egyptian.minimum) - 1),
+    roman.Early: st.one_of(
+        st.integers(max_value=int(roman.Early.minimum) - 1),
+        st.integers(min_value=int(roman.Early.maximum) + 1),
+    ),
+    roman.Apostrophus: st.one_of(
+        st.integers(max_value=int(roman.Apostrophus.minimum) - 1),
+        st.integers(min_value=int(roman.Apostrophus.maximum) + 1),
+    ),
+    roman.Standard: st.one_of(
+        st.integers(max_value=int(roman.Standard.minimum) - 1),
+        st.integers(min_value=int(roman.Standard.maximum) + 1),
+        # not base 12
+        st.fractions().filter(
+            lambda f: 12 ** round(log(f.denominator, 12)) != f.denominator
+        ),
+    ),
+}
+
 TYPE_STRATEGY_MAP: dict[UnionType | type, FunctionType] = {
-    str: strategies.integers,
-    int: strategies.integers,
-    float: strategies.floats,
-    Fraction: strategies.fractions,
+    str: st.integers,
+    int: st.integers,
+    float: st.floats,
+    Fraction: st.fractions,
 }
 
 
 def everything_except(
     excluded_types: tuple[type | UnionType, ...],
-) -> strategies.SearchStrategy[Any]:
+) -> st.SearchStrategy[Any]:
     """Generate arbitrary values excluding instances of specified types.
 
     Args:
@@ -33,7 +90,7 @@ def everything_except(
         A strategy that generates values not matching the excluded type(s).
     """
     return (
-        strategies.from_type(object)
+        st.from_type(object)
         .map(type)
         .filter(lambda x: not isinstance(x, excluded_types))
     )

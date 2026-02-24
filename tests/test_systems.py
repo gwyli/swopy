@@ -12,10 +12,11 @@ from sys import float_info
 from typing import cast
 
 import pytest
-from hypothesis import HealthCheck, assume, given, settings, strategies
+from hypothesis import assume, given, strategies
 
 from swopy import Denotation, Numeral, System
 from tests.helpers import (
+    POSITIVE_STRATEGY_CACHE,
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
     TYPE_STRATEGY_MAP,
@@ -43,7 +44,6 @@ def load_strategies(
 
 @pytest.mark.parametrize("system", SYSTEMS)
 @given(strategies.data())
-@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_reversibility(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
@@ -57,29 +57,14 @@ def test_reversibility(
     assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            kwargs: dict[str, int | float | Fraction] = {
-                "min_value": ceil(system.minimum),
-                "max_value": system.maximum,
-            }
+        number = data.draw(POSITIVE_STRATEGY_CACHE[system])
 
-            if base_type is Fraction:
-                kwargs["max_denominator"] = 12
+        encoded: Numeral = system.to_numeral(number, encode=encoding)
+        decoded: str | int | float | Fraction = system.from_numeral(
+            encoded, encode=encoding
+        )
 
-            number = data.draw(TYPE_STRATEGY_MAP[base_type](**kwargs))
-
-            # Roman numerals only supported base-12 fractions
-            if isinstance(number, Fraction) and system.__name__ == "Standard":
-                assume(number.denominator in (2, 3, 4, 6, 12))
-
-            encoded: Numeral = system.to_numeral(number, encode=encoding)
-            decoded: str | int | float | Fraction = system.from_numeral(
-                encoded, encode=encoding
-            )
-
-            assert decoded == number, (
-                f"Failed round-trip for {system} with value {number}"
-            )
+        assert decoded == number, f"Failed round-trip for {system} with value {number}"
 
 
 @pytest.mark.parametrize("system", SYSTEMS)

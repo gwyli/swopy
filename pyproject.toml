@@ -56,7 +56,7 @@ tzdata="tzdata"
 reportMissingTypeStubs=false
 reportMissingImports=false # Ignore external dependencies
 typeCheckingMode="strict"
-include = ["swopy"]
+include = ["swopy", "tests"]
 
 [tool.pytest.ini_options]
 doctest_optionflags = "NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL ELLIPSIS"

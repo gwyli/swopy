@@ -30,8 +30,8 @@ class TestRomanStandard:
 
     def test_not_base_12_fraction(self) -> None:
         """
-        Checks that a value error is raised when two incompatible
-        fraction characters are used
+        Checks that a value error is raised when the fraction for
+        roman.Standard is not base 12.
         """
         with pytest.raises(ValueError):
             systems.roman.Standard.to_numeral(Fraction(1, 7))
