@@ -7,7 +7,6 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from fractions import Fraction
-from math import ceil
 from typing import cast
 
 import pytest
@@ -19,11 +18,12 @@ from tests.helpers import (
     POSITIVE_STRATEGY_CACHE,
     SYSTEMS,
     SYSTEMS_WITHOUT_ARABIC,
-    TYPE_STRATEGY_MAP,
     everything_except,
 )
 
-_STRATEGY_CACHE: dict[type[System[Numeral, Denotation]], strategies.SearchStrategy] = {}
+_INVALID_TYPE_STRATEGY_CACHE: dict[
+    type[System[Numeral, Denotation]], strategies.SearchStrategy
+] = {}
 
 
 def load_strategies(
@@ -36,10 +36,12 @@ def load_strategies(
     to Python 3.14s tail-call optimisations.
     """
     base_types_: tuple[type] = cast(tuple[type], base_types)
-    if system not in _STRATEGY_CACHE:
-        _STRATEGY_CACHE[system] = everything_except(excluded_types=base_types_)
+    if system not in _INVALID_TYPE_STRATEGY_CACHE:
+        _INVALID_TYPE_STRATEGY_CACHE[system] = everything_except(
+            excluded_types=base_types_
+        )
 
-    return _STRATEGY_CACHE[system]
+    return _INVALID_TYPE_STRATEGY_CACHE[system]
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -168,20 +170,11 @@ def test_invalid_encodings_to_numeral(
     invalid encoding when converting to a numeral.
     """
 
-    base_types: Container[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
+    number = data.draw(POSITIVE_STRATEGY_CACHE[system])
 
-    for base_type in base_types:
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](
-                min_value=ceil(system.minimum), max_value=system.maximum
-            )
-        )
-
-        for encoding in System.encodings:
-            if encoding not in system.encodings:
-                with pytest.raises(ValueError):
-                    system.to_numeral(number, encode=encoding)
+    for encoding in set(System.encodings) - set(system.encodings):
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
 
 
 @pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
@@ -205,7 +198,6 @@ def test_invalid_encodings_from_numeral(
     ]
     numeral = data.draw(strategies.text(alphabet=alphabet))
 
-    for encoding in System.encodings:
-        if encoding not in system.encodings:
-            with pytest.raises(ValueError):
-                system.from_numeral(numeral, encode=encoding)
+    for encoding in set(System.encodings) - set(system.encodings):
+        with pytest.raises(ValueError):
+            system.from_numeral(numeral, encode=encoding)
