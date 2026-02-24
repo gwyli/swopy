@@ -19,7 +19,7 @@ def base12_fractions(
     if min_value > max_value:
         raise ValueError(f"min_value ({min_value}) must be <= max_value ({max_value})")
 
-    target_denominator = draw(st.sampled_from(sorted({1, 2, 3, 4, 6, 12})))
+    target_denominator = draw(st.sampled_from(sorted({2, 3, 4, 6, 12})))
 
     # All unique numerators/denominators that reduce to one of our valid denominators.
     # A fraction n/d reduces to have denominator d/gcd(n,d).  The simplest approach:
@@ -32,7 +32,11 @@ def base12_fractions(
 
     # Collect all valid numerators (coprime with target_denominator)
     valid_numerators = [
-        p for p in range(lo, hi + 1) if math.gcd(abs(p), target_denominator) == 1
+        p
+        for p in range(lo, hi + 1)
+        if math.gcd(abs(p), target_denominator) == 1
+        # Don't generate ints as Fractions
+        and p // target_denominator != p / target_denominator
     ]
 
     if not valid_numerators:

@@ -19,7 +19,7 @@ from swopy import (
     swop,
     systems,
 )
-from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP, min_max
+from tests.helpers import POSITIVE_STRATEGY_CACHE, SYSTEMS, TYPE_STRATEGY_MAP, min_max
 
 
 @given(
@@ -152,36 +152,20 @@ def test_identity_conversion(
     """
     Converting from a system to itself should return the input.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            kwargs: dict[str, int | float | Fraction] = {
-                "min_value": ceil(system.minimum),
-                "max_value": system.maximum,
-            }
+        number = data.draw(POSITIVE_STRATEGY_CACHE[system])
 
-            if base_type is Fraction:
-                kwargs["max_denominator"] = 12
+        number_: Numeral = system.to_numeral(number, encode=encoding)
+        result: Numeral = swop(number_, system, system)
+        final: Denotation = system.from_numeral(result, encode=encoding)
 
-            number = data.draw(TYPE_STRATEGY_MAP[base_type](**kwargs))
-
-            # Roman numerals only supported base-12 fractions
-            if isinstance(number, Fraction) and system.__name__ == "Standard":
-                assume(number.denominator in (2, 3, 4, 6))
-
-            number_: Numeral = system.to_numeral(number, encode=encoding)
-            result: Numeral = swop(number_, system, system)
-            final: Denotation = system.from_numeral(result, encode=encoding)
-
-            assert final == number, (
-                "Failed identity conversion for {system} with value {number}"
-            )
-            assert type(final) is type(number), (
-                "Type mismatch in identity conversion for {system} with value {number}"
-            )
+        assert final == number, (
+            "Failed identity conversion for {system} with value {number}"
+        )
+        assert type(final) is type(number), (
+            "Type mismatch in identity conversion for {system} with value {number}"
+        )
 
 
 def test_get_all_systems():
