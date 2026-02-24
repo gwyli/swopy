@@ -12,9 +12,6 @@ from swopy.systems import arabic, egyptian, roman
 from .strategies import base12_fractions
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
-SYSTEMS_WITHOUT_ARABIC: list[type[System[Any, Any]]] = [
-    s for s in get_all_systems().values() if s.__name__ != "Arabic"
-]
 
 POSITIVE_STRATEGY_CACHE: dict[type[System[Any, Any]], st.SearchStrategy] = {
     arabic.Arabic: st.one_of(

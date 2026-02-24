@@ -17,7 +17,6 @@ from tests.helpers import (
     NEGATIVE_STRATEGY_CACHE,
     POSITIVE_STRATEGY_CACHE,
     SYSTEMS,
-    SYSTEMS_WITHOUT_ARABIC,
 )
 from tests.strategies import everything_except
 
@@ -104,7 +103,7 @@ def test_maximum_is_many(
         )
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
 @given(strategies.text())
 def test_invalid_characters(system: type[System[str, Denotation]], value: str) -> None:
     """Verifies that a ValueError is raised when attempting to convert a string
@@ -177,7 +176,7 @@ def test_invalid_encodings_to_numeral(
             system.to_numeral(number, encode=encoding)
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
 @given(strategies.data())
 def test_invalid_encodings_from_numeral(
     system: type[System[Numeral, Denotation]],
@@ -189,9 +188,6 @@ def test_invalid_encodings_from_numeral(
     Args:
         number: A valid number for the numeral system.
     """
-
-    base_types: Container[type] = system._get_base_types(0)  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     alphabet = [
         x for x in system.from_numeral_map() if isinstance(x, str) and len(x) == 1
