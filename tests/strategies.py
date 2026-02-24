@@ -1,5 +1,7 @@
 import math
 from fractions import Fraction
+from types import UnionType
+from typing import Any
 
 from hypothesis import strategies as st
 
@@ -48,3 +50,21 @@ def base12_fractions(
     numerator = draw(st.sampled_from(valid_numerators))
 
     return Fraction(numerator, target_denominator)
+
+
+def everything_except(
+    excluded_types: tuple[type | UnionType, ...],
+) -> st.SearchStrategy[Any]:
+    """Generate arbitrary values excluding instances of specified types.
+
+    Args:
+        excluded_types: A type or tuple of types to exclude from generation.
+
+    Returns:
+        A strategy that generates values not matching the excluded type(s).
+    """
+    return (
+        st.from_type(object)
+        .map(type)
+        .filter(lambda x: not isinstance(x, excluded_types))
+    )
