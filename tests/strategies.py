@@ -7,8 +7,11 @@ from hypothesis import strategies as st
 
 
 @st.composite
-def base12_fractions(
-    draw: st.DrawFn, min_value: Fraction, max_value: Fraction
+def baseN_fractions(
+    draw: st.DrawFn,
+    base: int,
+    min_value: Fraction,
+    max_value: Fraction,
 ) -> Fraction:
     """
     A Hypothesis composite strategy that draws a fraction whose reduced form
@@ -21,7 +24,9 @@ def base12_fractions(
     if min_value > max_value:
         raise ValueError(f"min_value ({min_value}) must be <= max_value ({max_value})")
 
-    target_denominator = draw(st.sampled_from(sorted({2, 3, 4, 6, 12})))
+    possible_denominators = {x for x in range(2, base + 1) if base // x == base / x}
+
+    target_denominator = draw(st.sampled_from(sorted(possible_denominators)))
 
     # All unique numerators/denominators that reduce to one of our valid denominators.
     # A fraction n/d reduces to have denominator d/gcd(n,d).  The simplest approach:

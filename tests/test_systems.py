@@ -13,12 +13,10 @@ import pytest
 from hypothesis import assume, given, strategies
 
 from swopy import Denotation, Numeral, System
-from tests.helpers import (
-    NEGATIVE_STRATEGY_CACHE,
-    POSITIVE_STRATEGY_CACHE,
-    SYSTEMS,
-)
-from tests.strategies import everything_except
+
+from .factory.factory import make_strategy
+from .helpers import SYSTEMS
+from .strategies import everything_except
 
 _INVALID_TYPE_STRATEGY_CACHE: dict[
     type[System[Numeral, Denotation]], strategies.SearchStrategy
@@ -58,7 +56,8 @@ def test_reversibility(
     assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        number = data.draw(POSITIVE_STRATEGY_CACHE[system])
+        # number = data.draw(construct_union_strategy(system, is_successful=True))
+        number = data.draw(make_strategy(system))
 
         encoded: Numeral = system.to_numeral(number, encode=encoding)
         decoded: str | int | float | Fraction = system.from_numeral(
@@ -66,9 +65,12 @@ def test_reversibility(
         )
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
+        assert type(decoded) is type(number), (
+            f"Type mismatch {system} between {decoded} and {number}."
+        )
 
 
-@pytest.mark.parametrize("system", SYSTEMS)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if not x.maximum_is_many])
 @given(strategies.data())
 def test_minima_and_maxima(
     system: type[System[Numeral, Denotation]],
@@ -80,7 +82,27 @@ def test_minima_and_maxima(
     """
 
     for encoding in system.encodings:
-        number = data.draw(NEGATIVE_STRATEGY_CACHE[system])
+        # number = data.draw(construct_union_strategy(system, is_successful=False))
+        number = data.draw(make_strategy(system, falsify=True))
+
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
+
+
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if x.maximum_is_many])
+@given(strategies.data())
+def test_minima_and_maxima_if_max_is_many(
+    system: type[System[Numeral, Denotation]],
+    data: strategies.DataObject,
+) -> None:
+    """Verifies that a ValueError is raised when attempting to convert numbers
+    below the minimum valid value or above the maximum valid value for the numeral
+    system.
+    """
+
+    for encoding in system.encodings:
+        # number = data.draw(construct_union_strategy(system, is_successful=False))
+        number = data.draw(make_strategy(system, falsify=True, over_max=True))
 
         with pytest.raises(ValueError):
             system.to_numeral(number, encode=encoding)
@@ -96,7 +118,7 @@ def test_maximum_is_many(
     value returned is the maximum.
     """
     for encoding in system.encodings:
-        number = system.maximum * data.draw(strategies.integers(min_value=1))
+        number = system.maximum * data.draw(make_strategy(system))
 
         assert system.to_numeral(number, encode=encoding) == system.to_numeral(
             system.maximum, encode=encoding
@@ -169,7 +191,7 @@ def test_invalid_encodings_to_numeral(
     invalid encoding when converting to a numeral.
     """
 
-    number = data.draw(POSITIVE_STRATEGY_CACHE[system])
+    number = data.draw(make_strategy(system))
 
     for encoding in set(System.encodings) - set(system.encodings):
         with pytest.raises(ValueError):

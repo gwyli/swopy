@@ -19,7 +19,13 @@ from swopy import (
     swop,
     systems,
 )
-from tests.helpers import POSITIVE_STRATEGY_CACHE, SYSTEMS, TYPE_STRATEGY_MAP, min_max
+
+from .factory.factory import make_strategy
+from .helpers import (
+    SYSTEMS,
+    TYPE_STRATEGY_MAP,
+    min_max,
+)
 
 
 @given(
@@ -69,25 +75,25 @@ def test_round_trip[
             if number.denominator == 1:
                 number = int(number)
 
-        # We always start with a numeric strategy, so first convert to from_system
-        # from Arabic numerals
-        source_input: TFromNumeral = swop(
-            number, from_system=systems.arabic.Arabic, to_system=from_system
-        )
-        # Intermediate conversion
-        result: TToNumeral = swop(source_input, from_system, to_system)
-        # Back to start
-        final: TFromNumeral = swop(result, to_system, from_system)
-        # Last, convert back to Arabic to compare
-        final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
+    number = data.draw(make_strategy(from_system, to_system))
 
-        assert final_number == number, (
-            f"{number} incorrectly converted to {final_number}."
-        )
+    # We always start with a numeric strategy, so first convert to from_system
+    # from Arabic numerals
+    source_input: TFromNumeral = swop(
+        number, from_system=systems.arabic.Arabic, to_system=from_system
+    )
+    # Intermediate conversion
+    result: TToNumeral = swop(source_input, from_system, to_system)
+    # Back to start
+    final: TFromNumeral = swop(result, to_system, from_system)
+    # Last, convert back to Arabic to compare
+    final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
 
-        assert type(final_number) is type(number), (
-            f"{number} is not of the same type as {final_number}"
-        )
+    assert final_number == number, f"{number} incorrectly converted to {final_number}."
+
+    assert type(final_number) is type(number), (
+        f"{number} is not of the same type as {final_number}"
+    )
 
 
 @given(
@@ -154,17 +160,18 @@ def test_identity_conversion(
     """
 
     for encoding in system.encodings:
-        number = data.draw(POSITIVE_STRATEGY_CACHE[system])
+        # number = data.draw(construct_union_strategy(system, is_successful=True))
+        number = data.draw(make_strategy(system))
 
         number_: Numeral = system.to_numeral(number, encode=encoding)
         result: Numeral = swop(number_, system, system)
         final: Denotation = system.from_numeral(result, encode=encoding)
 
         assert final == number, (
-            "Failed identity conversion for {system} with value {number}"
+            f"Failed identity conversion for {system} with value {number}"
         )
         assert type(final) is type(number), (
-            "Type mismatch in identity conversion for {system} with value {number}"
+            f"Type mismatch in identity conversion for {system} with value {number}"
         )
 
 
