@@ -17,7 +17,10 @@ from swopy import (
     swop,
     systems,
 )
-from tests.helpers import SYSTEMS, TYPE_STRATEGY_MAP
+
+from .strategy_factory.factory import make_double_strategy, make_strategy
+
+SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 
 
 @given(
@@ -38,24 +41,9 @@ def test_round_trip[
     """
     Converting A -> B -> A should return the original value.
     """
-    # Calculate the overlapping valid range
-    min_val = max(from_system.minimum, to_system.minimum)
-    max_val = min(from_system.maximum, to_system.maximum)
 
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
-
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
-
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
-
-    for base_type in set(from_base_types) & set(to_base_types):
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
-        )
+    for strategy in make_double_strategy(from_system, to_system):
+        number = data.draw(strategy)
 
         # We always start with a numeric strategy, so first convert to from_system
         # from Arabic numerals
@@ -70,11 +58,11 @@ def test_round_trip[
         final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
 
         assert final_number == number, (
-            "{number} incorrectly converted to {final_number}."
+            f"{number} incorrectly converted to {final_number}."
         )
 
         assert type(final_number) is type(number), (
-            "{number} is not of the same type as {final_number}"
+            f"{number} is not of the same type as {final_number}"
         )
 
 
@@ -97,24 +85,11 @@ def test_round_trip_failure[
     Converting A -> B -> A should raise a TypeError if the systems have no overlapping
     valid types.
     """
-    # Calculate the overlapping valid range
-    min_val = max(from_system.minimum, to_system.minimum)
-    max_val = min(from_system.maximum, to_system.maximum)
 
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
+    assume(from_system is not to_system)
 
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
-
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
-
-    for base_type in set(from_base_types) ^ set(to_base_types):
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
-        )
+    for strategy in make_double_strategy(from_system, to_system, falsify=True):
+        number = data.draw(strategy)
 
         with pytest.raises(TypeError):
             # We always start with a numeric strategy, so first convert to from_system
@@ -133,28 +108,20 @@ def test_identity_conversion(
     """
     Converting from a system to itself should return the input.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](
-                    min_value=system.minimum, max_value=system.maximum
-                )
-            )
+        number = data.draw(make_strategy(system))
 
-            number_: Numeral = system.to_numeral(number, encode=encoding)
-            result: Numeral = swop(number_, system, system)
-            final: Denotation = system.from_numeral(result, encode=encoding)
+        number_: Numeral = system.to_numeral(number, encode=encoding)
+        result: Numeral = swop(number_, system, system)
+        final: Denotation = system.from_numeral(result, encode=encoding)
 
-            assert final == number, (
-                "Failed identity conversion for {system} with value {number}"
-            )
-            assert type(final) is type(number), (
-                "Type mismatch in identity conversion for {system} with value {number}"
-            )
+        assert final == number, (
+            f"Failed identity conversion for {system} with value {number}"
+        )
+        assert type(final) is type(number), (
+            f"Type mismatch in identity conversion for {system} with value {number}"
+        )
 
 
 def test_get_all_systems():
@@ -187,24 +154,8 @@ def test_encodings[
     numeral systems don't support is used.
     """
 
-    # Calculate the overlapping valid range
-    min_val = max(from_system.minimum, to_system.minimum)
-    max_val = min(from_system.maximum, to_system.maximum)
-
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
-
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
-
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
-
-    for base_type in set(from_base_types) & set(to_base_types):
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
-        )
+    for strategy in make_double_strategy(from_system, to_system):
+        number = data.draw(strategy)
 
         # We always start with a numeric strategy, so first convert to from_system
         # from Arabic numerals

@@ -20,7 +20,7 @@ jobs:
     name: test with ${{ matrix.env }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }} - {{matrix.os}}
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }} - ${{ matrix.os }}--${{ matrix.env }}
       cancel-in-progress: true
     strategy:
       fail-fast: false

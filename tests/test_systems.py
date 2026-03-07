@@ -7,21 +7,22 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from fractions import Fraction
-from sys import float_info
-from typing import cast
+from math import inf
+from typing import Any, cast
 
 import pytest
 from hypothesis import assume, given, strategies
 
-from swopy import Denotation, Numeral, System
-from tests.helpers import (
-    SYSTEMS,
-    SYSTEMS_WITHOUT_ARABIC,
-    TYPE_STRATEGY_MAP,
-    everything_except,
-)
+from swopy import Denotation, Numeral, System, get_all_systems
 
-_STRATEGY_CACHE: dict[type[System[Numeral, Denotation]], strategies.SearchStrategy] = {}
+from .strategies import everything_except
+from .strategy_factory.factory import make_strategy
+
+SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
+
+_INVALID_TYPE_STRATEGY_CACHE: dict[
+    type[System[Numeral, Denotation]], strategies.SearchStrategy
+] = {}
 
 
 def load_strategies(
@@ -34,10 +35,12 @@ def load_strategies(
     to Python 3.14s tail-call optimisations.
     """
     base_types_: tuple[type] = cast(tuple[type], base_types)
-    if system not in _STRATEGY_CACHE:
-        _STRATEGY_CACHE[system] = everything_except(excluded_types=base_types_)
+    if system not in _INVALID_TYPE_STRATEGY_CACHE:
+        _INVALID_TYPE_STRATEGY_CACHE[system] = everything_except(
+            excluded_types=base_types_
+        )
 
-    return _STRATEGY_CACHE[system]
+    return _INVALID_TYPE_STRATEGY_CACHE[system]
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -55,92 +58,89 @@ def test_reversibility(
     assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](
-                    min_value=system.minimum, max_value=system.maximum
-                )
-            )
+        number = data.draw(make_strategy(system))
 
-            encoded: Numeral = system.to_numeral(number, encode=encoding)
-            decoded: str | int | float | Fraction = system.from_numeral(
-                encoded, encode=encoding
-            )
+        encoded: Numeral = system.to_numeral(number, encode=encoding)
+        decoded: str | int | float | Fraction = system.from_numeral(
+            encoded, encode=encoding
+        )
 
-            assert decoded == number, (
-                f"Failed round-trip for {system} with value {number}"
-            )
+        assert decoded == number, f"Failed round-trip for {system} with value {number}"
+        assert type(decoded) is type(number), (
+            f"Type mismatch {system} between {decoded} and {number}."
+        )
 
 
-@pytest.mark.parametrize("system", SYSTEMS)
+@pytest.mark.parametrize(
+    "system",
+    [
+        x
+        for x in SYSTEMS
+        # Special case `System.maximum_is_many` and don't test maxima and minima if they
+        # are unbounded
+        if not x.maximum_is_many and not (x.minimum == -inf and x.maximum == inf)
+    ],
+)
 @given(strategies.data())
-def test_minima(
+def test_minima_and_maxima(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
-    below the minimum valid value for the numeral system.
+    below the minimum valid value or above the maximum valid value for the numeral
+    system.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](max_value=system.minimum - 1)
-            )
+        number = data.draw(make_strategy(system, falsify=True))
 
-            # For unbounded systems adding 1 is not enough to exceed the bound
-            if system.maximum == float_info.max:
-                number = number * 2
-
-            with pytest.raises(ValueError):
-                system.to_numeral(number, encode=encoding)
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
 
 
-@pytest.mark.parametrize("system", SYSTEMS)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if x.maximum_is_many])
 @given(strategies.data())
-def test_maxima(
+def test_minima_and_maxima_if_max_is_many(
     system: type[System[Numeral, Denotation]],
     data: strategies.DataObject,
 ) -> None:
     """Verifies that a ValueError is raised when attempting to convert numbers
-    above the maximum valid value for the numeral system.
+    below the minimum valid value or above the maximum valid value for the numeral
+    system.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        for base_type in base_types:
-            number = data.draw(
-                TYPE_STRATEGY_MAP[base_type](min_value=system.maximum + 1)
-            )
+        number = data.draw(make_strategy(system, falsify=True, over_max=True))
 
-            # For unbounded systems adding 1 is not enough to exceed the bound
-            if system.maximum == float_info.max:
-                number = number * 2
-
-            # Some systems may treat values above the maximum as equivalent to the
-            # maximum.
-            if system.maximum_is_many:
-                assert system.to_numeral(number, encode=encoding) == system.to_numeral(
-                    system.maximum, encode=encoding
-                )
-            else:
-                with pytest.raises(ValueError):
-                    system.to_numeral(number, encode=encoding)
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if x.maximum_is_many])
+@given(strategies.data())
+def test_maximum_is_many(
+    system: type[System[Numeral, Denotation]],
+    data: strategies.DataObject,
+) -> None:
+    """Verifies that where the maximum of a numeral system represents "many" the
+    value returned is the maximum.
+    """
+    for encoding in system.encodings:
+        number = system.maximum * data.draw(make_strategy(system))
+
+        assert system.to_numeral(number, encode=encoding) == system.to_numeral(
+            system.maximum, encode=encoding
+        )
+
+
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
 @given(strategies.text())
 def test_invalid_characters(system: type[System[str, Denotation]], value: str) -> None:
     """Verifies that a ValueError is raised when attempting to convert a string
     containing invalid characters for the numeral system.
     """
 
-    character_string: str = "".join(system.from_numeral_map.keys())
+    character_string: str = "".join(system.from_numeral_map().keys())
 
     assume(not all(c.upper() in character_string for c in value))
 
@@ -199,23 +199,14 @@ def test_invalid_encodings_to_numeral(
     invalid encoding when converting to a numeral.
     """
 
-    base_types: Container[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
+    number = data.draw(make_strategy(system))
 
-    for base_type in base_types:
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](
-                min_value=system.minimum, max_value=system.maximum
-            )
-        )
-
-        for encoding in System.encodings:
-            if encoding not in system.encodings:
-                with pytest.raises(ValueError):
-                    system.to_numeral(number, encode=encoding)
+    for encoding in set(System.encodings) - set(system.encodings):
+        with pytest.raises(ValueError):
+            system.to_numeral(number, encode=encoding)
 
 
-@pytest.mark.parametrize("system", SYSTEMS_WITHOUT_ARABIC)
+@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
 @given(strategies.data())
 def test_invalid_encodings_from_numeral(
     system: type[System[Numeral, Denotation]],
@@ -228,13 +219,11 @@ def test_invalid_encodings_from_numeral(
         number: A valid number for the numeral system.
     """
 
-    base_types: Container[type] = system._get_base_types(0)  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
-
-    alphabet = [x for x in system.from_numeral_map if len(x) == 1]
+    alphabet = [
+        x for x in system.from_numeral_map() if isinstance(x, str) and len(x) == 1
+    ]
     numeral = data.draw(strategies.text(alphabet=alphabet))
 
-    for encoding in System.encodings:
-        if encoding not in system.encodings:
-            with pytest.raises(ValueError):
-                system.from_numeral(numeral, encode=encoding)
+    for encoding in set(System.encodings) - set(system.encodings):
+        with pytest.raises(ValueError):
+            system.from_numeral(numeral, encode=encoding)

@@ -4,6 +4,8 @@ This module provides conversion utilities for Egyptian hieroglyphic numerals.
 It implements bidirectional conversion between Arabic numbers and Egyptian numerals.
 """
 
+from collections.abc import Mapping
+from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
@@ -26,7 +28,7 @@ class Egyptian(System[str, int]):
             notation.
     """
 
-    to_numeral_map: ClassVar[dict[int, str]] = {
+    _to_numeral_map: Mapping[int, str] = {
         1_000_000: "\U00013069",
         100_000: "\U00013153",
         10_000: "\U000130ad",
@@ -36,12 +38,10 @@ class Egyptian(System[str, int]):
         1: "\U000133fa",
     }
 
-    from_numeral_map: ClassVar[dict[str, int]] = {
-        v: k for k, v in to_numeral_map.items()
-    }
+    _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
-    minimum: ClassVar[float] = 1
-    maximum: ClassVar[float] = 1_000_000
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 1_000_000
 
     maximum_is_many: ClassVar[bool] = True
     encodings: ClassVar[Encodings] = {"utf8"}
@@ -72,7 +72,7 @@ class Egyptian(System[str, int]):
         """
         result: str = ""
 
-        for arabic, hieroglyph in cls.to_numeral_map.items():
+        for arabic, hieroglyph in cls.to_numeral_map().items():
             count, number = divmod(number, arabic)
             count = int(count)
             result += hieroglyph * count
@@ -106,8 +106,8 @@ class Egyptian(System[str, int]):
         total: int = 0
 
         for hieroglyph in numeral:
-            if hieroglyph not in cls.from_numeral_map:
+            if hieroglyph not in cls.from_numeral_map():
                 raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
-            total += cls.from_numeral_map[hieroglyph]
+            total += cls.from_numeral_map()[hieroglyph]
 
         return total

@@ -95,11 +95,11 @@ def get_all_systems() -> dict[str, type[System[Any, Any]]]:
 
         Get system properties:
         >>> all_systems = get_all_systems()
-        >>> roman = all_systems['roman.Standard']
+        >>> roman = all_systems['roman.Early']
         >>> roman.minimum
         1
         >>> roman.maximum
-        3999
+        899
     """
     result: dict[str, type[System[Any, Any]]] = {}
 

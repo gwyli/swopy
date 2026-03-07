@@ -7,12 +7,14 @@ for subtractive notation (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF001 RUF002 RUF003
 
+from collections.abc import Mapping
+from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
 
 
-class Early[TNumeral: str, TDenotation: int](System[str, int]):
+class Early(System[str, int]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -31,7 +33,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         maximum_is_many: False, as 899 is a precise limit.
     """
 
-    to_numeral_map: ClassVar[dict[int, str]] = {
+    _to_numeral_map: Mapping[int, str] = {
         500: "\u216e",
         400: "\u216d\u216e",
         100: "\u216d",
@@ -44,7 +46,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         4: "\u2160\u2164",
         1: "\u2160",
     }
-    from_numeral_map: ClassVar[dict[str, int]] = {
+    _from_numeral_map: Mapping[str, int] = {
         "\u2160": 1,
         "I": 1,
         "\u2164": 5,
@@ -59,8 +61,8 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         "D": 500,
     }
 
-    minimum: ClassVar[float] = 1
-    maximum: ClassVar[float] = 899
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 899
 
     maximum_is_many: ClassVar[bool] = False
 
@@ -96,10 +98,10 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         """
         result: str = ""
 
-        for latin, roman in cls.to_numeral_map.items():
-            while number >= latin:
+        for arabic, roman in cls.to_numeral_map().items():
+            while number >= arabic:
                 result += roman
-                number -= latin
+                number -= arabic
 
         return result
 
@@ -138,7 +140,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         prev_value: int = 0
 
         for char in reversed(numeral.upper()):
-            current_value = cls.from_numeral_map.get(char)
+            current_value = cls.from_numeral_map().get(char)
 
             if current_value is None:
                 raise ValueError(f"Invalid Roman character: {char}")
@@ -153,8 +155,7 @@ class Early[TNumeral: str, TDenotation: int](System[str, int]):
         return total
 
 
-# FIXME: Add fractions
-class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
+class Standard(System[str, int | Fraction]):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -173,7 +174,7 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         maximum_is_many: False, as 3999 is a precise limit.
     """
 
-    to_numeral_map: ClassVar[dict[int, str]] = {
+    _to_numeral_map: Mapping[int | Fraction, str] = {
         1_000: "\u216f",
         900: "\u216d\u216f",
         500: "\u216e",
@@ -187,8 +188,38 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         5: "\u2164",
         4: "\u2160\u2164",
         1: "\u2160",
+        Fraction(11, 12): "S⁙",
+        Fraction(5, 6): "S∷",
+        Fraction(3, 4): "S∴",
+        Fraction(2, 3): "S:",
+        Fraction(7, 12): "S·",
+        Fraction(1, 2): "S",
+        Fraction(5, 12): "⁙",
+        Fraction(1, 3): "∷",
+        Fraction(1, 4): "∴",
+        Fraction(1, 6): ":",
+        Fraction(1, 12): "·",
     }
-    from_numeral_map: ClassVar[dict[str, int]] = {
+    _from_numeral_map: Mapping[str, int | Fraction] = {
+        "·": Fraction(1, 12),
+        "··": Fraction(1, 6),
+        ":": Fraction(1, 6),
+        "···": Fraction(1, 4),
+        "∴": Fraction(1, 4),
+        "····": Fraction(1, 3),
+        "∷": Fraction(1, 3),
+        "·····": Fraction(5, 12),
+        "⁙": Fraction(5, 12),
+        "S": Fraction(1, 2),
+        "S·": Fraction(7, 12),
+        "S··": Fraction(2, 3),
+        "S:": Fraction(2, 3),
+        "S···": Fraction(3, 4),
+        "S∴": Fraction(3, 4),
+        "S····": Fraction(5, 6),
+        "S∷": Fraction(5, 6),
+        "S·····": Fraction(11, 12),
+        "S⁙": Fraction(11, 12),
         "\u2160": 1,
         "I": 1,
         "\u2164": 5,
@@ -205,11 +236,11 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         "M": 1_000,
     }
 
-    minimum: ClassVar[float] = 1
-    maximum: ClassVar[float] = 3_999
+    minimum: ClassVar[int | float | Fraction] = Fraction(1, 12)
+    maximum: ClassVar[int | float | Fraction] = 3_999
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, number: int | Fraction) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
@@ -240,15 +271,30 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
         """
         result: str = ""
 
-        for latin, roman in cls.to_numeral_map.items():
-            while number >= latin:
+        # Non-integer/fraction numbers and negative numbers are gated
+        # in System.to_numeral()
+        integer = int(number)
+        proper_fraction = abs(int(number) - number)
+
+        for arabic, roman in cls.to_numeral_map().items():
+            while integer >= arabic:
                 result += roman
-                number -= latin
+                integer -= arabic
+
+        if proper_fraction == 0:
+            return result
+
+        try:
+            result += cls.to_numeral_map()[proper_fraction]
+        except KeyError as e:
+            raise ValueError(
+                f"{number} cannot be represented in {cls.__name__}."
+            ) from e
 
         return result
 
     @classmethod
-    def _from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int | Fraction:
         """Converts a Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
@@ -277,26 +323,36 @@ class Standard[TNumeral: str, TDenotation: (int)](System[str, int]):
                 ...
             ValueError: Invalid Roman character: Z
         """
-        total: int = 0
-        prev_value: int = 0
+        total: int | Fraction = 0
+        prev_value: int | Fraction = 0
+        prev_char: str | None = None
 
         for char in reversed(numeral.upper()):
-            current_value = cls.from_numeral_map.get(char)
+            current_value = cls.from_numeral_map().get(char, None)
 
             if current_value is None:
                 raise ValueError(f"Invalid Roman character: {char}")
 
-            if current_value < prev_value:
+            if char == "S" and prev_char:
+                total -= prev_value
+                try:
+                    total += cls.from_numeral_map()[char + prev_char]
+                except KeyError as e:
+                    raise ValueError(
+                        f"Invalid Roman character: {char + prev_char}"
+                    ) from e
+            elif current_value < prev_value:
                 total -= current_value
             else:
                 total += current_value
 
             prev_value = current_value
+            prev_char = char
 
         return total
 
 
-class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
+class Apostrophus(Early):
     """Roman numeral system converter.
 
     Implements bidirectional conversion between integers and Roman numeral strings.
@@ -315,7 +371,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
         maximum_is_many: False, as 3999 is a precise limit.
     """
 
-    to_numeral_map: ClassVar[dict[int, str]] = {
+    _to_numeral_map: Mapping[int, str] = {
         100_000: "CCCⅠↃↃↃ",
         50_000: "ⅠↃↃↃ",
         10_000: "CCⅠↃↃ",
@@ -328,7 +384,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
         5: "\u2164",
         1: "\u2160",
     }
-    from_numeral_map: ClassVar[dict[str, int]] = {
+    _from_numeral_map: Mapping[str, int] = {
         "CCCⅠↃↃↃ": 100_000,
         "ⅠↃↃↃ": 50_000,
         "CCⅠↃↃ": 10_000,
@@ -346,7 +402,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
         "I": 1,
     }
 
-    maximum: ClassVar[float] = 100_000
+    maximum: ClassVar[int | float | Fraction] = 100_000
     encodings: ClassVar[Encodings] = {"utf8"}
 
     @classmethod
@@ -383,7 +439,7 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
                 ...
             ValueError: Invalid sequence I cannot follow a smaller value.
         """
-        total = 0
+        total: int | Fraction = 0
         numeral_ = numeral.upper()
         # Start with a value larger than the maximum to allow any numeral
         last_value = cls.maximum + 1
@@ -391,9 +447,9 @@ class Apostrophus[TNumeral: str, TDenotation: int](Early[str, int]):
         i = 0
         while i < len(numeral_):
             matched = False
-            for symbol in cls.from_numeral_map:
+            for symbol in cls.from_numeral_map():
                 if numeral_.startswith(symbol, i):
-                    current_value = cls.from_numeral_map[symbol]
+                    current_value = cls.from_numeral_map()[symbol]
 
                     # Ensure we aren't seeing a larger symbol after a smaller one
                     if current_value > last_value:
