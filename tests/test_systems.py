@@ -7,16 +7,17 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from fractions import Fraction
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from hypothesis import assume, given, strategies
 
-from swopy import Denotation, Numeral, System
+from swopy import Denotation, Numeral, System, get_all_systems
 
 from .factory.factory import make_strategy
-from .helpers import SYSTEMS
 from .strategies import everything_except
+
+SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 
 _INVALID_TYPE_STRATEGY_CACHE: dict[
     type[System[Numeral, Denotation]], strategies.SearchStrategy
@@ -56,7 +57,6 @@ def test_reversibility(
     assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
-        # number = data.draw(construct_union_strategy(system, is_successful=True))
         number = data.draw(make_strategy(system))
 
         encoded: Numeral = system.to_numeral(number, encode=encoding)
@@ -82,7 +82,6 @@ def test_minima_and_maxima(
     """
 
     for encoding in system.encodings:
-        # number = data.draw(construct_union_strategy(system, is_successful=False))
         number = data.draw(make_strategy(system, falsify=True))
 
         with pytest.raises(ValueError):
@@ -101,7 +100,6 @@ def test_minima_and_maxima_if_max_is_many(
     """
 
     for encoding in system.encodings:
-        # number = data.draw(construct_union_strategy(system, is_successful=False))
         number = data.draw(make_strategy(system, falsify=True, over_max=True))
 
         with pytest.raises(ValueError):

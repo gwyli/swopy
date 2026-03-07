@@ -127,3 +127,30 @@ def make_strategy[
             builders_.append(builder.build(kind, None, lo - 1))
 
     return one_of(*builders_)
+
+
+def make_double_strategy[
+    TFromNumeral: Numeral,
+    TFromDenotation: Denotation,
+    TToNumeral: Numeral,
+    TToDenotation: Denotation,
+](
+    cls_a: type[System[TFromNumeral, TFromDenotation]],
+    cls_b: type[System[TToNumeral, TToDenotation]],
+    falsify: bool = False,
+) -> list[SearchStrategy[Any]]:
+
+    if not falsify:
+        kinds = infer_numeric_kind(cls_a) & infer_numeric_kind(cls_b)
+    else:
+        kinds = infer_numeric_kind(cls_a) ^ infer_numeric_kind(cls_b)
+
+    builders_: list[SearchStrategy[Any]] = []
+
+    for kind in kinds:
+        lo, hi = _resolve_bounds(cls_a, cls_b)
+
+        builder = builders.get_builder(kind)
+        builders_.append(builder.build(kind, lo, hi))
+
+    return builders_

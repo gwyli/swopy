@@ -4,8 +4,6 @@ This module contains property-based tests using Hypothesis for main swopy API to
 convert between different numeral systems.
 """
 
-from fractions import Fraction
-from math import ceil
 from typing import Any
 
 import pytest
@@ -20,12 +18,9 @@ from swopy import (
     systems,
 )
 
-from .factory.factory import make_strategy
-from .helpers import (
-    SYSTEMS,
-    TYPE_STRATEGY_MAP,
-    min_max,
-)
+from .factory.factory import make_double_strategy, make_strategy
+
+SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 
 
 @given(
@@ -46,54 +41,29 @@ def test_round_trip[
     """
     Converting A -> B -> A should return the original value.
     """
-    # Calculate the overlapping valid range
-    min_val = min_max(max, from_system.minimum, to_system.minimum)
-    max_val = min_max(min, from_system.maximum, to_system.maximum)
 
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
+    for strategy in make_double_strategy(from_system, to_system):
+        number = data.draw(strategy)
 
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
+        # We always start with a numeric strategy, so first convert to from_system
+        # from Arabic numerals
+        source_input: TFromNumeral = swop(
+            number, from_system=systems.arabic.Arabic, to_system=from_system
+        )
+        # Intermediate conversion
+        result: TToNumeral = swop(source_input, from_system, to_system)
+        # Back to start
+        final: TFromNumeral = swop(result, to_system, from_system)
+        # Last, convert back to Arabic to compare
+        final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
 
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
+        assert final_number == number, (
+            f"{number} incorrectly converted to {final_number}."
+        )
 
-    for base_type in set(from_base_types) & set(to_base_types):
-        kwargs: dict[str, int] = {
-            "min_value": min_val,
-            "max_value": max_val,
-        }
-
-        if base_type is Fraction:
-            kwargs["max_denominator"] = 12
-
-        number = data.draw(TYPE_STRATEGY_MAP[base_type](**kwargs))
-        if isinstance(number, Fraction):
-            assume(number.denominator // 12 == number.denominator / 12)
-            if number.denominator == 1:
-                number = int(number)
-
-    number = data.draw(make_strategy(from_system, to_system))
-
-    # We always start with a numeric strategy, so first convert to from_system
-    # from Arabic numerals
-    source_input: TFromNumeral = swop(
-        number, from_system=systems.arabic.Arabic, to_system=from_system
-    )
-    # Intermediate conversion
-    result: TToNumeral = swop(source_input, from_system, to_system)
-    # Back to start
-    final: TFromNumeral = swop(result, to_system, from_system)
-    # Last, convert back to Arabic to compare
-    final_number: Numeral = swop(final, from_system, systems.arabic.Arabic)
-
-    assert final_number == number, f"{number} incorrectly converted to {final_number}."
-
-    assert type(final_number) is type(number), (
-        f"{number} is not of the same type as {final_number}"
-    )
+        assert type(final_number) is type(number), (
+            f"{number} is not of the same type as {final_number}"
+        )
 
 
 @given(
@@ -115,31 +85,11 @@ def test_round_trip_failure[
     Converting A -> B -> A should raise a TypeError if the systems have no overlapping
     valid types.
     """
-    # Calculate the overlapping valid range
-    min_val = min_max(max, from_system.minimum, to_system.minimum)
-    max_val = min_max(min, from_system.maximum, to_system.maximum)
 
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
+    assume(from_system is not to_system)
 
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
-
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
-
-    for base_type in set(from_base_types) ^ set(to_base_types):
-        number = data.draw(
-            TYPE_STRATEGY_MAP[base_type](min_value=min_val, max_value=max_val)
-        )
-
-        # If a generated fraction is an int no type error should be raised when
-        # converting between two int compatible systems
-        if isinstance(number, Fraction):
-            assume(int(number) != number)
-
-            assume(number.denominator in (2, 3, 4, 6))
+    for strategy in make_double_strategy(from_system, to_system, falsify=True):
+        number = data.draw(strategy)
 
         with pytest.raises(TypeError):
             # We always start with a numeric strategy, so first convert to from_system
@@ -160,7 +110,6 @@ def test_identity_conversion(
     """
 
     for encoding in system.encodings:
-        # number = data.draw(construct_union_strategy(system, is_successful=True))
         number = data.draw(make_strategy(system))
 
         number_: Numeral = system.to_numeral(number, encode=encoding)
@@ -205,34 +154,8 @@ def test_encodings[
     numeral systems don't support is used.
     """
 
-    # Calculate the overlapping valid range
-    min_val = min_max(max, from_system.minimum, to_system.minimum)
-    max_val = min_max(min, from_system.maximum, to_system.maximum)
-
-    # Guard against systems with no overlap
-    if min_val > max_val:
-        assume(False)
-
-    to_base_types: tuple[type] = to_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(to_base_types) >= 1, "System must have at least one base type"
-
-    from_base_types: tuple[type] = from_system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-    assert len(from_base_types) >= 1, "System must have at least one base type"
-
-    for base_type in set(from_base_types) & set(to_base_types):
-        kwargs: dict[str, int | float | Fraction] = {
-            "min_value": ceil(from_system.minimum),
-            "max_value": from_system.maximum,
-        }
-
-        if base_type is Fraction:
-            kwargs["max_denominator"] = 12
-
-        number = data.draw(TYPE_STRATEGY_MAP[base_type](**kwargs))
-
-        # Roman numerals only supported base-12 fractions
-        if isinstance(number, Fraction) and from_system.__name__ == "Standard":
-            assume(number.denominator in (2, 3, 4, 6))
+    for strategy in make_double_strategy(from_system, to_system):
+        number = data.draw(strategy)
 
         # We always start with a numeric strategy, so first convert to from_system
         # from Arabic numerals

@@ -30,6 +30,12 @@ from swopy import System
 class BaseNFraction:
     base: int
 
+    def __hash__(self):
+        return hash(Fraction)
+
+    def __eq__(self, other: object):
+        return other is Fraction or other is self
+
 
 NumericKind = type | BaseNFraction
 
@@ -90,37 +96,3 @@ def infer_numeric_kind(cls: type[System[Any, Any]]) -> set[NumericKind]:
             kinds.add(Fraction)
 
     return kinds
-
-
-def infer_numeric_kind1(cls: type[System[Any, Any]]) -> NumericKind:
-    """Inspect a System subclass and return its NumericKind."""
-
-    values: list[Any] = []
-
-    if getattr(cls, "_from_numeral_map", {}):
-        mapping: Mapping[Any, Any] = cls.from_numeral_map()
-        values = list(mapping.values())
-
-        fraction_values = [v for v in values if isinstance(v, Fraction)]
-
-        if fraction_values:
-            base = _infer_base(fraction_values)
-            if base is not None:
-                return BaseNFraction(base=base)
-            return Fraction
-
-    sample = getattr(cls, "minimum", None)
-
-    if isinstance(sample, Fraction):
-        return Fraction
-
-    if isinstance(sample, int):
-        return int
-
-    if isinstance(sample, float):
-        return float
-
-    raise TypeError(
-        f"Cannot infer numeric kind for {cls}: "
-        f"minimum attribute has unsupported type {type(sample)}"
-    )
