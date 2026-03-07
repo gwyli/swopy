@@ -70,8 +70,8 @@ class FloatStrategyBuilder(StrategyBuilder[Any]):
         # min_value=Fraction(1, 12) cannot be exactly represented as a float of width 64
         # Force `System.minimum` and `System.maximum` to be flots when generating the
         # strategy
-        lo = float(minimum) if minimum else None
-        hi = float(maximum) if maximum else None
+        lo = float(minimum) if minimum is not None else None
+        hi = float(maximum) if maximum is not None else None
         return st.floats(min_value=lo, max_value=hi, allow_nan=False)
 
 
