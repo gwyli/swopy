@@ -61,6 +61,7 @@ jobs:
 
       - name: Commit version change
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.BOT_TOKEN }}@github.com/gwyli/swopy.git
           git config --local user.email "218805929+amati-bot@users.noreply.github.com"
           git config --local user.name "amati[bot]"
           git commit uv.lock pyproject.toml -m "Bump version to ${STEPS_NEW_VERSION_OUTPUTS_TAG}"
