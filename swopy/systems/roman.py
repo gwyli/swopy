@@ -98,10 +98,10 @@ class Early(System[str, int]):
         """
         result: str = ""
 
-        for latin, roman in cls.to_numeral_map().items():
-            while number >= latin:
+        for arabic, roman in cls.to_numeral_map().items():
+            while number >= arabic:
                 result += roman
-                number -= latin
+                number -= arabic
 
         return result
 
@@ -155,7 +155,6 @@ class Early(System[str, int]):
         return total
 
 
-# FIXME: Add fractions
 class Standard(System[str, int | Fraction]):
     """Roman numeral system converter.
 
