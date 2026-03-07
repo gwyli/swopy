@@ -7,6 +7,7 @@ and validate range constraints for each numeral system.
 
 from collections.abc import Container
 from fractions import Fraction
+from math import inf
 from typing import Any, cast
 
 import pytest
@@ -70,7 +71,16 @@ def test_reversibility(
         )
 
 
-@pytest.mark.parametrize("system", [x for x in SYSTEMS if not x.maximum_is_many])
+@pytest.mark.parametrize(
+    "system",
+    [
+        x
+        for x in SYSTEMS
+        # Special case `System.maximum_is_many` and don't test maxima and minima if they
+        # are unbounded
+        if not x.maximum_is_many and not (x.minimum == -inf and x.maximum == inf)
+    ],
+)
 @given(strategies.data())
 def test_minima_and_maxima(
     system: type[System[Numeral, Denotation]],

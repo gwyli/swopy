@@ -19,6 +19,7 @@ Usage
         ...
 """
 
+from math import inf
 from typing import Any
 
 from hypothesis.strategies import SearchStrategy, one_of
@@ -37,7 +38,8 @@ def _resolve_bounds[
 ](
     cls_a: type[System[TFromNumeral, TFromDenotation]],
     cls_b: type[System[TToNumeral, TToDenotation]] | None,
-) -> tuple[Denotation, Denotation]:
+    falsify: bool = False,
+) -> tuple[Denotation | None, Denotation | None]:
     """
     Single class  → (cls_a.minimum, cls_a.maximum)
     Two classes   → (max of minimums, min of maximums)
@@ -51,7 +53,19 @@ def _resolve_bounds[
         lo = max(lo, cls_b.minimum)
         hi = min(hi, cls_b.maximum)
 
-    if lo > hi:
+    # If we're falsifying the bound then ensure
+    # we're outside it
+    if falsify:
+        lo = lo - 1
+        hi = hi + 1
+
+    # Hypothesis maps unbounded min/max to None
+    if lo == -inf:
+        lo = None
+    if hi == inf:
+        hi = None
+
+    if lo and hi and lo > hi:
         raise ValueError(
             f"Resolved bounds [{lo}, {hi}] are empty. "
             "The two systems have no overlapping range."
@@ -104,7 +118,7 @@ def make_strategy[
     builders_: list[SearchStrategy[Any]] = []
 
     for kind in kinds:
-        lo, hi = _resolve_bounds(cls_a, cls_b)
+        lo, hi = _resolve_bounds(cls_a, cls_b, falsify)
 
         builder = builders.get_builder(kind)
 
@@ -120,11 +134,11 @@ def make_strategy[
         # Otherwise, an expected success
         # where bounds result in the exact number being returned
         elif not over_max:
-            builders_.append(builder.build(kind, hi + 1, None))
-            builders_.append(builder.build(kind, None, lo - 1))
+            builders_.append(builder.build(kind, hi, None))
+            builders_.append(builder.build(kind, None, lo))
         # Or where a high number results in a lower number being returned
         else:
-            builders_.append(builder.build(kind, None, lo - 1))
+            builders_.append(builder.build(kind, None, lo))
 
     return one_of(*builders_)
 

@@ -9,7 +9,7 @@ their representations in that particular numeral system.
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from fractions import Fraction
-from sys import float_info
+from math import inf
 from types import UnionType, get_original_bases
 from typing import Any, ClassVar, Literal, TypeIs, get_args
 
@@ -41,8 +41,8 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         maximum_is_many: Whether the maximum is precise or represents "many".
     """
 
-    minimum: ClassVar[int | float | Fraction] = -float_info.max
-    maximum: ClassVar[int | float | Fraction] = float_info.max
+    minimum: ClassVar[int | float | Fraction] = -inf
+    maximum: ClassVar[int | float | Fraction] = inf
     maximum_is_many: ClassVar[bool] = False
     _to_numeral_map: Mapping[TDenotation, TNumeral]
     _from_numeral_map: Mapping[TNumeral, TDenotation]
