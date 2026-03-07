@@ -18,7 +18,7 @@ from swopy import (
     systems,
 )
 
-from .factory.factory import make_double_strategy, make_strategy
+from .strategy_factory.factory import make_double_strategy, make_strategy
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 

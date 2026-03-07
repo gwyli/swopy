@@ -15,8 +15,8 @@ from hypothesis import assume, given, strategies
 
 from swopy import Denotation, Numeral, System, get_all_systems
 
-from .factory.factory import make_strategy
 from .strategies import everything_except
+from .strategy_factory.factory import make_strategy
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
 

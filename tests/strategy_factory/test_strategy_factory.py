@@ -1,10 +1,5 @@
 """
-test_strategy_factory.py
-------------------------
-Demonstrates and tests the strategy factory against all four numeric kinds.
-
-Run with:
-    pytest test_strategy_factory.py -v
+Demonstrates and tests the strategy factory.
 """
 
 from collections.abc import Mapping

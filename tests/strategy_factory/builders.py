@@ -1,10 +1,11 @@
 """
-builders.py
------------
-One StrategyBuilder per NumericKind.  Each builder receives resolved
-(minimum, maximum) bounds and returns a Hypothesis SearchStrategy.
+Builds and registers Hypothesis strategies for the test harness.
 
-To add support for a new numeric kind:
+One StrategyBuilder instance per NumericKind (int, float etc.). Each builder receives
+resolved (minimum, maximum) bounds and returns a Hypothesis SearchStrategy.
+
+To add support for a new numeric kind (see numeric_type.py):
+
   1. Create a subclass of StrategyBuilder.
   2. Register it via @register_builder(YourKindClass).
 """
@@ -35,19 +36,34 @@ class StrategyBuilder[TNumeric: NumericKind](ABC):
 _REGISTRY: dict[NumericKind, StrategyBuilder[Any]] = {}
 
 
-def register_builder(kind_cls: NumericKind):
-    """Class decorator - registers a StrategyBuilder for a NumericKind type."""
+def register_builder(kind: NumericKind):
+    """Class decorator - registers a StrategyBuilder for a NumericKind type.
+
+    Args:
+        kind: The type (int, float etc.) to associate this StrategyBuilder to.
+        Each kind must be unique.
+    Returns:
+        A decorator to register a StrategyBuilder class
+    """
 
     def decorator(
         builder_cls: type[StrategyBuilder[Any]],
     ) -> type[StrategyBuilder[Any]]:
-        _REGISTRY[kind_cls] = builder_cls()
+        _REGISTRY[kind] = builder_cls()
         return builder_cls
 
     return decorator
 
 
 def get_builder(kind: NumericKind) -> StrategyBuilder[Any]:
+    """Gets a StrategyBuilder instance to create strategies. Called in factory.py
+
+    Args:
+        kind: The type (int, float etc.) of StrategyBuilder to return.
+
+    Returns:
+        The appropritate StrategyBuilder instance for the kind
+    """
     key = kind if isinstance(kind, type) else type(kind)
     builder = _REGISTRY.get(key)
     if builder is None:
