@@ -21,9 +21,6 @@ class Early(System[str, int]):
     Supports the standard Roman numeral notation with subtractive notation for
     efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
 
-    Type Parameter:
-        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, Ⅽ, Ⅾ, etc.).
-
     Attributes:
         to_numeral_map: Mapping of integer values to Roman numeral components,
                    ordered by magnitude including subtractive pairs.
