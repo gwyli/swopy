@@ -2,7 +2,7 @@
 Tests for specific cases
 
 This module is for non-property-based system specific tests. Each system should
-have its own class for organisation.
+have its own class for organisation in the form Test<Module><Class>
 """
 
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
@@ -49,3 +49,29 @@ class TestRomanApostrophus:
         """
         with pytest.raises(ValueError):
             systems.roman.Apostrophus.from_numeral("ⅠⅠↃⅠ")
+
+
+class TestEtruscanEtruscan:
+    """Specific tests for systems.etruscan.Etruscan."""
+
+    def test_to_numeral_four(self):
+        # 4 = 4×1; Etruscan has no subtractive notation
+        assert systems.etruscan.Etruscan.to_numeral(4) == "\U00010320" * 4
+
+    def test_to_numeral_six(self):
+        # 6 = 1 + 5; RTL → smallest on the left: 𐌠𐌡
+        assert systems.etruscan.Etruscan.to_numeral(6) == "\U00010320" + "\U00010321"
+
+    def test_to_numeral_seventeen(self):
+        # 17 = 2×1 + 1×5 + 1×10; RTL: 𐌠𐌠𐌡𐌢
+        assert (
+            systems.etruscan.Etruscan.to_numeral(17)
+            == "\U00010320" * 2 + "\U00010321" + "\U00010322"
+        )
+
+    def test_to_numeral_twentynine(self):
+        # 29 = 4×1 + 1×5 + 2×10; RTL: 𐌠𐌠𐌠𐌠𐌡𐌢𐌢
+        assert (
+            systems.etruscan.Etruscan.to_numeral(29)
+            == "\U00010320" * 4 + "\U00010321" + "\U00010322" * 2
+        )

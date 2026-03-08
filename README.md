@@ -1,6 +1,6 @@
 # Swopy
 
-A Python library for converting between different numeral systems.
+A library for biredirectional conversion between numeral systems (e.g. Egyptian, Roman, Arabic etc.).
 
 ## Overview
 
@@ -9,12 +9,13 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 
 ## Supported Numeral Systems
 
-* [Roman](swopy/systems/roman.py), in the forms:
+* [Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/arabic.py), supporting integers, floats and fractions between `-math.inf` and `math.inf`
+* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
+* [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py), supporting integers between 1 and 300
+* [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
-   * Standard, supporting integers between 1 and 3,999
+   * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
    * Apostrophus, supporting integers between 1 and 100,000
-* [Egyptian](swopy/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
-* [Arabic](swopy/systems/arabic.py), supporting integers between `-int(sys.float_info.max)` and `int(sys.float_info.max)`
 
 ## Installation
 
@@ -49,11 +50,13 @@ import swopy
 import pprint
 systems = swopy.get_all_systems()
 pprint.pprint(systems)
-#{'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
+
+# {'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
 # 'egyptian.Egyptian': <class 'swopy.systems.egyptian.Egyptian'>,
-# 'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
-# 'roman.Early': <class 'swopy.systems.roman.Early'>,
-# 'roman.Standard': <class 'swopy.systems.roman.Standard'>}
+# 'etruscan.Etruscan': <class 'swopy.systems.etruscan.Etruscan'>,
+#  'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
+#  'roman.Early': <class 'swopy.systems.roman.Early'>,
+#  'roman.Standard': <class 'swopy.systems.roman.Standard'>}
 
 swopy.swop(42, systems['arabic.Arabic'], systems['roman.Early'])
 # 'XLII'
