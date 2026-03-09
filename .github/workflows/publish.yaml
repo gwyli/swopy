@@ -36,7 +36,7 @@ jobs:
           python-version-file: ".python-version"
       - name: Build
         run: uv build
-      #- name: Publish to PyPI test
-      #  run: uv publish --index testpypi
+      - name: Publish to PyPI test
+        run: uv publish --index testpypi
       - name: Publish
         run: uv publish
