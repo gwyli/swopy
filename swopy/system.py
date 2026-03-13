@@ -51,7 +51,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     _denotation_runtime_type: ClassVar[tuple[type, ...]]
     encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
-    def __init_subclass__(cls, **kwargs: dict[Any, Any]) -> None:
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         """Appends the base types of the numeral system to the class variable for
         runtime type checking.
         """
@@ -89,11 +89,11 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         return cls._from_numeral_map
 
     @classmethod
-    def _get_base_types(cls, position: int) -> tuple[type]:
+    def _get_base_types(cls, position: int) -> tuple[type, ...]:
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.
 
-        Returns:
+        Returns:# Code review agent
             The base type(s) used for numeral representation in this system.
         """
 
@@ -230,7 +230,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         conversion logic, while the public `from_numeral` method handles validation
         and type checking.
 
-        AArgs:
+        Args:
             numeral: The numeral to convert.
 
         Returns:

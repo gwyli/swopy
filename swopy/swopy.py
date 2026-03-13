@@ -33,7 +33,7 @@ def swop[
     then performs the conversion via Arabic numerals.
 
     Args:
-        number: The number to convert, in whatever format the source system accepts.
+        numeral: The number to convert, in whatever format the source system accepts.
         from_system: The source numeral system.
         to_system: The target numeral system.
 
@@ -54,16 +54,6 @@ def swop[
         >>> swop('Ⅹ', systems.roman.Standard, systems.roman.Standard)
         'Ⅹ'
     """
-
-    if encode not in from_system.encodings:
-        raise ValueError(
-            f"Encoding '{encode}' is not supported for {from_system.__name__}."
-        )
-
-    if encode not in to_system.encodings:
-        raise ValueError(
-            f"Encoding '{encode}' is not supported for {to_system.__name__}."
-        )
 
     intermediate: TFromDenotation = from_system.from_numeral(numeral, encode=encode)
 

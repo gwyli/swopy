@@ -91,7 +91,7 @@ class Early(System[str, int]):
             >>> Early.to_numeral(900)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 900.
+            ValueError: Number must be less than or equal to 899.
         """
         result: str = ""
 
@@ -264,7 +264,7 @@ class Standard(System[str, int | Fraction]):
             >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 900.
+            ValueError: Number must be less than or equal to 899.
         """
         result: str = ""
 
@@ -430,7 +430,7 @@ class Apostrophus(Early):
             >>> Apostrophus.from_numeral('Z')
             Traceback (most recent call last):
                 ...
-            ValueError: Ⅰnvalid Roman character: Z
+            ValueError: Invalid Roman character: Z
             >>> Apostrophus.from_numeral('ⅠⅠↃⅠ')
             Traceback (most recent call last):
                 ...
