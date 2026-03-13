@@ -61,9 +61,7 @@ def test_reversibility(
         number = data.draw(make_strategy(system))
 
         encoded: Numeral = system.to_numeral(number, encode=encoding)
-        decoded: str | int | float | Fraction = system.from_numeral(
-            encoded, encode=encoding
-        )
+        decoded: str | int | float | Fraction = system.from_numeral(encoded)
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
         assert type(decoded) is type(number), (
@@ -144,9 +142,8 @@ def test_invalid_characters(system: type[System[str, Denotation]], value: str) -
 
     assume(not all(c.upper() in character_string for c in value))
 
-    for encoding in system.encodings:
-        with pytest.raises(ValueError):
-            system.from_numeral(value, encode=encoding)
+    with pytest.raises(ValueError):
+        system.from_numeral(value)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -184,9 +181,8 @@ def test_invalid_numerals(
 
     number = data.draw(load_strategies(system, base_types))
 
-    for encoding in system.encodings:
-        with pytest.raises(TypeError):
-            system.from_numeral(number, encode=encoding)
+    with pytest.raises(TypeError):
+        system.from_numeral(number)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -204,26 +200,3 @@ def test_invalid_encodings_to_numeral(
     for encoding in set(System.encodings) - set(system.encodings):
         with pytest.raises(ValueError):
             system.to_numeral(number, encode=encoding)
-
-
-@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
-@given(strategies.data())
-def test_invalid_encodings_from_numeral(
-    system: type[System[Numeral, Denotation]],
-    data: strategies.DataObject,
-) -> None:
-    """Verifies that a ValueError is raised when attempting to use an
-    invalid encoding when converting from a numeral system.
-
-    Args:
-        number: A valid number for the numeral system.
-    """
-
-    alphabet = [
-        x for x in system.from_numeral_map() if isinstance(x, str) and len(x) == 1
-    ]
-    numeral = data.draw(strategies.text(alphabet=alphabet))
-
-    for encoding in set(System.encodings) - set(system.encodings):
-        with pytest.raises(ValueError):
-            system.from_numeral(numeral, encode=encoding)

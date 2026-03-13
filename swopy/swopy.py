@@ -55,7 +55,7 @@ def swop[
         'Ⅹ'
     """
 
-    intermediate: TFromDenotation = from_system.from_numeral(numeral, encode=encode)
+    intermediate: TFromDenotation = from_system.from_numeral(numeral)
 
     if to_system.is_valid_denotation(intermediate):
         return to_system.to_numeral(intermediate, encode=encode)
