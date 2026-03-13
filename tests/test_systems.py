@@ -53,7 +53,7 @@ def test_reversibility(
     Verifies that numeral systems can be converted to their representation
     and back without loss of precision.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type, ...] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
