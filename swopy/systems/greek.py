@@ -12,7 +12,7 @@ Unicode glyphs used:
 The valid range is 1–9999.
 """
 
-# Ignore ambiguous unicode character strings in Etruscan numerals
+# Ignore ambiguous unicode character strings in Greek numerals
 # ruff: noqa: RUF002 RUF003
 
 from collections.abc import Mapping
@@ -256,4 +256,361 @@ class Milesian(System[str, int]):
                     f"Invalid Greek Milesian character at position {i}: {numeral[i]!r}"
                 )
 
+        return total
+
+
+class Aegean(System[str, int]):
+    """Aegean numeral system converter.
+
+    Implements bidirectional conversion between integers and Aegean (Linear A/B)
+    numeral strings. Aegean is a purely additive, base-10 system: each
+    denomination from 1 through 90,000 has its own unique Unicode symbol, and
+    numerals are formed by concatenating symbols in descending order. Each symbol
+    appears at most once.
+
+    Forty-five distinct Unicode symbols are used (U+10107–U+10133):
+
+        𐄇–𐄏  U+10107–U+1010F  AEGEAN NUMBER ONE through NINE         ->  1–9
+        𐄐–𐄘  U+10110–U+10118  AEGEAN NUMBER TEN through NINETY       ->  10–90
+        𐄙–𐄡  U+10119–U+10121  AEGEAN NUMBER ONE HUNDRED through      ->  100–900
+                                NINE HUNDRED
+        𐄢–𐄪  U+10122–U+1012A  AEGEAN NUMBER ONE THOUSAND through     ->  1000–9000
+                                NINE THOUSAND
+        𐄫–𐄳  U+1012B–U+10133  AEGEAN NUMBER TEN THOUSAND through     ->  10000–90000
+                                NINETY THOUSAND
+
+    The structure of a numeral is (each symbol optional, at most one per row):
+
+        [ten-thousand symbol]  — one of 𐄫–𐄳 (10000, 20000, …, 90000)
+        [thousand symbol]      — one of 𐄢–𐄪 (1000, 2000, …, 9000)
+        [hundred symbol]       — one of 𐄙–𐄡 (100, 200, …, 900)
+        [ten symbol]           — one of 𐄐–𐄘 (10, 20, …, 90)
+        [unit symbol]          — one of 𐄇–𐄏 (1, 2, …, 9)
+
+    Examples:
+        1996  ->  𐄢𐄡𐄘𐄌  (1000 + 900 + 90 + 6)
+        99999 ->  𐄳𐄪𐄡𐄘𐄏  (90000 + 9000 + 900 + 90 + 9)
+
+    Attributes:
+        _to_numeral_map: Mapping of the 45 denominations to their glyphs.
+        _from_numeral_map: Mapping of glyphs to their integer values.
+        minimum: Minimum valid value (1).
+        maximum: Maximum valid value (99999).
+        maximum_is_many: False; 99999 is a precise upper bound.
+        encodings: UTF-8 only; Aegean glyphs have no ASCII equivalents.
+    """
+
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 99999
+
+    encodings: ClassVar[Encodings] = {"utf8"}
+
+    _to_numeral_map: Mapping[int, str] = {
+        90000: "\U00010133",  # 𐄳
+        80000: "\U00010132",  # 𐄲
+        70000: "\U00010131",  # 𐄱
+        60000: "\U00010130",  # 𐄰
+        50000: "\U0001012f",  # 𐄯
+        40000: "\U0001012e",  # 𐄮
+        30000: "\U0001012d",  # 𐄭
+        20000: "\U0001012c",  # 𐄬
+        10000: "\U0001012b",  # 𐄫
+        9000: "\U0001012a",  # 𐄪
+        8000: "\U00010129",  # 𐄩
+        7000: "\U00010128",  # 𐄨
+        6000: "\U00010127",  # 𐄧
+        5000: "\U00010126",  # 𐄦
+        4000: "\U00010125",  # 𐄥
+        3000: "\U00010124",  # 𐄤
+        2000: "\U00010123",  # 𐄣
+        1000: "\U00010122",  # 𐄢
+        900: "\U00010121",  # 𐄡
+        800: "\U00010120",  # 𐄠
+        700: "\U0001011f",  # 𐄟
+        600: "\U0001011e",  # 𐄞
+        500: "\U0001011d",  # 𐄝
+        400: "\U0001011c",  # 𐄜
+        300: "\U0001011b",  # 𐄛
+        200: "\U0001011a",  # 𐄚
+        100: "\U00010119",  # 𐄙
+        90: "\U00010118",  # 𐄘
+        80: "\U00010117",  # 𐄗
+        70: "\U00010116",  # 𐄖
+        60: "\U00010115",  # 𐄕
+        50: "\U00010114",  # 𐄔
+        40: "\U00010113",  # 𐄓
+        30: "\U00010112",  # 𐄒
+        20: "\U00010111",  # 𐄑
+        10: "\U00010110",  # 𐄐
+        9: "\U0001010f",  # 𐄏
+        8: "\U0001010e",  # 𐄎
+        7: "\U0001010d",  # 𐄍
+        6: "\U0001010c",  # 𐄌
+        5: "\U0001010b",  # 𐄋
+        4: "\U0001010a",  # 𐄊
+        3: "\U00010109",  # 𐄉
+        2: "\U00010108",  # 𐄈
+        1: "\U00010107",  # 𐄇
+    }
+
+    _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
+
+    @classmethod
+    def _to_numeral(cls, number: int) -> str:
+        """Convert an Arabic integer to its Aegean numeral representation.
+
+        Uses greedy decomposition: at each step the largest denomination not
+        exceeding the remainder is consumed, producing numerals in
+        largest-to-smallest order. Each symbol appears at most once.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The Aegean string representation of ``number``.
+
+        Raises:
+            ValueError: If ``number`` is outside the valid range.
+
+        Examples:
+            >>> Aegean._to_numeral(1)
+            '𐄇'
+            >>> Aegean._to_numeral(9)
+            '𐄏'
+            >>> Aegean._to_numeral(10)
+            '𐄐'
+            >>> Aegean._to_numeral(99)
+            '𐄘𐄏'
+            >>> Aegean._to_numeral(1000)
+            '𐄢'
+            >>> Aegean._to_numeral(1996)
+            '𐄢𐄡𐄘𐄌'
+            >>> Aegean._to_numeral(99999)
+            '𐄳𐄪𐄡𐄘𐄏'
+        """
+        result = ""
+        for value, glyph in cls._to_numeral_map.items():
+            count, number = divmod(number, value)
+            result += glyph * count
+        return result
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int:
+        """Convert an Aegean numeral string to its Arabic integer value.
+
+        Scans left-to-right, looking each character up in the value map and
+        summing the results.
+
+        Args:
+            numeral: The Aegean numeral string to convert.
+
+        Returns:
+            The integer value of ``numeral``.
+
+        Raises:
+            ValueError: If ``numeral`` contains an unrecognised character.
+
+        Examples:
+            >>> Aegean._from_numeral('𐄇')
+            1
+            >>> Aegean._from_numeral('𐄢𐄡𐄘𐄌')
+            1996
+            >>> Aegean._from_numeral('𐄳𐄪𐄡𐄘𐄏')
+            99999
+        """
+        valid_chars = set(cls._from_numeral_map.keys())
+        total = 0
+        for char in numeral:
+            if char not in valid_chars:
+                raise ValueError(f"Invalid Aegean character: {char!r}")
+            total += cls._from_numeral_map[char]
+        return total
+
+
+class Attic(System[str, int | Fraction]):
+    """Greek Attic (acrophonic) numeral system converter.
+
+    Implements bidirectional conversion between integers or fractions and Greek
+    Attic numeral strings. Attic is a purely additive system written
+    largest-to-smallest. Five composite acrophonic symbols represent 5, 50, 500,
+    5000, and 50,000; the base denominations 1, 10, 100, 1000, and 10,000 are
+    represented by the Greek letters Ι, Δ, Η, Χ, and Μ respectively. Two
+    fraction symbols represent 1/2 and 1/4; the maximum representable fraction
+    component is 3/4 (= 𐅁𐅀).
+
+    Twelve distinct symbols are used:
+
+        𐅀  U+10140  GREEK ACROPHONIC ATTIC ONE QUARTER  ->  1/4
+        𐅁  U+10141  GREEK ACROPHONIC ATTIC ONE HALF     ->  1/2
+        Ι   U+0399   GREEK CAPITAL LETTER IOTA           ->  1
+        𐅃  U+10143  GREEK ACROPHONIC ATTIC FIVE         ->  5
+        Δ   U+0394   GREEK CAPITAL LETTER DELTA          ->  10
+        𐅄  U+10144  GREEK ACROPHONIC ATTIC FIFTY        ->  50
+        Η   U+0397   GREEK CAPITAL LETTER ETA            ->  100
+        𐅅  U+10145  GREEK ACROPHONIC ATTIC FIVE HUNDRED ->  500
+        Χ   U+03A7   GREEK CAPITAL LETTER CHI            ->  1000
+        𐅆  U+10146  GREEK ACROPHONIC ATTIC FIVE THOUSAND->  5000
+        Μ   U+039C   GREEK CAPITAL LETTER MU             ->  10000
+        𐅇  U+10147  GREEK ACROPHONIC ATTIC FIFTY THOUSAND->  50000
+
+    The structure of a numeral is (each group optional):
+
+        𐅇? Μ{0–4}  — fifty-thousands then ten-thousands
+        𐅆? Χ{0–4}  — five-thousands then thousands
+        𐅅? Η{0–4}  — five-hundreds then hundreds
+        𐅄? Δ{0–4}  — fifties then tens
+        𐅃? Ι{0–4}  — fives then ones
+        𐅁? 𐅀?      — one-half then one-quarter (fractional part only)
+
+    Examples:
+        1996  ->  Χ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃Ι
+        99999 ->  𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ
+
+    Attributes:
+        _to_numeral_map: Mapping of the twelve base values (int and Fraction) to
+            their glyphs, ordered largest-to-smallest.
+        _from_numeral_map: Mapping of glyphs (both upper- and lowercase for the
+            Greek letters) to their integer or Fraction values.
+        minimum: Minimum valid value (1/4).
+        maximum: Maximum valid value (99999).
+        maximum_is_many: False; 99999 is a precise upper bound.
+        encodings: UTF-8 only; Attic acrophonic glyphs have no ASCII equivalents.
+    """
+
+    minimum: ClassVar[int | float | Fraction] = Fraction(1, 4)
+    maximum: ClassVar[int | float | Fraction] = 99999
+
+    encodings: ClassVar[Encodings] = {"utf8"}
+
+    _to_numeral_map: Mapping[int | Fraction, str] = {
+        50000: "\U00010147",  # 𐅇
+        10000: "\u039c",  # Μ
+        5000: "\U00010146",  # 𐅆
+        1000: "\u03a7",  # Χ
+        500: "\U00010145",  # 𐅅
+        100: "\u0397",  # Η
+        50: "\U00010144",  # 𐅄
+        10: "\u0394",  # Δ
+        5: "\U00010143",  # 𐅃
+        1: "\u0399",  # Ι
+        Fraction(1, 2): "\U00010141",  # 𐅁
+        Fraction(1, 4): "\U00010140",  # 𐅀
+    }
+
+    # Both uppercase and lowercase Greek letters are included so that either
+    # form is accepted as input.
+    _from_numeral_map: Mapping[str, int | Fraction] = {
+        "\U00010140": Fraction(1, 4),  # 𐅀
+        "\U00010141": Fraction(1, 2),  # 𐅁
+        "\U00010143": 5,  # 𐅃
+        "\U00010144": 50,  # 𐅄
+        "\U00010145": 500,  # 𐅅
+        "\U00010146": 5000,  # 𐅆
+        "\U00010147": 50000,  # 𐅇
+        "\u0399": 1,  # Ι  (iota uppercase)
+        "\u03b9": 1,  # ι  (iota lowercase)
+        "\u0394": 10,  # Δ  (delta uppercase)
+        "\u03b4": 10,  # δ  (delta lowercase)
+        "\u0397": 100,  # Η  (eta uppercase)
+        "\u03b7": 100,  # η  (eta lowercase)
+        "\u03a7": 1000,  # Χ  (chi uppercase)
+        "\u03c7": 1000,  # χ  (chi lowercase)
+        "\u039c": 10000,  # Μ  (mu uppercase)
+        "\u03bc": 10000,  # μ  (mu lowercase)
+    }
+
+    @classmethod
+    def _to_numeral(cls, number: int | Fraction) -> str:
+        """Convert an Arabic integer or Fraction to its Attic numeral representation.
+
+        Separates the integer and fractional parts. The integer part is
+        decomposed greedily from largest denomination to smallest. The fractional
+        part (if any) is expressed using the half (𐅁) and/or quarter (𐅀) symbols
+        appended after the integer symbols. Only fractions whose component is
+        exactly 0, 1/4, 1/2, or 3/4 are representable.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The Attic string representation of ``number``.
+
+        Raises:
+            ValueError: If ``number`` is outside the valid range or its
+                fractional part is not a multiple of 1/4.
+
+        Examples:
+            >>> Attic._to_numeral(1)
+            'Ι'
+            >>> Attic._to_numeral(5)
+            '𐅃'
+            >>> Attic._to_numeral(10)
+            'Δ'
+            >>> from fractions import Fraction
+            >>> Attic._to_numeral(Fraction(1, 4))
+            '𐅀'
+            >>> Attic._to_numeral(Fraction(3, 4))
+            '𐅁𐅀'
+            >>> Attic._to_numeral(1996)
+            'Χ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃Ι'
+            >>> Attic._to_numeral(99999)
+            '𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ'
+        """
+        n = Fraction(number)
+        integer_part = int(n)
+        frac_part = n - integer_part
+
+        result = ""
+        for value, glyph in cls._to_numeral_map.items():
+            if isinstance(value, Fraction):
+                continue
+            count, integer_part = divmod(integer_part, value)
+            result += glyph * count
+
+        if frac_part >= Fraction(1, 2):
+            result += cls._to_numeral_map[Fraction(1, 2)]
+            frac_part -= Fraction(1, 2)
+        if frac_part >= Fraction(1, 4):
+            result += cls._to_numeral_map[Fraction(1, 4)]
+            frac_part -= Fraction(1, 4)
+        if frac_part:
+            raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
+
+        return result
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int | Fraction:
+        """Convert an Attic numeral string to its Arabic integer or Fraction value.
+
+        Scans left-to-right, looking each character up in the value map and
+        summing the results. Both uppercase and lowercase Greek letters are
+        accepted. Returns an ``int`` when the result is a whole number and a
+        ``Fraction`` when the result has a fractional component.
+
+        Args:
+            numeral: The Attic numeral string to convert.
+
+        Returns:
+            The integer or Fraction value of ``numeral``.
+
+        Raises:
+            ValueError: If ``numeral`` contains an unrecognised character.
+
+        Examples:
+            >>> Attic._from_numeral('Ι')
+            1
+            >>> Attic._from_numeral('𐅃Ι')
+            6
+            >>> Attic._from_numeral('Χ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃Ι')
+            1996
+            >>> from fractions import Fraction
+            >>> Attic._from_numeral('𐅁𐅀')
+            Fraction(3, 4)
+        """
+        valid_chars = set(cls._from_numeral_map.keys())
+        total: int | Fraction = 0
+        for char in numeral:
+            if char not in valid_chars:
+                raise ValueError(f"Invalid Attic character: {char!r}")
+            total += cls._from_numeral_map[char]
         return total
