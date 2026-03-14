@@ -14,6 +14,8 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 * [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py), supporting integers between 1 and 300
 * [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py), in the forms:
    * Milesian, supporting integers between 1 and 9,999
+* [Indic](https://github.com/gwyli/swopy/blob/main/swopy/systems/indic.py), in the forms:
+   * Kharosthi, supporting integers between 1 and 9,999
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
    * Standard, supporting integers and base-12 fractions between 1/12 and 3,999

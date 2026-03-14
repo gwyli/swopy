@@ -75,3 +75,11 @@ class TestEtruscanEtruscan:
             systems.etruscan.Etruscan.to_numeral(29)
             == "\U00010320" * 4 + "\U00010321" + "\U00010322" * 2
         )
+
+
+class TestIndicKharosthi:
+    """Specific tests for systems.indic.Kharosthi"""
+
+    def test_to_numeral(self):
+        # 2+4+10+20+20+20+20 + 100x(1+4+4) + 1000
+        assert systems.indic.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
