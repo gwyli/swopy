@@ -15,6 +15,8 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 * [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py), in the forms:
    * Milesian, supporting integers between 1 and 9,999
 * [Indic](https://github.com/gwyli/swopy/blob/main/swopy/systems/indic.py), in the forms:
+   * Bakhshali, supporting integers between 1 and 9,999
+   * Brahmi, supporting integers between 1 and 9,999
    * Kharosthi, supporting integers between 1 and 9,999
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
@@ -55,12 +57,16 @@ import pprint
 systems = swopy.get_all_systems()
 pprint.pprint(systems)
 
-# {'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
+#{'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
 # 'egyptian.Egyptian': <class 'swopy.systems.egyptian.Egyptian'>,
 # 'etruscan.Etruscan': <class 'swopy.systems.etruscan.Etruscan'>,
-#  'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
-#  'roman.Early': <class 'swopy.systems.roman.Early'>,
-#  'roman.Standard': <class 'swopy.systems.roman.Standard'>}
+# 'greek.Milesian': <class 'swopy.systems.greek.Milesian'>,
+# 'indic.Bakhshali': <class 'swopy.systems.indic.Bakhshali'>,
+# 'indic.Brahmi': <class 'swopy.systems.indic.Brahmi'>,
+# 'indic.Kharosthi': <class 'swopy.systems.indic.Kharosthi'>,
+# 'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
+# 'roman.Early': <class 'swopy.systems.roman.Early'>,
+# 'roman.Standard': <class 'swopy.systems.roman.Standard'>}
 
 swopy.swop(42, systems['arabic.Arabic'], systems['roman.Early'])
 # 'XLII'
