@@ -80,6 +80,18 @@ class Tangut(System[str, int]):
     }
 
     @classmethod
+    def from_numeral_map(cls) -> Mapping[str, int]:
+        """Returns all valid Tangut characters mapped to their numeric values.
+
+        Combines digit glyphs (1-9) and multiplier glyphs (10, 100, 1000,
+        10000) so that callers see the complete set of accepted characters.
+
+        Returns:
+            A mapping from every valid Tangut glyph to its numeric value.
+        """
+        return {**cls._from_numeral_map, **cls._multiplier_from_map}
+
+    @classmethod
     def _to_numeral(cls, number: int) -> str:
         """Convert an Arabic integer to its Tangut numeral representation.
 
