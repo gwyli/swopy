@@ -20,6 +20,11 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Bakhshali, supporting integers between 1 and 9,999
    * Brahmi, supporting integers between 1 and 9,999
    * Kharosthi, supporting integers between 1 and 9,999
+* [Mesopotamian](https://github.com/gwyli/swopy/blob/main/swopy/systems/mesopotamian.py), in the forms:
+   * Cuneiform, supporting integers between 1 and 999
+   * Hatran, supporting integers between 1 and 999
+   * Nabataean, supporting integers between 1 and 999
+   * Palmyrene, supporting integers between 1 and 99
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
    * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
