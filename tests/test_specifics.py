@@ -85,6 +85,17 @@ class TestIndicKharosthi:
         assert systems.indic.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
 
 
+class TestGreekAttic:
+    """Specific tests for systems.greek.Attic."""
+
+    def test_non_representable_fraction(self) -> None:
+        """Checks that a ValueError is raised for a fraction that cannot be
+        represented in Attic numerals (only 1/2 and 1/4 are supported).
+        """
+        with pytest.raises(ValueError):
+            systems.greek.Attic.to_numeral(Fraction(1, 3))
+
+
 class TestAncientSouthArabian:
     """Specific tests for systems.semetic.OldSouthArabian"""
 
