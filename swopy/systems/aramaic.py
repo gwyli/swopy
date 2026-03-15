@@ -1,10 +1,11 @@
-"""Aramaic numeral system converters.
+"""Mesopotamian numeral system converters.
 
-This module implements numeral systems from Aramaic: Palmyrene, Hatran, and Nabataean.
-All three are purely additive systems using greedy decomposition for encoding and
-character-sum for decoding.
+This module implements numeral systems from Mesopotamian and related cultures:
+Cuneiform, Palmyrene, Hatran, and Nabataean. All four are purely additive
+systems using greedy decomposition for encoding and character-sum for decoding.
 
 Unicode blocks used:
+
     Palmyrene                          U+10860-U+1087F
     Hatran                             U+108E0-U+108FF
     Nabataean                          U+10880-U+108AF
