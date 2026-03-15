@@ -97,4 +97,4 @@ class Egyptian(System[str, int]):
             >>> Egyptian.from_numeral("\U00013386")  # Ten hieroglyph
             10
         """
-        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Egyptian")
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)

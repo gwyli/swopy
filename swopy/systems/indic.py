@@ -192,37 +192,9 @@ class Kharosthi(System[str, int]):
             >>> Kharosthi._from_numeral('𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁')
             1996
         """
-        unit_chars = frozenset(cls._to_numeral_map[v] for v in (1, 2, 3, 4))
-        multiplier_chars = {
-            cls._to_numeral_map[100]: 100,
-            cls._to_numeral_map[1000]: 1000,
-        }
-        additive_chars = {
-            cls._to_numeral_map[10]: 10,
-            cls._to_numeral_map[20]: 20,
-        }
-        valid_chars = set(cls._from_numeral_map.keys())
-
-        total = 0
-        unit_buffer = 0
-
-        for char in numeral:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Kharosthi character: {char!r}")
-
-            if char in unit_chars:
-                unit_buffer += cls._from_numeral_map[char]
-            elif char in multiplier_chars:
-                total += multiplier_chars[char] * max(unit_buffer, 1)
-                unit_buffer = 0
-            else:
-                # Additive tens symbol: flush accumulated units as ones first
-                total += unit_buffer
-                unit_buffer = 0
-                total += additive_chars[char]
-
-        total += unit_buffer
-        return total
+        return multiplicative_additive_from_numeral(
+            numeral, cls._from_numeral_map, cls.__name__
+        )
 
 
 class Brahmi(System[str, int]):
@@ -380,7 +352,7 @@ class Brahmi(System[str, int]):
             1996
         """
         return multiplicative_additive_from_numeral(
-            numeral, cls._from_numeral_map, "Brahmi"
+            numeral, cls._from_numeral_map, cls.__name__
         )
 
 
@@ -538,5 +510,5 @@ class Bakhshali(System[str, int]):
             1996
         """
         return multiplicative_additive_from_numeral(
-            numeral, cls._from_numeral_map, "Bakhshali"
+            numeral, cls._from_numeral_map, cls.__name__
         )

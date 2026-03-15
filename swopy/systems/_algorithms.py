@@ -28,6 +28,26 @@ def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> s
     return result
 
 
+def reversed_greedy_additive_to_numeral(
+    number: int, numeral_map: Mapping[int, str]
+) -> str:
+    """Convert an integer to a right-to-left numeral string.
+
+    Uses greedy additive decomposition (see ``greedy_additive_to_numeral``) then
+    reverses the result so that the highest-denomination glyph appears rightmost,
+    matching writing systems that read right-to-left (e.g. Etruscan).
+
+    Args:
+        number: The Arabic number to convert.
+        numeral_map: Ordered mapping from denomination values to their glyphs.
+
+    Returns:
+        The numeral string representation of ``number``, with glyphs in
+        right-to-left order (largest denomination rightmost).
+    """
+    return greedy_additive_to_numeral(number, numeral_map)[::-1]
+
+
 @overload
 def char_sum_from_numeral(
     numeral: str,
@@ -70,6 +90,166 @@ def char_sum_from_numeral(
         if char not in from_map:
             raise ValueError(f"Invalid {system_name} character: {char!r}")
         total += from_map[char]
+    return total
+
+
+def reversed_char_sum_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int],
+    system_name: str,
+) -> int:
+    """Convert a right-to-left numeral string to a number by summing character values.
+
+    Reverses ``numeral`` before processing, so that right-to-left writing systems
+    (e.g. Etruscan) can be parsed with the same character-sum logic used for
+    left-to-right systems.
+
+    Args:
+        numeral: The numeral string to convert (in right-to-left display order).
+        from_map: Mapping from individual characters to their numeric values.
+        system_name: Human-readable system name used in the error message.
+
+    Returns:
+        The sum of the values of all characters in ``numeral``.
+
+    Raises:
+        ValueError: If any character is not present in ``from_map``.
+    """
+    return char_sum_from_numeral(numeral[::-1], from_map, system_name)
+
+
+def subtractive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> str:
+    """Convert an integer to a numeral string using subtractive decomposition.
+
+    Iterates the map in its defined order (largest denomination first). For each
+    denomination, the corresponding glyph is appended and the denomination
+    subtracted as many times as it fits, rather than using ``divmod``. This
+    allows multi-character subtractive pairs (e.g. ⅠⅩ for 9) to be expressed
+    as single map entries.
+
+    Args:
+        number: The Arabic number to convert.
+        numeral_map: Ordered mapping from denomination values to their glyphs.
+            May include subtractive pairs as multi-character glyph values.
+
+    Returns:
+        The numeral string representation of ``number``.
+    """
+    result = ""
+    for value, glyph in numeral_map.items():
+        while number >= value:
+            result += glyph
+            number -= value
+    return result
+
+
+def subtractive_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int],
+    system_name: str,
+) -> int:
+    """Convert a subtractive numeral string to an integer.
+
+    Scans ``numeral`` right-to-left (after upper-casing). A character whose
+    value is smaller than the previously seen character's value is subtracted
+    rather than added, implementing the standard subtractive rule
+    (e.g. ⅠⅩ → 9).
+
+    Args:
+        numeral: The numeral string to convert.
+        from_map: Mapping from individual characters to their numeric values.
+            Both upper- and lower-case variants should be included.
+        system_name: Human-readable system name used in the error message.
+
+    Returns:
+        The integer value of ``numeral``.
+
+    Raises:
+        ValueError: If any character is not present in ``from_map``.
+    """
+    total = 0
+    prev_value = 0
+    for char in reversed(numeral.upper()):
+        current_value = from_map.get(char)
+        if current_value is None:
+            raise ValueError(f"Invalid {system_name} character: {char!r}")
+        if current_value < prev_value:
+            total -= current_value
+        else:
+            total += current_value
+        prev_value = current_value
+    return total
+
+
+def longest_match_from_numeral(  # noqa: PLR0913
+    numeral: str,
+    from_map: Mapping[str, int],
+    system_name: str,
+    *,
+    case_fold: bool = False,
+    enforce_descending: bool = False,
+    initial_max: int | None = None,
+) -> int:
+    """Convert a numeral string to an integer using longest-match scanning.
+
+    At each position the longest token in ``from_map`` that matches the remaining
+    string is consumed. Map entries must therefore be ordered longest-first when
+    ambiguous prefixes exist (e.g. two-character thousands tokens before their
+    constituent single-character units in Milesian Greek).
+
+    Args:
+        numeral: The numeral string to convert.
+        from_map: Ordered mapping from token strings to their numeric values.
+            Tokens are tested in iteration order; list longer tokens first.
+        system_name: Human-readable system name used in error messages.
+        case_fold: If ``True``, ``numeral`` is upper-cased before processing so
+            that both cases are accepted without duplicating map entries.
+        enforce_descending: If ``True``, token values must be non-increasing
+            left-to-right. A token whose value exceeds the previous token's
+            value raises ``ValueError``.
+        initial_max: Sentinel used as the "previous value" before the first
+            token when ``enforce_descending`` is ``True``. Defaults to
+            ``max(from_map.values()) + 1``, permitting any valid first token.
+
+    Returns:
+        The integer value of ``numeral``.
+
+    Raises:
+        ValueError: If an unrecognised token is encountered, or if
+            ``enforce_descending`` is ``True`` and a token violates the
+            descending-order constraint.
+    """
+    if case_fold:
+        numeral = numeral.upper()
+
+    last_value: int = (
+        (initial_max if initial_max is not None else max(from_map.values()) + 1)
+        if enforce_descending
+        else 0
+    )
+
+    total = 0
+    i = 0
+    while i < len(numeral):
+        matched = False
+        for symbol, value in from_map.items():
+            if numeral.startswith(symbol, i):
+                if enforce_descending and value > last_value:
+                    raise ValueError(
+                        f"Invalid {system_name} sequence: {symbol!r} cannot follow"
+                        " a smaller value."
+                    )
+                total += value
+                last_value = value
+                i += len(symbol)
+                matched = True
+                break
+
+        if not matched:
+            raise ValueError(
+                f"Invalid {system_name} character at position {i}: {numeral[i]!r}"
+            )
+
     return total
 
 

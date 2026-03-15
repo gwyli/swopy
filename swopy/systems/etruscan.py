@@ -23,6 +23,10 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import System
+from ._algorithms import (
+    reversed_char_sum_from_numeral,
+    reversed_greedy_additive_to_numeral,
+)
 
 
 class Etruscan(System[str, int]):
@@ -103,16 +107,7 @@ class Etruscan(System[str, int]):
             >>> Etruscan._to_numeral(399)
             '𐌠𐌠𐌠𐌠𐌡𐌢𐌢𐌢𐌢𐌣𐌣𐌣𐌣𐌣𐌣𐌣'
         """
-        parts: list[str] = []
-        remainder: int = number
-
-        for value, glyph in cls._to_numeral_map.items():
-            count, remainder = divmod(remainder, value)
-            parts.append(glyph * count)
-
-        # Build LTR string then reverse: largest denomination ends up rightmost.
-        ltr = "".join(parts)
-        return ltr[::-1]
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -148,16 +143,6 @@ class Etruscan(System[str, int]):
             >>> Etruscan._from_numeral('IIIIΛXX')
             29
         """
-        valid_chars: set[str] = set(cls._from_numeral_map.keys())
-
-        # Numerals are written right-to-left; reverse so we iterate from the
-        # smallest denomination (leftmost in the display string) first.
-        ltr: str = numeral[::-1]
-
-        total: int = 0
-        for char in ltr:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Etruscan character: {char}")
-            total += cls._from_numeral_map[char]
-
-        return total
+        return reversed_char_sum_from_numeral(
+            numeral, cls._from_numeral_map, cls.__name__
+        )

@@ -20,7 +20,11 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
-from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
+from ._algorithms import (
+    char_sum_from_numeral,
+    greedy_additive_to_numeral,
+    longest_match_from_numeral,
+)
 
 
 class Milesian(System[str, int]):
@@ -233,25 +237,7 @@ class Milesian(System[str, int]):
             >>> Milesian._from_numeral('͵θϡϙθ')
             9999
         """
-        total: int = 0
-        i: int = 0
-
-        while i < len(numeral):
-            matched = False
-
-            for symbol, value in cls._from_numeral_map.items():
-                if numeral.startswith(symbol, i):
-                    total += value
-                    i += len(symbol)
-                    matched = True
-                    break
-
-            if not matched:
-                raise ValueError(
-                    f"Invalid Greek Milesian character at position {i}: {numeral[i]!r}"
-                )
-
-        return total
+        return longest_match_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
 
 
 class Aegean(System[str, int]):
@@ -409,7 +395,7 @@ class Aegean(System[str, int]):
             >>> Aegean._from_numeral('𐄳𐄪𐄡𐄘𐄏')
             99999
         """
-        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Aegean")
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
 
 
 class Attic(System[str, int | Fraction]):
@@ -592,4 +578,4 @@ class Attic(System[str, int | Fraction]):
             >>> Attic._from_numeral('𐅁𐅀')
             Fraction(3, 4)
         """
-        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Attic")
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
