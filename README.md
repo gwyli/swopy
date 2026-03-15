@@ -17,6 +17,8 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Palmyrene, supporting integers between 1 and 99
 * [Cuneiform](https://github.com/gwyli/swopy/blob/main/swopy/systems/cuneiform.py)
    * Cuneiform, supporting integers between 1 and 999
+* [Chinese](https://github.com/gwyli/swopy/blob/main/swopy/systems/chinese.py):
+   * CountingRod, supporting integers between 1 and 99
 * [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py)
    * Egyptian, supporting integers between 1 and 1,000,000/many
    * CopticEpact, supporting integers between 1 and 9,999
