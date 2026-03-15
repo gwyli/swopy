@@ -20,6 +20,7 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Milesian(System[str, int]):
@@ -200,13 +201,7 @@ class Milesian(System[str, int]):
             >>> Milesian._to_numeral(9999)
             '͵θϡϙθ'
         """
-        result: str = ""
-
-        for value, glyph in cls._to_numeral_map.items():
-            count, number = divmod(number, value)
-            result += glyph * count
-
-        return result
+        return greedy_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -388,11 +383,7 @@ class Aegean(System[str, int]):
             >>> Aegean._to_numeral(99999)
             '𐄳𐄪𐄡𐄘𐄏'
         """
-        result = ""
-        for value, glyph in cls._to_numeral_map.items():
-            count, number = divmod(number, value)
-            result += glyph * count
-        return result
+        return greedy_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -418,13 +409,7 @@ class Aegean(System[str, int]):
             >>> Aegean._from_numeral('𐄳𐄪𐄡𐄘𐄏')
             99999
         """
-        valid_chars = set(cls._from_numeral_map.keys())
-        total = 0
-        for char in numeral:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Aegean character: {char!r}")
-            total += cls._from_numeral_map[char]
-        return total
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Aegean")
 
 
 class Attic(System[str, int | Fraction]):
@@ -607,10 +592,4 @@ class Attic(System[str, int | Fraction]):
             >>> Attic._from_numeral('𐅁𐅀')
             Fraction(3, 4)
         """
-        valid_chars = set(cls._from_numeral_map.keys())
-        total: int | Fraction = 0
-        for char in numeral:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Attic character: {char!r}")
-            total += cls._from_numeral_map[char]
-        return total
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Attic")

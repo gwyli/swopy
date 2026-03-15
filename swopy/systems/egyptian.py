@@ -9,6 +9,7 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Egyptian(System[str, int]):
@@ -70,14 +71,7 @@ class Egyptian(System[str, int]):
             >>> Egyptian.to_numeral(1000001)
             '\U00013069'
         """
-        result: str = ""
-
-        for arabic, hieroglyph in cls.to_numeral_map().items():
-            count, number = divmod(number, arabic)
-            count = int(count)
-            result += hieroglyph * count
-
-        return result
+        return greedy_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -103,11 +97,4 @@ class Egyptian(System[str, int]):
             >>> Egyptian.from_numeral("\U00013386")  # Ten hieroglyph
             10
         """
-        total: int = 0
-
-        for hieroglyph in numeral:
-            if hieroglyph not in cls.from_numeral_map():
-                raise ValueError(f"Invalid Egyptian hieroglyph: {hieroglyph}")
-            total += cls.from_numeral_map()[hieroglyph]
-
-        return total
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, "Egyptian")

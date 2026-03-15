@@ -5,13 +5,17 @@ from the Indian subcontinent.
 """
 
 # Ignore ambiguous unicode character strings in Indic numerals
-# ruff: noqa: RUF002 RUF003
+# ruff: noqa: RUF002
 
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import (
+    multiplicative_additive_from_numeral,
+    multiplicative_additive_to_numeral,
+)
 
 
 class Kharosthi(System[str, int]):
@@ -346,32 +350,7 @@ class Brahmi(System[str, int]):
             >>> Brahmi._to_numeral(9999)
             '𑁚𑁥𑁚𑁤𑁣𑁚'
         """
-        result = ""
-
-        # Thousands group: unit multiplier (omitted if 1) + 𑁥
-        thousands, number = divmod(number, 1000)
-        if thousands:
-            if thousands > 1:
-                result += cls._to_numeral_map[thousands]
-            result += cls._to_numeral_map[1000]
-
-        # Hundreds group: unit multiplier (omitted if 1) + 𑁤
-        hundreds, number = divmod(number, 100)
-        if hundreds:
-            if hundreds > 1:
-                result += cls._to_numeral_map[hundreds]
-            result += cls._to_numeral_map[100]
-
-        # Tens: dedicated decade symbol (10, 20, …, 90)
-        tens, number = divmod(number, 10)
-        if tens:
-            result += cls._to_numeral_map[tens * 10]
-
-        # Ones: dedicated unit symbol (1–9)
-        if number:
-            result += cls._to_numeral_map[number]
-
-        return result
+        return multiplicative_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -400,34 +379,9 @@ class Brahmi(System[str, int]):
             >>> Brahmi._from_numeral('𑁥𑁚𑁤𑁣𑁗')
             1996
         """
-        unit_chars = frozenset(cls._to_numeral_map[v] for v in range(1, 10))
-        multiplier_chars = {
-            cls._to_numeral_map[100]: 100,
-            cls._to_numeral_map[1000]: 1000,
-        }
-        decade_chars = {cls._to_numeral_map[v * 10]: v * 10 for v in range(1, 10)}
-        valid_chars = set(cls._from_numeral_map.keys())
-
-        total = 0
-        unit_buffer = 0
-
-        for char in numeral:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Brahmi character: {char!r}")
-
-            if char in unit_chars:
-                unit_buffer += cls._from_numeral_map[char]
-            elif char in multiplier_chars:
-                total += multiplier_chars[char] * max(unit_buffer, 1)
-                unit_buffer = 0
-            else:
-                # Decade symbol: flush accumulated units as ones first
-                total += unit_buffer
-                unit_buffer = 0
-                total += decade_chars[char]
-
-        total += unit_buffer
-        return total
+        return multiplicative_additive_from_numeral(
+            numeral, cls._from_numeral_map, "Brahmi"
+        )
 
 
 class Bakhshali(System[str, int]):
@@ -554,32 +508,7 @@ class Bakhshali(System[str, int]):
             >>> Bakhshali._to_numeral(9999)
             '𑇩𑇴𑇩𑇳𑇲𑇩'
         """
-        result = ""
-
-        # Thousands group: unit multiplier (omitted if 1) + 𑇴
-        thousands, number = divmod(number, 1000)
-        if thousands:
-            if thousands > 1:
-                result += cls._to_numeral_map[thousands]
-            result += cls._to_numeral_map[1000]
-
-        # Hundreds group: unit multiplier (omitted if 1) + 𑇳
-        hundreds, number = divmod(number, 100)
-        if hundreds:
-            if hundreds > 1:
-                result += cls._to_numeral_map[hundreds]
-            result += cls._to_numeral_map[100]
-
-        # Tens: dedicated decade symbol (10, 20, …, 90)
-        tens, number = divmod(number, 10)
-        if tens:
-            result += cls._to_numeral_map[tens * 10]
-
-        # Ones: dedicated unit symbol (1–9)
-        if number:
-            result += cls._to_numeral_map[number]
-
-        return result
+        return multiplicative_additive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -608,31 +537,6 @@ class Bakhshali(System[str, int]):
             >>> Bakhshali._from_numeral('𑇴𑇩𑇳𑇲𑇦')
             1996
         """
-        unit_chars = frozenset(cls._to_numeral_map[v] for v in range(1, 10))
-        multiplier_chars = {
-            cls._to_numeral_map[100]: 100,
-            cls._to_numeral_map[1000]: 1000,
-        }
-        decade_chars = {cls._to_numeral_map[v * 10]: v * 10 for v in range(1, 10)}
-        valid_chars = set(cls._from_numeral_map.keys())
-
-        total = 0
-        unit_buffer = 0
-
-        for char in numeral:
-            if char not in valid_chars:
-                raise ValueError(f"Invalid Bakhshali character: {char!r}")
-
-            if char in unit_chars:
-                unit_buffer += cls._from_numeral_map[char]
-            elif char in multiplier_chars:
-                total += multiplier_chars[char] * max(unit_buffer, 1)
-                unit_buffer = 0
-            else:
-                # Decade symbol: flush accumulated units as ones first
-                total += unit_buffer
-                unit_buffer = 0
-                total += decade_chars[char]
-
-        total += unit_buffer
-        return total
+        return multiplicative_additive_from_numeral(
+            numeral, cls._from_numeral_map, "Bakhshali"
+        )
