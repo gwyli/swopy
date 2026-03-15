@@ -75,8 +75,11 @@ def test_reversibility(
         x
         for x in SYSTEMS
         # Special case `System.maximum_is_many` and don't test maxima and minima if they
-        # are unbounded
-        if not x.maximum_is_many and not (x.minimum == -inf and x.maximum == inf)
+        # are unbounded (no upper bound means there is nothing above maximum to falsify)
+        # FIXME: At the moment this works for the two number systems that reach infinity
+        # Mayan and Arabic, if in the future there is a number system from -inf -> some
+        # bounded value then this needs to be rethought.
+        if not x.maximum_is_many and x.maximum != inf
     ],
 )
 @given(strategies.data())

@@ -22,6 +22,7 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Bakhshali, supporting integers between 1 and 9,999
    * Brahmi, supporting integers between 1 and 9,999
    * Kharosthi, supporting integers between 1 and 9,999
+* [Mayan](https://github.com/gwyli/swopy/blob/main/swopy/systems/mayan.py), supporting integers between 0 and infinity
 * [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py), supporting integers between 1 and 999
 * [Mesopotamian](https://github.com/gwyli/swopy/blob/main/swopy/systems/mesopotamian.py), in the forms:
    * Cuneiform, supporting integers between 1 and 999
