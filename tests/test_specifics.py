@@ -96,6 +96,42 @@ class TestGreekAttic:
             systems.greek.Attic.to_numeral(Fraction(1, 3))
 
 
+class TestAramaicImperialAramaic:
+    """Specific tests for systems.aramaic.ImperialAramaic."""
+
+    def test_rtl(self) -> None:
+        """Checks that larger denominations appear on the right (RTL order)."""
+        numeral = systems.aramaic.ImperialAramaic.to_numeral(1001)
+        assert numeral[-1] == "\U0001085e"  # ONE THOUSAND on right
+
+
+class TestAramaicManichaean:
+    """Specific tests for systems.aramaic.Manichaean."""
+
+    def test_rtl(self) -> None:
+        """Checks that larger denominations appear on the right (RTL order)."""
+        numeral = systems.aramaic.Manichaean.to_numeral(11)
+        assert numeral[-1] == "\U00010aed"  # TEN on right
+
+
+class TestAramaicOldSogdian:
+    """Specific tests for systems.aramaic.OldSogdian."""
+
+    def test_rtl(self) -> None:
+        """Checks that larger denominations appear on the right (RTL order)."""
+        numeral = systems.aramaic.OldSogdian.to_numeral(101)
+        assert numeral[-1] == "\U00010f25"  # ONE HUNDRED on right
+
+
+class TestAramaicSogdian:
+    """Specific tests for systems.aramaic.Sogdian."""
+
+    def test_rtl(self) -> None:
+        """Checks that larger denominations appear on the right (RTL order)."""
+        numeral = systems.aramaic.Sogdian.to_numeral(21)
+        assert numeral[-1] == "\U00010f53"  # TWENTY on right
+
+
 class TestAncientSouthArabian:
     """Specific tests for systems.semetic.OldSouthArabian"""
 

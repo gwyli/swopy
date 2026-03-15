@@ -13,8 +13,12 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Arabic, supporting integers, floats and fractions between `-math.inf` and `math.inf`
 * [Aramaic](https://github.com/gwyli/swopy/blob/main/swopy/systems/aramaic.py):
    * Hatran, supporting integers between 1 and 999
+   * ImperialAramaic, supporting integers between 1 and 99,999
+   * Manichaean, supporting integers between 1 and 999
    * Nabataean, supporting integers between 1 and 999
+   * OldSogdian, supporting integers between 1 and 999
    * Palmyrene, supporting integers between 1 and 99
+   * Sogdian, supporting integers between 1 and 999
 * [Cuneiform](https://github.com/gwyli/swopy/blob/main/swopy/systems/cuneiform.py)
    * Cuneiform, supporting integers between 1 and 999
 * [Chinese](https://github.com/gwyli/swopy/blob/main/swopy/systems/chinese.py):
