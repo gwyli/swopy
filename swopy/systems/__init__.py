@@ -11,6 +11,7 @@ from ..systems import (
     mongolian,
     phoenician,
     roman,
+    semetic,
     tibetan,
 )
 
@@ -27,5 +28,6 @@ __all__ = [
     "mongolian",
     "phoenician",
     "roman",
+    "semetic",
     "tibetan",
 ]

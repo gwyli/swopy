@@ -40,6 +40,9 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Tangut, supporting integers between 1 and 99,999,999
 * [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py):
    * Phoenician, supporting integers between 1 and 999
+* [Semetic](https://github.com/gwyli/swopy/blob/main/swopy/systems/semetic.py):
+   * AncientSouthArabian, supporting integers between 1 and 99,999
+   * AncientNorthArabian, supporting integers between 1 and 99
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
    * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
