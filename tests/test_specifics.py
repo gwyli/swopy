@@ -83,3 +83,11 @@ class TestIndicKharosthi:
     def test_to_numeral(self):
         # 2+4+10+20+20+20+20 + 100x(1+4+4) + 1000
         assert systems.indic.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
+
+
+class TestAncientSouthArabian:
+    """Specific tests for systems.semetic.OldSouthArabian"""
+
+    def test_to_numeral(self):
+        assert systems.semetic.AncientSouthArabian.to_numeral(31000) == "𐩲𐩲𐩲𐩱"
+        assert systems.semetic.AncientSouthArabian.to_numeral(40000) == "𐩲𐩲𐩲𐩲"
