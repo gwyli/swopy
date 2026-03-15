@@ -1,3 +1,21 @@
-from ..systems import arabic, egyptian, etruscan, greek, indic, mesopotamian, roman
+from ..systems import (
+    arabic,
+    egyptian,
+    etruscan,
+    greek,
+    indic,
+    mesopotamian,
+    phoenician,
+    roman,
+)
 
-__all__ = ["arabic", "egyptian", "etruscan", "greek", "indic", "mesopotamian", "roman"]
+__all__ = [
+    "arabic",
+    "egyptian",
+    "etruscan",
+    "greek",
+    "indic",
+    "mesopotamian",
+    "phoenician",
+    "roman",
+]
