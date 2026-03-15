@@ -32,6 +32,8 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Aegean, supporting integers between 1 and 99,999
    * Attic, supporting integers and base-4 fractions between 1/4 and 99,999
    * Milesian, supporting integers between 1 and 9,999
+* [Inuit](https://github.com/gwyli/swopy/blob/main/swopy/systems/inuit.py):
+   * Kaktovik, supporting integers between -infinity and +infinity
 * [Indic](https://github.com/gwyli/swopy/blob/main/swopy/systems/indic.py):
    * Bakhshali, supporting integers between 1 and 9,999
    * Brahmi, supporting integers between 1 and 9,999

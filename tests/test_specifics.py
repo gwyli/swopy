@@ -6,7 +6,7 @@ have its own class for organisation in the form Test<Module><Class>
 """
 
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
-# ruff: noqa: RUF003
+# ruff: noqa: RUF002 RUF003
 
 from fractions import Fraction
 
@@ -94,6 +94,27 @@ class TestGreekAttic:
         """
         with pytest.raises(ValueError):
             systems.greek.Attic.to_numeral(Fraction(1, 3))
+
+
+class TestInuitKaktovik:
+    """Specific tests for systems.inuit.Kaktovik."""
+
+    def test_42(self) -> None:
+        """Checks that 42 encodes as two Kaktovik twos (2×20 + 2)."""
+        assert systems.inuit.Kaktovik.to_numeral(42) == "\U0001d2c2\U0001d2c2"
+
+    def test_negative(self) -> None:
+        """Checks that negative integers are prefixed with a hyphen-minus."""
+        assert systems.inuit.Kaktovik.to_numeral(-1) == "-\U0001d2c1"
+        assert systems.inuit.Kaktovik.from_numeral("-\U0001d2c1") == -1
+
+    def test_large_number(self) -> None:
+        """Checks that numbers greater than 10^20 round-trip correctly."""
+        n = 10**21
+        assert (
+            systems.inuit.Kaktovik.from_numeral(systems.inuit.Kaktovik.to_numeral(n))
+            == n
+        )
 
 
 class TestAramaicImperialAramaic:
