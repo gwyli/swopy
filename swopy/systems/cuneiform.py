@@ -1,4 +1,4 @@
-"""Mesopotamian numeral system converters.
+"""Cuneiform numeral system converters.
 
 This module implements numeral systems from Cuneiform, which is a purely additive
 system using greedy decomposition for encoding and character-sum for decoding.

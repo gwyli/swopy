@@ -1,7 +1,12 @@
-"""Egyptian numeral system conversion module.
+"""Egyptian numeral system converters.
 
-This module provides conversion utilities for Egyptian hieroglyphic numerals.
-It implements bidirectional conversion between Arabic numbers and Egyptian numerals.
+This module implements numeral systems from Egypt, which are additive systems using
+greedy decomposition for encoding and character-sum for decoding.
+
+Unicode blocks used:
+
+    Egyptian Hieroglyphs               U+13000-U+1342F
+    Coptic Epact Number                U+102E0-U+102FF
 """
 
 # ruff: noqa: RUF003
