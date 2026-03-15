@@ -10,7 +10,9 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 ## Supported Numeral Systems
 
 * [Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/arabic.py), supporting integers, floats and fractions between `-math.inf` and `math.inf`
-* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
+* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py), in the forms:
+   * Egyptian, supporting integers between 1 and 1,000,000/many
+   * CopticEpact, supporting integers between 1 and 9,999
 * [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py), supporting integers between 1 and 300
 * [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py), in the forms:
    * Aegean, supporting integers between 1 and 99,999
