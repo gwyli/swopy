@@ -34,6 +34,8 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Kharosthi, supporting integers between 1 and 9,999
 * [Mayan](https://github.com/gwyli/swopy/blob/main/swopy/systems/mayan.py):
    * Mayan, supporting integers between 0 and infinity
+* [Tibetan](https://github.com/gwyli/swopy/blob/main/swopy/systems/tibetan.py):
+   * Tangut, supporting integers between 1 and 99,999,999
 * [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py):
    * Phoenician, supporting integers between 1 and 999
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:

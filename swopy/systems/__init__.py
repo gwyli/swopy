@@ -10,6 +10,7 @@ from ..systems import (
     mayan,
     phoenician,
     roman,
+    tibetan,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "mayan",
     "phoenician",
     "roman",
+    "tibetan",
 ]
