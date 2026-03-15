@@ -304,6 +304,124 @@ def multiplicative_additive_to_numeral(
     return result
 
 
+def multiplicative_myriad_to_numeral(
+    number: int,
+    digit_map: Mapping[int, str],
+    multiplier_map: Mapping[int, str],
+    *,
+    explicit_one_tens: bool = False,
+) -> str:
+    """Convert an integer to a multiplicative-myriad numeral string.
+
+    Handles systems (e.g. Tangut, Khitan) where digits 1–9 have unique glyphs
+    and multipliers x10, x100, x1000, x10,000 are separate glyphs. The
+    coefficient is omitted when equal to 1, except optionally for the tens
+    place. The myriad coefficient (1–9999) is itself encoded as a sub-myriad
+    number.
+
+    Args:
+        number: The Arabic number to convert.
+        digit_map: Ordered mapping from digit values (1–9) to their glyphs.
+        multiplier_map: Ordered mapping from multiplier values (10000, 1000,
+            100, 10) to their glyphs, largest first.
+        explicit_one_tens: If ``True``, the digit 1 is always written before
+            the tens multiplier (e.g. Tangut). If ``False``, the digit 1 is
+            omitted before all multipliers including tens (e.g. Khitan).
+
+    Returns:
+        The numeral string representation of ``number``.
+    """
+    _myriad = 10000
+    _ten = 10
+    myriad_glyph = multiplier_map[_myriad]
+    sub_mult = [(k, v) for k, v in multiplier_map.items() if k != _myriad]
+
+    def encode_sub(n: int) -> str:
+        res = ""
+        for mult, glyph in sub_mult:
+            coeff, n = divmod(n, mult)
+            if coeff:
+                if coeff > 1 or (explicit_one_tens and mult == _ten):
+                    res += digit_map[coeff]
+                res += glyph
+        if n:
+            res += digit_map[n]
+        return res
+
+    myriads, remainder = divmod(number, _myriad)
+    result = ""
+    if myriads:
+        if myriads > 1 or explicit_one_tens:
+            result += encode_sub(myriads)
+        result += myriad_glyph
+    if remainder:
+        result += encode_sub(remainder)
+    return result
+
+
+def multiplicative_myriad_from_numeral(
+    numeral: str,
+    digit_map: Mapping[str, int],
+    multiplier_map: Mapping[str, int],
+    system_name: str,
+) -> int:
+    """Convert a multiplicative-myriad numeral string to an integer.
+
+    Splits at the myriad glyph (if present). The portion before is parsed as
+    a sub-myriad coefficient (multiplied by 10,000); the portion after is
+    parsed as the remainder. If no myriad glyph is present, the whole string
+    is parsed as a sub-myriad number.
+
+    Within each sub-myriad segment, a digit glyph followed by a sub-myriad
+    multiplier glyph contributes ``digit × multiplier``; a lone multiplier
+    glyph contributes ``1 × multiplier``; a lone digit glyph contributes its
+    value.
+
+    Args:
+        numeral: The numeral string to convert.
+        digit_map: Mapping from digit glyphs to their values (1–9).
+        multiplier_map: Mapping from multiplier glyphs to their values
+            (10000, 1000, 100, 10).
+        system_name: Human-readable system name used in the error message.
+
+    Returns:
+        The integer value of ``numeral``.
+
+    Raises:
+        ValueError: If an unrecognised character is encountered.
+    """
+    _myriad = 10000
+    myriad_glyph = next(g for g, v in multiplier_map.items() if v == _myriad)
+    sub_mult_map = {g: v for g, v in multiplier_map.items() if v != _myriad}
+
+    def parse_sub(s: str) -> int:
+        total = 0
+        i = 0
+        while i < len(s):
+            c = s[i]
+            if c in digit_map:
+                digit = digit_map[c]
+                i += 1
+                if i < len(s) and s[i] in sub_mult_map:
+                    total += digit * sub_mult_map[s[i]]
+                    i += 1
+                else:
+                    total += digit
+            elif c in sub_mult_map:
+                total += sub_mult_map[c]
+                i += 1
+            else:
+                raise ValueError(f"Invalid {system_name} character: {c!r}")
+        return total
+
+    if myriad_glyph in numeral:
+        idx = numeral.index(myriad_glyph)
+        coeff = parse_sub(numeral[:idx]) if idx > 0 else 1
+        remainder = parse_sub(numeral[idx + 1 :]) if idx + 1 < len(numeral) else 0
+        return coeff * 10000 + remainder
+    return parse_sub(numeral)
+
+
 def multiplicative_additive_from_numeral(
     numeral: str, from_map: Mapping[str, int], system_name: str
 ) -> int:

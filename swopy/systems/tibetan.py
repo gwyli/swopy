@@ -22,6 +22,10 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import (
+    multiplicative_myriad_from_numeral,
+    multiplicative_myriad_to_numeral,
+)
 
 
 class Tangut(System[str, int]):
@@ -63,93 +67,24 @@ class Tangut(System[str, int]):
 
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
-    # Multiplier glyphs
-    _multipliers: ClassVar[Mapping[int, str]] = {
+    # Multiplier glyphs (largest first)
+    _multiplier_map: ClassVar[Mapping[int, str]] = {
         10000: "\U00017457",  # 𗑗  Tangut myriad (x10,000)
         1000: "\U000170d4",  # 𗃔  Tangut thousand (x1,000)
         100: "\U000172da",  # 𗋚  Tangut hundred (x100)
         10: "\U00017c17",  # 𗰗  Tangut ten (x10)
     }
 
-    # Sub-myriad multipliers only (used in the parser)
-    _sub_multipliers: ClassVar[Mapping[str, int]] = {
-        "\U000170d4": 1000,
-        "\U000172da": 100,
-        "\U00017c17": 10,
+    _multiplier_from_map: ClassVar[Mapping[str, int]] = {
+        v: k for k, v in _multiplier_map.items()
     }
-
-    @classmethod
-    def _encode_sub_myriad(cls, number: int) -> str:
-        """Encode an integer in 1-9999 as a Tangut sub-myriad string.
-
-        Args:
-            number: Integer in the range 1-9999.
-
-        Returns:
-            The Tangut numeral string for ``number``.
-        """
-        result = ""
-        thousands, number = divmod(number, 1000)
-        if thousands:
-            if thousands > 1:
-                result += cls._to_numeral_map[thousands]
-            result += cls._multipliers[1000]
-        hundreds, number = divmod(number, 100)
-        if hundreds:
-            if hundreds > 1:
-                result += cls._to_numeral_map[hundreds]
-            result += cls._multipliers[100]
-        tens, number = divmod(number, 10)
-        if tens:
-            result += cls._to_numeral_map[tens]  # always explicit
-            result += cls._multipliers[10]
-        if number:
-            result += cls._to_numeral_map[number]
-        return result
-
-    @classmethod
-    def _parse_sub_myriad(cls, numeral: str) -> int:
-        """Parse a Tangut sub-myriad numeral string (no myriad glyph present).
-
-        Scans left-to-right. A digit character followed by a sub-myriad
-        multiplier contributes ``digit * multiplier``; a lone multiplier
-        contributes ``1 * multiplier``; a lone digit contributes its value.
-
-        Args:
-            numeral: Tangut numeral string containing only digit and
-                sub-myriad multiplier glyphs.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If an unrecognised character is encountered.
-        """
-        total = 0
-        i = 0
-        while i < len(numeral):
-            c = numeral[i]
-            if c in cls._from_numeral_map:
-                digit = cls._from_numeral_map[c]
-                i += 1
-                if i < len(numeral) and numeral[i] in cls._sub_multipliers:
-                    total += digit * cls._sub_multipliers[numeral[i]]
-                    i += 1
-                else:
-                    total += digit
-            elif c in cls._sub_multipliers:
-                total += cls._sub_multipliers[c]
-                i += 1
-            else:
-                raise ValueError(f"Invalid {cls.__name__} character: {c!r}")
-        return total
 
     @classmethod
     def _to_numeral(cls, number: int) -> str:
         """Convert an Arabic integer to its Tangut numeral representation.
 
         Numbers >= 10,000 are expressed as ``encode(coefficient) + myriad``,
-        where the coefficient (1-9999) is itself encoded by ``_encode_sub_myriad``.
+        where the coefficient (1-9999) is itself encoded as a sub-myriad number.
         The remainder (0-9999) is appended directly.
 
         Args:
@@ -183,14 +118,12 @@ class Tangut(System[str, int]):
             >>> Tangut._to_numeral(99999999)
             '𗢭𗃔𗢭𗋚𗢭𗰗𗢭𗑗𗢭𗃔𗢭𗋚𗢭𗰗𗢭'
         """
-        myriads, remainder = divmod(number, 10000)
-        result = ""
-        if myriads:
-            result += cls._encode_sub_myriad(myriads)
-            result += cls._multipliers[10000]
-        if remainder:
-            result += cls._encode_sub_myriad(remainder)
-        return result
+        return multiplicative_myriad_to_numeral(
+            number,
+            cls._to_numeral_map,
+            cls._multiplier_map,
+            explicit_one_tens=True,
+        )
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -234,14 +167,9 @@ class Tangut(System[str, int]):
                 ...
             ValueError: Invalid Tangut character: '?'
         """
-        myriad_glyph = cls._multipliers[10000]
-        if myriad_glyph in numeral:
-            idx = numeral.index(myriad_glyph)
-            coeff = cls._parse_sub_myriad(numeral[:idx]) if idx > 0 else 1
-            remainder = (
-                cls._parse_sub_myriad(numeral[idx + 1 :])
-                if idx + 1 < len(numeral)
-                else 0
-            )
-            return coeff * 10000 + remainder
-        return cls._parse_sub_myriad(numeral)
+        return multiplicative_myriad_from_numeral(
+            numeral,
+            cls._from_numeral_map,
+            cls._multiplier_from_map,
+            cls.__name__,
+        )
