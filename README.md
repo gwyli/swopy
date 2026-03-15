@@ -9,26 +9,31 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 
 ## Supported Numeral Systems
 
-* [Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/arabic.py), supporting integers, floats and fractions between `-math.inf` and `math.inf`
-* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py), in the forms:
-   * Egyptian, supporting integers between 1 and 1,000,000/many
-   * CopticEpact, supporting integers between 1 and 9,999
-* [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py), supporting integers between 1 and 300
-* [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py), in the forms:
-   * Aegean, supporting integers between 1 and 99,999
-   * Attic, supporting integers and base-4 fractions between 1/4 and 99,999
-   * Milesian, supporting integers between 1 and 9,999
-* [Indic](https://github.com/gwyli/swopy/blob/main/swopy/systems/indic.py), in the forms:
-   * Bakhshali, supporting integers between 1 and 9,999
-   * Brahmi, supporting integers between 1 and 9,999
-   * Kharosthi, supporting integers between 1 and 9,999
-* [Mayan](https://github.com/gwyli/swopy/blob/main/swopy/systems/mayan.py), supporting integers between 0 and infinity
-* [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py), supporting integers between 1 and 999
-* [Mesopotamian](https://github.com/gwyli/swopy/blob/main/swopy/systems/mesopotamian.py), in the forms:
-   * Cuneiform, supporting integers between 1 and 999
+* [Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/arabic.py):
+   * Arabic, supporting integers, floats and fractions between `-math.inf` and `math.inf`
+* [Aramaic](https://github.com/gwyli/swopy/blob/main/swopy/systems/aramaic.py):
    * Hatran, supporting integers between 1 and 999
    * Nabataean, supporting integers between 1 and 999
    * Palmyrene, supporting integers between 1 and 99
+* [Cuneiform](https://github.com/gwyli/swopy/blob/main/swopy/systems/cuneiform.py)
+   * Cuneiform, supporting integers between 1 and 999
+* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py)
+   * Egyptian, supporting integers between 1 and 1,000,000/many
+   * CopticEpact, supporting integers between 1 and 9,999
+* [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py):
+   * Etruscan, supporting integers between 1 and 300
+* [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py):
+   * Aegean, supporting integers between 1 and 99,999
+   * Attic, supporting integers and base-4 fractions between 1/4 and 99,999
+   * Milesian, supporting integers between 1 and 9,999
+* [Indic](https://github.com/gwyli/swopy/blob/main/swopy/systems/indic.py):
+   * Bakhshali, supporting integers between 1 and 9,999
+   * Brahmi, supporting integers between 1 and 9,999
+   * Kharosthi, supporting integers between 1 and 9,999
+* [Mayan](https://github.com/gwyli/swopy/blob/main/swopy/systems/mayan.py):
+   * Mayan, supporting integers between 0 and infinity
+* [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py):
+   * Phoenician, supporting integers between 1 and 999
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
    * Early, supporting integers between 1 and 899
    * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
