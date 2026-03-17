@@ -18,6 +18,7 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 * [Brahmi-Dravidian](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi_dravidian.py):
    * Grantha, supporting integers between 0 and infinity (base-7 positional)
    * Saurashtra, supporting integers between 0 and infinity
+   * Tamil, supporting integers between 1 and 9,999
 * [Brahmi-Gupta](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi_gupta.py):
    * Bhaiksuki, supporting integers between 1 and 999
    * SinhalaArchaic, supporting integers between 1 and 9,999
@@ -28,11 +29,16 @@ Swopy supports bidirectional conversion — you can convert from any supported s
 * [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py):
    * Egyptian, supporting integers between 1 and 1,000,000/many
    * CopticEpact, supporting integers between 1 and 9,999
+* [Ethiopic](https://github.com/gwyli/swopy/blob/main/swopy/systems/ethiopic.py):
+   * Ethiopic, supporting integers between 1 and 99,999,999
 * [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py):
    * Aegean, supporting integers between 1 and 99,999
+   * Alphabetic, supporting integers between 1 and 9,999
    * Attic, supporting integers and base-4 fractions between 1/4 and 99,999
    * Etruscan, supporting integers between 1 and 399
    * Milesian, supporting integers between 1 and 9,999
+* [Hebrew](https://github.com/gwyli/swopy/blob/main/swopy/systems/hebrew.py):
+   * Hebrew, supporting integers between 1 and 9,999
 * [Hindu-Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/hindu_arabic.py):
    * Arabic, supporting integers, floats and fractions between `-math.inf` and `math.inf`
    * Bakhshali, supporting integers between 1 and 9,999
@@ -59,7 +65,9 @@ Swopy supports bidirectional conversion — you can convert from any supported s
    * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
    * Apostrophus, supporting integers between 1 and 100,000
 * [Sino-Tibetan](https://github.com/gwyli/swopy/blob/main/swopy/systems/sino_tibetan.py):
+   * Chinese, supporting integers between 1 and 99,999,999
    * Khitan, supporting integers between 1 and 99,999,999
+   * Suzhou, supporting integers between 0 and infinity
    * Tangut, supporting integers between 1 and 99,999,999
 * [Siyaq](https://github.com/gwyli/swopy/blob/main/swopy/systems/siyaq.py):
    * IndicSiyaq, supporting integers between 1 and 99,999

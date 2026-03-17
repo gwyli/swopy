@@ -4,10 +4,13 @@ This module implements numeral systems from scripts derived from Brahmi and
 used in Dravidian-language contexts.
 Currently supports:
 
-    Grantha    U+11300-U+1137F  (seven combining digit glyphs: 0-6,
-                                  U+11366-U+1136C)
-    Saurashtra U+A880-U+A8DF   (ten positional digit glyphs: 0-9,
-                                  U+A8D0-U+A8D9)
+    Grantha         U+11300-U+1137F  (seven combining digit glyphs: 0-6,
+                                      U+11366-U+1136C)
+    Saurashtra      U+A880-U+A8DF   (ten positional digit glyphs: 0-9,
+                                      U+A8D0-U+A8D9)
+    Tamil           U+0B80-U+0BFF   (digit glyphs 1-9 U+0BE7-U+0BEF;
+                                      multipliers 10/100/1000 at
+                                      U+0BF0-U+0BF2)
 
 Grantha uses seven combining digit marks (Unicode category Mn) for values 0-6,
 encoded here as a positional base-7 system. Each digit position represents a
@@ -18,7 +21,16 @@ standalone positional symbols in this implementation.
 Saurashtra uses ten positional decimal digit glyphs (0-9) identical in
 structure to the Arabic base-10 system. Numbers are encoded as a sequence of
 digit glyphs representing the decimal expansion, most-significant digit first.
+
+Tamil traditional numerals are a multiplicative-additive system.  Digit glyphs
+(1-9) combine with multiplier signs (10, 100, 1000) by prefix: the digit
+coefficient is written before the multiplier and omitted when equal to 1.
+Ones are written using the digit glyphs directly; there are no dedicated
+decade signs, so 20 is encoded as ௨௰ (digit 2 + ten sign).  The valid range
+is 1-9999.
 """
+
+# ruff: noqa: RUF002
 
 from collections.abc import Mapping
 from fractions import Fraction
@@ -232,4 +244,162 @@ class Saurashtra(System[str, int]):
             if char not in cls._from_numeral_map:
                 raise ValueError(f"Invalid Saurashtra character: {char!r}")
             total = total * 10 + cls._from_numeral_map[char]
+        return total
+
+
+class Tamil(System[str, int]):
+    """Tamil traditional numeral system converter.
+
+    Implements bidirectional conversion between integers and Tamil traditional
+    numeral strings using Unicode block U+0B80-U+0BFF.  The system is
+    multiplicative-additive: digit glyphs (1-9) precede a multiplier sign
+    (10, 100, 1000); the digit is omitted when the coefficient is 1.  There
+    are no dedicated decade signs, so 20 is ௨௰ (digit 2 + ten sign).  The
+    valid range is 1-9999.
+
+    Distinct from Tamil decimal digits (U+0BE6-U+0BEF), which form a
+    Hindu-Arabic positional system; these traditional forms use the
+    higher-order signs U+0BF0-U+0BF2 as multipliers.
+
+    Attributes:
+        minimum: Minimum valid value (1).
+        maximum: Maximum valid value (9999).
+        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+    """
+
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 9999
+
+    encodings: ClassVar[Encodings] = {"utf8"}
+
+    # Digit glyphs 1-9 (U+0BE7-U+0BEF)
+    _digit_map: ClassVar[Mapping[int, str]] = {i: chr(0x0BE6 + i) for i in range(1, 10)}
+
+    # Multiplier glyphs (largest first for greedy decomposition)
+    _multiplier_map: ClassVar[Mapping[int, str]] = {
+        1000: "\u0bf2",  # ௲  TAMIL NUMBER ONE THOUSAND
+        100: "\u0bf1",  # ௱  TAMIL NUMBER ONE HUNDRED
+        10: "\u0bf0",  # ௰  TAMIL NUMBER TEN
+    }
+
+    _multiplier_from_map: ClassVar[Mapping[str, int]] = {
+        v: k for k, v in _multiplier_map.items()
+    }
+
+    _to_numeral_map: Mapping[int, str] = {**_digit_map}
+
+    # Digit-only reverse map (1-9); used internally as coefficient lookup.
+    _digit_from_map: ClassVar[Mapping[str, int]] = {v: k for k, v in _digit_map.items()}
+
+    # Full from_numeral_map includes both digit glyphs and multiplier signs so
+    # that standalone multiplier inputs are recognised as valid characters.
+    _from_numeral_map: Mapping[str, int] = {
+        **{v: k for k, v in _digit_map.items()},
+        "\u0bf0": 10,  # ௰  TAMIL NUMBER TEN
+        "\u0bf1": 100,  # ௱  TAMIL NUMBER ONE HUNDRED
+        "\u0bf2": 1000,  # ௲  TAMIL NUMBER ONE THOUSAND
+    }
+
+    @classmethod
+    def _to_numeral(cls, number: int) -> str:
+        """Convert an Arabic integer to its Tamil traditional numeral.
+
+        The digit coefficient is omitted when equal to 1; ones use the digit
+        glyphs directly; no dedicated decade signs exist.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
+
+        Examples:
+            >>> Tamil._to_numeral(1)
+            '௧'
+            >>> Tamil._to_numeral(10)
+            '௰'
+            >>> Tamil._to_numeral(20)
+            '௨௰'
+            >>> Tamil._to_numeral(100)
+            '௱'
+            >>> Tamil._to_numeral(200)
+            '௨௱'
+            >>> Tamil._to_numeral(1000)
+            '௲'
+            >>> Tamil._to_numeral(1996)
+            '௲௯௱௯௰௬'
+        """
+        result = ""
+        for mult in [1000, 100, 10]:
+            coeff, number = divmod(number, mult)
+            if coeff:
+                if coeff > 1:
+                    result += cls._digit_map[coeff]
+                result += cls._multiplier_map[mult]
+        if number:
+            result += cls._digit_map[number]
+        return result
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int:
+        """Convert a Tamil traditional numeral string to its Arabic integer value.
+
+        Scans left-to-right.  A digit glyph immediately followed by a
+        multiplier sign contributes ``digit × multiplier``; a lone multiplier
+        sign contributes ``1 × multiplier``; a lone digit contributes its
+        face value.
+
+        Args:
+            numeral: The numeral to convert.
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside
+                the valid range.
+            ValueError: If the numeral representation is invalid.
+
+        Examples:
+            >>> Tamil._from_numeral('௧')
+            1
+            >>> Tamil._from_numeral('௰')
+            10
+            >>> Tamil._from_numeral('௨௰')
+            20
+            >>> Tamil._from_numeral('௱')
+            100
+            >>> Tamil._from_numeral('௨௱')
+            200
+            >>> Tamil._from_numeral('௲')
+            1000
+            >>> Tamil._from_numeral('௲௯௱௯௰௬')
+            1996
+            >>> Tamil._from_numeral('?')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Tamil character: '?'
+        """
+        total = 0
+        i = 0
+        while i < len(numeral):
+            c = numeral[i]
+            if c in cls._digit_from_map:
+                # Digit glyph (1-9): may be followed by a multiplier
+                digit = cls._digit_from_map[c]
+                i += 1
+                if i < len(numeral) and numeral[i] in cls._multiplier_from_map:
+                    total += digit * cls._multiplier_from_map[numeral[i]]
+                    i += 1
+                else:
+                    total += digit
+            elif c in cls._multiplier_from_map:
+                # Standalone multiplier: implicit coefficient of 1
+                total += cls._multiplier_from_map[c]
+                i += 1
+            else:
+                raise ValueError(f"Invalid Tamil character: {c!r}")
         return total

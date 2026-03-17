@@ -4,15 +4,23 @@ This module implements numeral systems from the Greek and Etruscan script
 families.
 Currently supports:
 
-    Milesian  U+0370-U+03FF  (Greek alphabetic numerals; U+0375 prefix for
-                               thousands)
-    Aegean    U+10107-U+10133  (45 glyphs for 1–90,000)
-    Attic     U+0394-U+039C (Greek letters) + U+10140-U+10147 (acrophonic)
-    Etruscan  U+10320-U+10323  (four glyphs: 1, 5, 10, 50)
+    Milesian    U+0370-U+03FF  (Greek alphabetic numerals; U+0375 prefix for
+                                thousands)
+    Alphabetic  U+0370-U+03FF  (uppercase Greek alphabetic numerals; U+0374
+                                keraia suffix as number mark)
+    Aegean      U+10107-U+10133  (45 glyphs for 1–90,000)
+    Attic       U+0394-U+039C (Greek letters) + U+10140-U+10147 (acrophonic)
+    Etruscan    U+10320-U+10323  (four glyphs: 1, 5, 10, 50)
 
-Milesian uses Greek alphabetic numerals; each letter contributes its face
-value and numerals are written largest-to-smallest.  Thousands are denoted by
-the Greek numeral sign ͵ (U+0375) before the corresponding unit letter.
+Milesian uses lowercase Greek alphabetic numerals; each letter contributes its
+face value and numerals are written largest-to-smallest.  Thousands are
+denoted by the Greek numeral sign ͵ (U+0375) before the corresponding unit
+letter.
+
+Alphabetic is the uppercase variant of the same Greek alphabetic numeral
+system.  The keraia ʹ (U+0374) is appended as a number mark; thousands use
+the same ͵ (U+0375) prefix as Milesian.  Both upper- and lower-case letters
+are accepted in decoding, and a trailing keraia is optional.
 
 Aegean is a purely additive system using dedicated number glyphs; each
 denomination appears at most once, written largest-to-smallest.
@@ -714,3 +722,222 @@ class Etruscan(System[str, int]):
         return reversed_char_sum_from_numeral(
             numeral, cls._from_numeral_map, cls.__name__
         )
+
+
+_KERAIA = "\u0374"  # ʹ  GREEK NUMERAL SIGN (keraia suffix)
+
+
+class Alphabetic(System[str, int]):
+    """Greek Alphabetic numeral system converter.
+
+    Implements bidirectional conversion between integers and Greek alphabetic
+    numeral strings.  The system is the uppercase variant of the Milesian
+    system: each uppercase letter contributes its face value and numerals are
+    written largest-to-smallest.  Thousands are denoted by the Greek numeral
+    sign ͵ (U+0375) placed before the corresponding unit letter.  The keraia
+    ʹ (U+0374) is appended as a number mark in encoding and stripped (if
+    present) before decoding.
+
+    Both upper- and lower-case letters are accepted in ``from_numeral``.
+
+    Attributes:
+        minimum: Minimum valid value (1).
+        maximum: Maximum valid value (9999).
+        encodings: UTF-8 only; Greek letters have no ASCII equivalents.
+    """
+
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 9999
+
+    encodings: ClassVar[Encodings] = {"utf8"}
+
+    _to_numeral_map: Mapping[int, str] = {
+        9000: "\u0375\u0398",  # ͵Θ
+        8000: "\u0375\u0397",  # ͵Η
+        7000: "\u0375\u0396",  # ͵Ζ
+        6000: "\u0375\u03da",  # ͵Ϛ
+        5000: "\u0375\u0395",  # ͵Ε
+        4000: "\u0375\u0394",  # ͵Δ
+        3000: "\u0375\u0393",  # ͵Γ
+        2000: "\u0375\u0392",  # ͵Β
+        1000: "\u0375\u0391",  # ͵Α
+        900: "\u03e0",  # Ϡ  sampi
+        800: "\u03a9",  # Ω
+        700: "\u03a8",  # Ψ
+        600: "\u03a7",  # Χ
+        500: "\u03a6",  # Φ
+        400: "\u03a5",  # Υ
+        300: "\u03a4",  # Τ
+        200: "\u03a3",  # Σ
+        100: "\u03a1",  # Ρ
+        90: "\u03d8",  # Ϙ  koppa
+        80: "\u03a0",  # Π
+        70: "\u039f",  # Ο
+        60: "\u039e",  # Ξ
+        50: "\u039d",  # Ν
+        40: "\u039c",  # Μ
+        30: "\u039b",  # Λ
+        20: "\u039a",  # Κ
+        10: "\u0399",  # Ι
+        9: "\u0398",  # Θ
+        8: "\u0397",  # Η
+        7: "\u0396",  # Ζ
+        6: "\u03da",  # Ϛ  stigma (uppercase)
+        5: "\u0395",  # Ε
+        4: "\u0394",  # Δ
+        3: "\u0393",  # Γ
+        2: "\u0392",  # Β
+        1: "\u0391",  # Α
+    }
+
+    # Two-character thousands tokens come first; both upper- and lower-case
+    # single-character tokens are included so either form is accepted.
+    _from_numeral_map: Mapping[str, int] = {
+        "\u0375\u0391": 1000,  # ͵Α
+        "\u0375\u03b1": 1000,  # ͵α
+        "\u0375\u0392": 2000,  # ͵Β
+        "\u0375\u03b2": 2000,  # ͵β
+        "\u0375\u0393": 3000,  # ͵Γ
+        "\u0375\u03b3": 3000,  # ͵γ
+        "\u0375\u0394": 4000,  # ͵Δ
+        "\u0375\u03b4": 4000,  # ͵δ
+        "\u0375\u0395": 5000,  # ͵Ε
+        "\u0375\u03b5": 5000,  # ͵ε
+        "\u0375\u03da": 6000,  # ͵Ϛ
+        "\u0375\u03db": 6000,  # ͵ϛ
+        "\u0375\u0396": 7000,  # ͵Ζ
+        "\u0375\u03b6": 7000,  # ͵ζ
+        "\u0375\u0397": 8000,  # ͵Η
+        "\u0375\u03b7": 8000,  # ͵η
+        "\u0375\u0398": 9000,  # ͵Θ
+        "\u0375\u03b8": 9000,  # ͵θ
+        "\u0391": 1,  # Α
+        "\u03b1": 1,  # α
+        "\u0392": 2,  # Β
+        "\u03b2": 2,  # β
+        "\u0393": 3,  # Γ
+        "\u03b3": 3,  # γ
+        "\u0394": 4,  # Δ
+        "\u03b4": 4,  # δ
+        "\u0395": 5,  # Ε
+        "\u03b5": 5,  # ε
+        "\u03da": 6,  # Ϛ
+        "\u03db": 6,  # ϛ
+        "\u0396": 7,  # Ζ
+        "\u03b6": 7,  # ζ
+        "\u0397": 8,  # Η
+        "\u03b7": 8,  # η
+        "\u0398": 9,  # Θ
+        "\u03b8": 9,  # θ
+        "\u0399": 10,  # Ι
+        "\u03b9": 10,  # ι
+        "\u039a": 20,  # Κ
+        "\u03ba": 20,  # κ
+        "\u039b": 30,  # Λ
+        "\u03bb": 30,  # λ
+        "\u039c": 40,  # Μ
+        "\u03bc": 40,  # μ
+        "\u039d": 50,  # Ν
+        "\u03bd": 50,  # ν
+        "\u039e": 60,  # Ξ
+        "\u03be": 60,  # ξ
+        "\u039f": 70,  # Ο
+        "\u03bf": 70,  # ο
+        "\u03a0": 80,  # Π
+        "\u03c0": 80,  # π
+        "\u03d8": 90,  # Ϙ koppa (uppercase)
+        "\u03d9": 90,  # ϙ koppa (lowercase)
+        "\u03a1": 100,  # Ρ
+        "\u03c1": 100,  # ρ
+        "\u03a3": 200,  # Σ
+        "\u03c3": 200,  # σ
+        "\u03a4": 300,  # Τ
+        "\u03c4": 300,  # τ
+        "\u03a5": 400,  # Υ
+        "\u03c5": 400,  # υ
+        "\u03a6": 500,  # Φ
+        "\u03c6": 500,  # φ
+        "\u03a7": 600,  # Χ
+        "\u03c7": 600,  # χ
+        "\u03a8": 700,  # Ψ
+        "\u03c8": 700,  # ψ
+        "\u03a9": 800,  # Ω
+        "\u03c9": 800,  # ω
+        "\u03e0": 900,  # Ϡ sampi (uppercase)
+        "\u03e1": 900,  # ϡ sampi (lowercase)
+    }
+
+    @classmethod
+    def _to_numeral(cls, number: int) -> str:
+        """Convert an Arabic integer to its Greek Alphabetic numeral.
+
+        Uses greedy additive decomposition with uppercase letters, largest
+        denomination first, then appends the keraia ʹ (U+0374) as a number
+        mark.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
+
+        Examples:
+            >>> Alphabetic._to_numeral(1)
+            'Αʹ'
+            >>> Alphabetic._to_numeral(6)
+            'Ϛʹ'
+            >>> Alphabetic._to_numeral(9)
+            'Θʹ'
+            >>> Alphabetic._to_numeral(100)
+            'Ρʹ'
+            >>> Alphabetic._to_numeral(1000)
+            '͵Αʹ'
+            >>> Alphabetic._to_numeral(9999)
+            '͵ΘϠϘΘʹ'
+        """
+        return greedy_additive_to_numeral(number, cls._to_numeral_map) + _KERAIA
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int:
+        """Convert a Greek Alphabetic numeral string to its Arabic integer value.
+
+        Strips an optional trailing keraia ʹ (U+0374) before parsing.
+        Two-character thousands tokens (͵X) are resolved before their
+        constituent single-character entries.  Both upper- and lower-case
+        letters are accepted.
+
+        Args:
+            numeral: The numeral to convert.
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside
+                the valid range.
+            ValueError: If the numeral representation is invalid.
+
+        Examples:
+            >>> Alphabetic._from_numeral('Αʹ')
+            1
+            >>> Alphabetic._from_numeral('α')
+            1
+            >>> Alphabetic._from_numeral('Θʹ')
+            9
+            >>> Alphabetic._from_numeral('Ρʹ')
+            100
+            >>> Alphabetic._from_numeral('͵Αʹ')
+            1000
+            >>> Alphabetic._from_numeral('͵ΘϠϘΘʹ')
+            9999
+            >>> Alphabetic._from_numeral('?')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid Alphabetic character at position 0: '?'
+        """
+        if numeral.endswith(_KERAIA):
+            numeral = numeral[:-1]
+        return longest_match_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
