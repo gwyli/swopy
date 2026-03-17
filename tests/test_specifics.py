@@ -118,6 +118,11 @@ class TestKaktovik:
             == n
         )
 
+    def test_bare_hyphen_raises(self) -> None:
+        """Checks that a lone hyphen-minus raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid Kaktovik numeral"):
+            systems.kaktovik.Kaktovik.from_numeral("-")
+
 
 class TestAramaicImperialAramaic:
     """Specific tests for systems.aramaic.ImperialAramaic."""
