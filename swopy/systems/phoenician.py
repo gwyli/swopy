@@ -1,19 +1,15 @@
-"""Phoenician numeral system converter.
+# ruff: noqa: RUF002
+"""Phoenician numeral system converters.
 
-This module implements the Phoenician numeral system, a purely additive system
-using six signs from Unicode block U+10916-U+1091B.
+This module implements numeral systems from the Phoenician script family.
+Currently supports:
 
-Unicode glyphs:
+    Phoenician  U+10916-U+1091B  (six glyphs: 1, 2, 3, 10, 20, 100)
 
-    𐤖  U+10916  PHOENICIAN NUMBER ONE      ->  1
-    𐤚  U+1091A  PHOENICIAN NUMBER TWO      ->  2
-    𐤛  U+1091B  PHOENICIAN NUMBER THREE    ->  3
-    𐤗  U+10917  PHOENICIAN NUMBER TEN      ->  10
-    𐤘  U+10918  PHOENICIAN NUMBER TWENTY   ->  20
-    𐤙  U+10919  PHOENICIAN NUMBER ONE HUNDRED -> 100
-
-No sign exists for 5, 50, or 1000, so values such as 4-9 are expressed
-additively (e.g. 4 = 3+1 = 𐤛𐤖, 9 = 3+3+3 = 𐤛𐤛𐤛). The valid range is 1-999.
+Phoenician is a purely additive system using greedy decomposition for encoding
+and character-sum for decoding.  No sign exists for 5, 50, or 1000, so values
+such as 4–9 are expressed by combining smaller signs (e.g. 9 = 3+3+3 = 𐤛𐤛𐤛).
+The valid range is 1–999.
 """
 
 from collections.abc import Mapping

@@ -46,7 +46,7 @@ def swop[
         TypeError: If the number cannot be represented in the target system.
 
     Examples:
-        >>> swop(10, systems.arabic.Arabic, systems.egyptian.Egyptian)
+        >>> swop(10, systems.hindu_arabic.Arabic, systems.egyptian.Egyptian)
         '\U00013386'
         >>> swop('Ⅹ', systems.roman.Standard, \
             systems.egyptian.Egyptian)
@@ -80,7 +80,7 @@ def get_all_systems() -> dict[str, type[System[Any, Any]]]:
         >>> all_systems = get_all_systems()
         >>> 'roman.Standard' in all_systems
         True
-        >>> 'arabic.Arabic' in all_systems
+        >>> 'hindu_arabic.Arabic' in all_systems
         True
 
         Get system properties:

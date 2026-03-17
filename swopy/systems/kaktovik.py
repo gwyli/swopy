@@ -1,4 +1,4 @@
-"""Inuit and related numeral system converters.
+"""Kaktovik (Iñupiaq) numeral system converters.
 
 This module implements numeral systems from the Inuit cultural sphere.
 Currently supports:

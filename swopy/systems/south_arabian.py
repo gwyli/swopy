@@ -1,10 +1,10 @@
-"""Semitic numeral system converters.
+"""South Arabian numeral system converters.
 
-This module implements numeral systems from ancient Semitic cultures.
+This module implements numeral systems from ancient South Arabian cultures.
 Currently supports:
 
-    Old South Arabian  U+10A60-U+10A7F  (specific glyphs listed below)
-    Old North Arabian  U+10A80-U+10A9F  (specific glyphs listed below)
+    Old South Arabian  U+10A60-U+10A7F  (five glyphs: 1, 50, 100, 1000, 10000)
+    Old North Arabian  U+10A80-U+10A9F  (three glyphs: 1, 10, 20)
 
 Both systems are purely additive, using greedy decomposition for encoding
 and character-sum for decoding.

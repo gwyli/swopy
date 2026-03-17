@@ -1,12 +1,15 @@
 """Cuneiform numeral system converters.
 
-This module implements numeral systems from Cuneiform, which is a purely additive
-system using greedy decomposition for encoding and character-sum for decoding.
+This module implements numeral systems from the Cuneiform script family.
+Currently supports:
 
-Unicode blocks used:
+    Cuneiform  U+12400-U+1247F  (Cuneiform Numbers and Punctuation block)
+               U+12000-U+123FF  (main block; ASH and DISH base signs)
 
-    Cuneiform Numbers and Punctuation  U+12400-U+1247F
-    Cuneiform (main block)             U+12000-U+123FF  (ASH and DISH base signs)
+Cuneiform is a purely additive system using greedy decomposition for encoding
+and character-sum for decoding.  Multiple-of-10 signs (THREE DISH through
+NINE DISH) and unit signs (TWO ASH through NINE ASH) are combined greedily;
+the value 20 is represented by two DISH signs.
 """
 
 # ruff: noqa: RUF002

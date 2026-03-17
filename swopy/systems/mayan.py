@@ -1,8 +1,12 @@
-"""Mayan numeral system converter.
+"""Mayan numeral system converters.
 
-This module implements the Mayan vigesimal (base-20) numeral system using
-Unicode block U+1D2E0-U+1D2F3. Each of the 20 unique glyphs represents a
-digit (0-19); numbers are encoded positionally, most-significant digit first,
+This module implements numeral systems from the Mayan script family.
+Currently supports:
+
+    Mayan  U+1D2E0-U+1D2F3  (twenty glyphs: zero through nineteen)
+
+Mayan is a positional base-20 (vigesimal) system; each of the 20 unique glyphs
+represents a digit (0–19).  Numbers are encoded most-significant digit first,
 analogous to the top-to-bottom writing direction of original Mayan inscriptions.
 
 Unicode glyphs:

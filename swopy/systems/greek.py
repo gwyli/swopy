@@ -1,18 +1,32 @@
-"""Greek Milesian numeral system conversion module.
+"""Greek and Etruscan numeral system converters.
 
-This module provides conversion utilities for Greek Milesian (alphabetic) numerals.
-It implements bidirectional conversion between Arabic numbers and Greek numerals.
+This module implements numeral systems from the Greek and Etruscan script
+families.
+Currently supports:
 
-Unicode glyphs used:
-    Units (1–9):    α β γ δ ε ϛ ζ η θ
-    Tens (10–90):   ι κ λ μ ν ξ ο π ϙ
-    Hundreds (100–900): ρ σ τ υ φ χ ψ ω ϡ
-    Thousands (1000–9000): ͵ (U+0375) prefix before the corresponding unit letter
+    Milesian  U+0370-U+03FF  (Greek alphabetic numerals; U+0375 prefix for
+                               thousands)
+    Aegean    U+10107-U+10133  (45 glyphs for 1–90,000)
+    Attic     U+0394-U+039C (Greek letters) + U+10140-U+10147 (acrophonic)
+    Etruscan  U+10320-U+10323  (four glyphs: 1, 5, 10, 50)
 
-The valid range is 1–9999.
+Milesian uses Greek alphabetic numerals; each letter contributes its face
+value and numerals are written largest-to-smallest.  Thousands are denoted by
+the Greek numeral sign ͵ (U+0375) before the corresponding unit letter.
+
+Aegean is a purely additive system using dedicated number glyphs; each
+denomination appears at most once, written largest-to-smallest.
+
+Attic is a purely additive system using Greek letter acrophonics for base
+denominations and composite symbols for fives; it also supports base-4
+fractions (1/4, 1/2, 3/4).
+
+Etruscan is a purely additive right-to-left system; encoding reverses the
+greedy result so the highest-denomination glyphs appear on the right, and
+decoding reverses the input before summing.
 """
 
-# Ignore ambiguous unicode character strings in Greek numerals
+# Ignore ambiguous unicode character strings in Greek and Etruscan numerals
 # ruff: noqa: RUF002 RUF003
 
 from collections.abc import Mapping
@@ -24,6 +38,8 @@ from ._algorithms import (
     char_sum_from_numeral,
     greedy_additive_to_numeral,
     longest_match_from_numeral,
+    reversed_char_sum_from_numeral,
+    reversed_greedy_additive_to_numeral,
 )
 
 
@@ -579,3 +595,122 @@ class Attic(System[str, int | Fraction]):
             Fraction(3, 4)
         """
         return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
+
+
+class Etruscan(System[str, int]):
+    """Etruscan numeral system converter.
+
+    Implements bidirectional conversion between integers and Etruscan numeral strings.
+
+    Etruscan numerals are a purely additive system written right-to-left (largest
+    denomination on the right).  ``_to_numeral`` builds numerals using a greedy
+    decomposition (largest denomination first) and reverses the result so that
+    the highest-denomination glyphs appear on the right.  ``_from_numeral``
+    reverses the input string before summing, so both paths share the same
+    left-to-right internal iteration.
+
+    Attributes:
+        to_numeral_map: Mapping of integer values to Etruscan numeral components,
+            ordered by magnitude including subtractive pairs.
+        from_numeral_map: Mapping of Etruscan numeral characters to their integer
+            values.
+        minimum: Minimum valid value (1).
+        maximum: Maximum valid value (399), limited by Etruscan numeral notation.
+        maximum_is_many: False, as 399 is a precise limit.
+    """
+
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 399
+
+    _to_numeral_map: Mapping[int, str] = {
+        50: "\U00010323",  # 𐌣 - OLD ITALIC NUMERAL FIFTY
+        10: "\U00010322",  # 𐌢 - OLD ITALIC NUMERAL TEN
+        5: "\U00010321",  # 𐌡 - OLD ITALIC NUMERAL FIVE
+        1: "\U00010320",  # 𐌠 - OLD ITALIC NUMERAL ONE
+    }
+
+    _from_numeral_map: Mapping[str, int] = {
+        "\U00010320": 1,
+        "\U00010321": 5,
+        "\U00010322": 10,
+        "\U00010323": 50,
+        "I": 1,
+        "Λ": 5,
+        "X": 10,
+        "↑": 50,
+    }
+
+    @classmethod
+    def _to_numeral(cls, number: int) -> str:
+        """Convert an Arabic integer to its Etruscan numeral representation.
+
+        Uses a greedy decomposition (largest denomination first), then reverses
+        the result so the highest-denomination glyphs appear on the right, in
+        keeping with the Etruscan right-to-left writing convention.
+
+        Args:
+            number: The Arabic number to convert.
+
+        Returns:
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range.
+
+        Examples:
+            >>> Etruscan._to_numeral(1)
+            '𐌠'
+            >>> Etruscan._to_numeral(4)
+            '𐌠𐌠𐌠𐌠'
+            >>> Etruscan._to_numeral(6)
+            '𐌠𐌡'
+            >>> Etruscan._to_numeral(10)
+            '𐌢'
+            >>> Etruscan._to_numeral(17)
+            '𐌠𐌠𐌡𐌢'
+            >>> Etruscan._to_numeral(29)
+            '𐌠𐌠𐌠𐌠𐌡𐌢𐌢'
+            >>> Etruscan._to_numeral(55)
+            '𐌡𐌣'
+            >>> Etruscan._to_numeral(399)
+            '𐌠𐌠𐌠𐌠𐌡𐌢𐌢𐌢𐌢𐌣𐌣𐌣𐌣𐌣𐌣𐌣'
+        """
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int:
+        """Convert an Etruscan numeral string to its Arabic integer value.
+
+        Accepts both Unicode glyphs (e.g. ``'𐌠𐌡'``) and their ASCII equivalents
+        (e.g. ``'IΛ'``).  The string is expected in standard right-to-left reading
+        order (largest denomination on the right), so it is reversed internally
+        before summing.
+
+        Args:
+            numeral: The numeral to convert.
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside the valid
+                range.
+            ValueError: If the numeral representation is invalid.
+
+        Examples:
+            >>> Etruscan._from_numeral('𐌠𐌠𐌠𐌠')
+            4
+            >>> Etruscan._from_numeral('𐌠𐌡')
+            6
+            >>> Etruscan._from_numeral('𐌠𐌠𐌡𐌢')
+            17
+            >>> Etruscan._from_numeral('𐌠𐌠𐌠𐌠𐌡𐌢𐌢')
+            29
+            >>> Etruscan._from_numeral('IIΛX')
+            17
+            >>> Etruscan._from_numeral('IIIIΛXX')
+            29
+        """
+        return reversed_char_sum_from_numeral(
+            numeral, cls._from_numeral_map, cls.__name__
+        )

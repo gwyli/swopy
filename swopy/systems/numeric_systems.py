@@ -1,11 +1,18 @@
-"""Chinese numeral system converters.
+# ruff: noqa: RUF002
+"""Numeric notation system converters.
 
-This module implements Chinese numeral systems. Currently supports:
+This module implements generic numeric notation systems not tied to a single
+cultural script family.
+Currently supports:
 
-    Counting Rod Numerals  U+1D360-U+1D371
+    Counting Rod Numerals  U+1D360-U+1D371  (eighteen glyphs: unit digits 1–9,
+                                              tens digits 10–90)
 
-Counting Rod numerals encode each decimal place with a dedicated glyph:
-unit digits (1-9) for units, tens digits (10-90) for tens.
+Counting Rod is a purely additive system that encodes each decimal place with a
+dedicated glyph: nine unit-digit glyphs (1–9) for the ones place and nine
+tens-digit glyphs (10–90) for the tens place.  Numbers are encoded as
+(optional tens glyph)(optional unit glyph).  Greedy decomposition is used for
+encoding and character-sum for decoding.
 """
 
 from collections.abc import Mapping

@@ -1,8 +1,17 @@
-"""Roman numeral system conversion module.
+"""Roman numeral system converters.
 
-This module provides conversion utilities for Roman numerals. It implements
-bidirectional conversion between Arabic numbers and Roman numerals, with support
-for subtractive notation (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
+This module implements numeral systems from the Roman script family.
+Currently supports:
+
+    Early        (Roman numerals up to 899; subtractive notation)
+    Standard     (Roman numerals 1/12 to 3,999; subtractive + base-12 fractions)
+    Apostrophus  (Roman numerals 1 to 100,000; extended forms CⅠↃ, CCⅠↃↃ, etc.)
+
+All three systems use subtractive notation (e.g. ⅠⅤ for 4, ⅠⅩ for 9) for
+encoding and longest-match or subtractive scanning for decoding.  Standard
+additionally supports base-12 fractions (twelfths) expressed with dot and S
+symbols.  Apostrophus extends the alphabet with parenthetical forms for large
+values.
 """
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF001 RUF002 RUF003

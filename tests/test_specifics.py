@@ -51,38 +51,38 @@ class TestRomanApostrophus:
             systems.roman.Apostrophus.from_numeral("ⅠⅠↃⅠ")
 
 
-class TestEtruscanEtruscan:
-    """Specific tests for systems.etruscan.Etruscan."""
+class TestGreekEtruscan:
+    """Specific tests for systems.greek.Etruscan."""
 
     def test_to_numeral_four(self):
         # 4 = 4×1; Etruscan has no subtractive notation
-        assert systems.etruscan.Etruscan.to_numeral(4) == "\U00010320" * 4
+        assert systems.greek.Etruscan.to_numeral(4) == "\U00010320" * 4
 
     def test_to_numeral_six(self):
         # 6 = 1 + 5; RTL → smallest on the left: 𐌠𐌡
-        assert systems.etruscan.Etruscan.to_numeral(6) == "\U00010320" + "\U00010321"
+        assert systems.greek.Etruscan.to_numeral(6) == "\U00010320" + "\U00010321"
 
     def test_to_numeral_seventeen(self):
         # 17 = 2×1 + 1×5 + 1×10; RTL: 𐌠𐌠𐌡𐌢
         assert (
-            systems.etruscan.Etruscan.to_numeral(17)
+            systems.greek.Etruscan.to_numeral(17)
             == "\U00010320" * 2 + "\U00010321" + "\U00010322"
         )
 
     def test_to_numeral_twentynine(self):
         # 29 = 4×1 + 1×5 + 2×10; RTL: 𐌠𐌠𐌠𐌠𐌡𐌢𐌢
         assert (
-            systems.etruscan.Etruscan.to_numeral(29)
+            systems.greek.Etruscan.to_numeral(29)
             == "\U00010320" * 4 + "\U00010321" + "\U00010322" * 2
         )
 
 
-class TestIndicKharosthi:
-    """Specific tests for systems.indic.Kharosthi"""
+class TestKharosthiKharosthi:
+    """Specific tests for systems.kharosthi.Kharosthi"""
 
     def test_to_numeral(self):
         # 2+4+10+20+20+20+20 + 100x(1+4+4) + 1000
-        assert systems.indic.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
+        assert systems.kharosthi.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
 
 
 class TestGreekAttic:
@@ -96,23 +96,25 @@ class TestGreekAttic:
             systems.greek.Attic.to_numeral(Fraction(1, 3))
 
 
-class TestInuitKaktovik:
-    """Specific tests for systems.inuit.Kaktovik."""
+class TestKaktovik:
+    """Specific tests for systems.kaktovik.Kaktovik."""
 
     def test_42(self) -> None:
         """Checks that 42 encodes as two Kaktovik twos (2×20 + 2)."""
-        assert systems.inuit.Kaktovik.to_numeral(42) == "\U0001d2c2\U0001d2c2"
+        assert systems.kaktovik.Kaktovik.to_numeral(42) == "\U0001d2c2\U0001d2c2"
 
     def test_negative(self) -> None:
         """Checks that negative integers are prefixed with a hyphen-minus."""
-        assert systems.inuit.Kaktovik.to_numeral(-1) == "-\U0001d2c1"
-        assert systems.inuit.Kaktovik.from_numeral("-\U0001d2c1") == -1
+        assert systems.kaktovik.Kaktovik.to_numeral(-1) == "-\U0001d2c1"
+        assert systems.kaktovik.Kaktovik.from_numeral("-\U0001d2c1") == -1
 
     def test_large_number(self) -> None:
         """Checks that numbers greater than 10^20 round-trip correctly."""
         n = 10**21
         assert (
-            systems.inuit.Kaktovik.from_numeral(systems.inuit.Kaktovik.to_numeral(n))
+            systems.kaktovik.Kaktovik.from_numeral(
+                systems.kaktovik.Kaktovik.to_numeral(n)
+            )
             == n
         )
 
@@ -126,36 +128,36 @@ class TestAramaicImperialAramaic:
         assert numeral[-1] == "\U0001085e"  # ONE THOUSAND on right
 
 
-class TestAramaicManichaean:
-    """Specific tests for systems.aramaic.Manichaean."""
+class TestSogdianManichaean:
+    """Specific tests for systems.sogdian.Manichaean."""
 
     def test_rtl(self) -> None:
         """Checks that larger denominations appear on the right (RTL order)."""
-        numeral = systems.aramaic.Manichaean.to_numeral(11)
+        numeral = systems.sogdian.Manichaean.to_numeral(11)
         assert numeral[-1] == "\U00010aed"  # TEN on right
 
 
-class TestAramaicOldSogdian:
-    """Specific tests for systems.aramaic.OldSogdian."""
+class TestSogdianOldSogdian:
+    """Specific tests for systems.sogdian.OldSogdian."""
 
     def test_rtl(self) -> None:
         """Checks that larger denominations appear on the right (RTL order)."""
-        numeral = systems.aramaic.OldSogdian.to_numeral(101)
+        numeral = systems.sogdian.OldSogdian.to_numeral(101)
         assert numeral[-1] == "\U00010f25"  # ONE HUNDRED on right
 
 
-class TestAramaicSogdian:
-    """Specific tests for systems.aramaic.Sogdian."""
+class TestSogdianSogdian:
+    """Specific tests for systems.sogdian.Sogdian."""
 
     def test_rtl(self) -> None:
         """Checks that larger denominations appear on the right (RTL order)."""
-        numeral = systems.aramaic.Sogdian.to_numeral(21)
+        numeral = systems.sogdian.Sogdian.to_numeral(21)
         assert numeral[-1] == "\U00010f53"  # TWENTY on right
 
 
-class TestAncientSouthArabian:
-    """Specific tests for systems.semetic.OldSouthArabian"""
+class TestSouthArabianAncientSouthArabian:
+    """Specific tests for systems.south_arabian.AncientSouthArabian"""
 
     def test_to_numeral(self):
-        assert systems.semetic.AncientSouthArabian.to_numeral(31000) == "𐩲𐩲𐩲𐩱"
-        assert systems.semetic.AncientSouthArabian.to_numeral(40000) == "𐩲𐩲𐩲𐩲"
+        assert systems.south_arabian.AncientSouthArabian.to_numeral(31000) == "𐩲𐩲𐩲𐩱"
+        assert systems.south_arabian.AncientSouthArabian.to_numeral(40000) == "𐩲𐩲𐩲𐩲"
