@@ -3,7 +3,7 @@ import pstats
 
 import swopy
 
-previous_system = swopy.systems.arabic.Arabic
+previous_system = swopy.systems.hindu_arabic.Arabic
 numeral = 10
 
 with cProfile.Profile() as pr:
