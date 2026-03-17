@@ -378,13 +378,6 @@ class Suzhou(System[str, int]):
         "\u303a": 30,  # 〺 HANGZHOU NUMERAL THIRTY (shorthand, decode only)
     }
 
-    _shorthand: ClassVar[frozenset[str]] = frozenset("\u3038\u3039\u303a")
-    _shorthand_values: ClassVar[Mapping[str, int]] = {
-        "\u3038": 10,
-        "\u3039": 20,
-        "\u303a": 30,
-    }
-
     @classmethod
     def _to_numeral(cls, number: int) -> str:
         """Convert a non-negative integer to its Suzhou positional representation.
@@ -456,13 +449,17 @@ class Suzhou(System[str, int]):
                 ...
             ValueError: Invalid Suzhou character: '?'
         """
-        if numeral in cls._shorthand_values:
-            return cls._shorthand_values[numeral]
         total = 0
         for char in numeral:
-            if char not in cls._from_numeral_map or char in cls._shorthand:
+            if char not in cls._from_numeral_map:
                 raise ValueError(f"Invalid Suzhou character: {char!r}")
-            total = total * 10 + cls._from_numeral_map[char]
+            value = cls._from_numeral_map[char]
+            # Detect shorthand numerals and prevent their use mid-string
+            if value >= 10:  # noqa: PLR2004
+                if len(numeral) != 1:
+                    raise ValueError(f"Invalid Suzhou character: {char!r}")
+                return value
+            total = total * 10 + value
         return total
 
 
