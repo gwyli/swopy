@@ -1,8 +1,17 @@
-"""Roman numeral system conversion module.
+"""Roman numeral system converters.
 
-This module provides conversion utilities for Roman numerals. It implements
-bidirectional conversion between Arabic numbers and Roman numerals, with support
-for subtractive notation (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
+This module implements numeral systems from the Roman script family.
+Currently supports:
+
+    Early        (Roman numerals up to 899; subtractive notation)
+    Standard     (Roman numerals 1/12 to 3,999; subtractive + base-12 fractions)
+    Apostrophus  (Roman numerals 1 to 100,000; extended forms CⅠↃ, CCⅠↃↃ, etc.)
+
+All three systems use subtractive notation (e.g. ⅠⅤ for 4, ⅠⅩ for 9) for
+encoding and longest-match or subtractive scanning for decoding.  Standard
+additionally supports base-12 fractions (twelfths) expressed with dot and S
+symbols.  Apostrophus extends the alphabet with parenthetical forms for large
+values.
 """
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF001 RUF002 RUF003
@@ -12,6 +21,11 @@ from fractions import Fraction
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import (
+    longest_match_from_numeral,
+    subtractive_from_numeral,
+    subtractive_to_numeral,
+)
 
 
 class Early(System[str, int]):
@@ -91,16 +105,9 @@ class Early(System[str, int]):
             >>> Early.to_numeral(900)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 900.
+            ValueError: Number must be less than or equal to 899.
         """
-        result: str = ""
-
-        for arabic, roman in cls.to_numeral_map().items():
-            while number >= arabic:
-                result += roman
-                number -= arabic
-
-        return result
+        return subtractive_to_numeral(number, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -130,26 +137,9 @@ class Early(System[str, int]):
             >>> Early.from_numeral('Z')
             Traceback (most recent call last):
                 ...
-            ValueError: Invalid Roman character: Z
+            ValueError: Invalid Early character: 'Z'
         """
-
-        total: int = 0
-        prev_value: int = 0
-
-        for char in reversed(numeral.upper()):
-            current_value = cls.from_numeral_map().get(char)
-
-            if current_value is None:
-                raise ValueError(f"Invalid Roman character: {char}")
-
-            if current_value < prev_value:
-                total -= current_value
-            else:
-                total += current_value
-
-            prev_value = current_value
-
-        return total
+        return subtractive_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
 
 
 class Standard(System[str, int | Fraction]):
@@ -264,7 +254,7 @@ class Standard(System[str, int | Fraction]):
             >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 900.
+            ValueError: Number must be less than or equal to 899.
         """
         result: str = ""
 
@@ -430,37 +420,17 @@ class Apostrophus(Early):
             >>> Apostrophus.from_numeral('Z')
             Traceback (most recent call last):
                 ...
-            ValueError: Ⅰnvalid Roman character: Z
-            >>> Apostrophus.from_numeral('ⅠⅠↃⅠ')
+            ValueError: Invalid Roman character: Z
+            >>> Apostrophus.from_numeral('VX')
             Traceback (most recent call last):
                 ...
-            ValueError: Invalid sequence I cannot follow a smaller value.
+            ValueError: Invalid Apostrophus sequence: 'X' cannot follow a smaller value.
         """
-        total: int | Fraction = 0
-        numeral_ = numeral.upper()
-        # Start with a value larger than the maximum to allow any numeral
-        last_value = cls.maximum + 1
-
-        i = 0
-        while i < len(numeral_):
-            matched = False
-            for symbol in cls.from_numeral_map():
-                if numeral_.startswith(symbol, i):
-                    current_value = cls.from_numeral_map()[symbol]
-
-                    # Ensure we aren't seeing a larger symbol after a smaller one
-                    if current_value > last_value:
-                        raise ValueError(
-                            f"Invalid sequence {symbol} cannot follow a smaller value."
-                        )
-
-                    total += current_value
-                    last_value = current_value
-                    i += len(symbol)
-                    matched = True
-                    break
-
-            if not matched:
-                raise ValueError(f"Invalid Apostrophus characters at position {i}")
-
-        return total
+        return longest_match_from_numeral(
+            numeral,
+            cls._from_numeral_map,
+            cls.__name__,
+            case_fold=True,
+            enforce_descending=True,
+            initial_max=int(cls.maximum) + 1,
+        )

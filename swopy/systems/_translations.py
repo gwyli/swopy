@@ -1,4 +1,4 @@
-UTF8_TO_ASCII = {
+UTF8_TO_LATIN = {
     "\u2160": "I",
     "\U00010320": "I",
     "\u2161": "II",
@@ -21,4 +21,4 @@ UTF8_TO_ASCII = {
     "\u216f": "M",
 }
 
-ASCII = str.maketrans(UTF8_TO_ASCII)
+ASCII = str.maketrans(UTF8_TO_LATIN)

@@ -114,7 +114,7 @@ def test_identity_conversion(
 
         number_: Numeral = system.to_numeral(number, encode=encoding)
         result: Numeral = swop(number_, system, system)
-        final: Denotation = system.from_numeral(result, encode=encoding)
+        final: Denotation = system.from_numeral(result)
 
         assert final == number, (
             f"Failed identity conversion for {system} with value {number}"
@@ -165,10 +165,5 @@ def test_encodings[
 
         for encoding in from_system.encodings:
             if encoding not in to_system.encodings:
-                with pytest.raises(ValueError):
-                    swop(source_input, from_system, to_system, encode=encoding)
-
-        for encoding in to_system.encodings:
-            if encoding not in from_system.encodings:
                 with pytest.raises(ValueError):
                     swop(source_input, from_system, to_system, encode=encoding)

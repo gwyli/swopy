@@ -35,7 +35,7 @@ class BaseNFraction:
         return hash(Fraction)
 
     def __eq__(self, other: object):
-        return other is Fraction or other is self
+        return other is Fraction or isinstance(other, BaseNFraction)
 
 
 NumericKind = type | BaseNFraction

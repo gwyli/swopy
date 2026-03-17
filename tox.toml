@@ -1,5 +1,5 @@
 requires = ["tox-uv"]
-env_list = ["3.15.0a6", "3.14.3", "3.14.0", "3.13", "lint", "typecheck", "dependencycheck", "zizmor"]
+env_list = ["3.15.0a7", "3.14.3", "3.14.0", "3.13", "lint", "typecheck", "dependencycheck", "zizmor"]
 
 [gh.python]
 "3.15.0a6" = ["3.15.0a6"]

@@ -1,21 +1,79 @@
 # Swopy
 
-A library for biredirectional conversion between numeral systems (e.g. Egyptian, Roman, Arabic etc.).
-
-## Overview
-
-Swopy provides a simple and extensible interface to convert numbers between various numeral systems.
-Swopy supports bidirectional conversion — you can convert from any supported system to any other.
+A library for biredirectional conversion between numeral systems. Supports 46 different systems across all numeral systems available in Unicode. Families include Aramaic, Brahmi, Cuneiform, Egyptian, Ethiopic, Greek, Hebrew, Hindu-Arabic, Kaktovik, Kharosthi, Mayan, Medefaidrin, Nabataean, Pahlavi, Phoenician, Roman, Sino-Tibetan, Siyaq, Sogdian, and South Arabian.
 
 ## Supported Numeral Systems
 
-* [Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/arabic.py), supporting integers, floats and fractions between `-math.inf` and `math.inf`
-* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py), supporting integers between 1 and 1,000,000/many
-* [Etruscan](https://github.com/gwyli/swopy/blob/main/swopy/systems/etruscan.py), supporting integers between 1 and 300
+* [Aramaic](https://github.com/gwyli/swopy/blob/main/swopy/systems/aramaic.py):
+   * `Hatran`, supporting integers between 1 and 999
+   * `ImperialAramaic`, supporting integers between 1 and 99,999
+   * `Palmyrene`, supporting integers between 1 and 99
+* [Brahmi](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi.py):
+   * `Brahmi`, supporting integers between 1 and 9,999
+* [Brahmi-Dravidian](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi_dravidian.py):
+   * `Grantha`, supporting integers between 0 and infinity (base-7 positional)
+   * `Saurashtra`, supporting integers between 0 and infinity
+   * `Tamil`, supporting integers between 1 and 9,999
+* [Brahmi-Gupta](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi_gupta.py):
+   * `Bhaiksuki`, supporting integers between 1 and 999
+   * `SinhalaArchaic`, supporting integers between 1 and 9,999
+* [Brahmi-Tai](https://github.com/gwyli/swopy/blob/main/swopy/systems/brahmi_tai.py):
+   * `Ahom`, supporting integers between 0 and infinity
+* [Cuneiform](https://github.com/gwyli/swopy/blob/main/swopy/systems/cuneiform.py):
+   * `Cuneiform`, supporting integers between 1 and 999
+* [Egyptian](https://github.com/gwyli/swopy/blob/main/swopy/systems/egyptian.py):
+   * `Egyptian`, supporting integers between 1 and 1,000,000/many
+   * `CopticEpact`, supporting integers between 1 and 9,999
+* [Ethiopic](https://github.com/gwyli/swopy/blob/main/swopy/systems/ethiopic.py):
+   * `Ethiopic`, supporting integers between 1 and 99,999,999
+* [Greek](https://github.com/gwyli/swopy/blob/main/swopy/systems/greek.py):
+   * `Aegean`, supporting integers between 1 and 99,999
+   * `Alphabetic`, supporting integers between 1 and 9,999
+   * `Attic`, supporting integers and base-4 fractions between 1/4 and 99,999
+   * `Etruscan`, supporting integers between 1 and 399
+   * `Milesian`, supporting integers between 1 and 9,999
+* [Hebrew](https://github.com/gwyli/swopy/blob/main/swopy/systems/hebrew.py):
+   * `Hebrew`, supporting integers between 1 and 9,999
+* [Hindu-Arabic](https://github.com/gwyli/swopy/blob/main/swopy/systems/hindu_arabic.py):
+   * `Arabic`, supporting integers, floats and fractions between `-math.inf` and `math.inf`. Also available in `arabic.Arabic`
+   * `Bakhshali`, supporting integers between 1 and 9,999
+* [Kaktovik](https://github.com/gwyli/swopy/blob/main/swopy/systems/kaktovik.py):
+   * `Kaktovik`, supporting integers between -infinity and +infinity
+* [Kharosthi](https://github.com/gwyli/swopy/blob/main/swopy/systems/kharosthi.py):
+   * `Kharosthi`, supporting integers between 1 and 9,999
+* [Mayan](https://github.com/gwyli/swopy/blob/main/swopy/systems/mayan.py):
+   * `Mayan`, supporting integers between 0 and infinity
+* [Medefaidrin](https://github.com/gwyli/swopy/blob/main/swopy/systems/medefaidrin.py):
+   * `Medefaidrin`, supporting integers between 0 and infinity (base-20 positional)
+* [Nabataean](https://github.com/gwyli/swopy/blob/main/swopy/systems/nabataean.py):
+   * `Nabataean`, supporting integers between 1 and 999
+* [Numeric Systems](https://github.com/gwyli/swopy/blob/main/swopy/systems/numeric_systems.py):
+   * `CountingRod`, supporting integers between 1 and 99
+* [Pahlavi](https://github.com/gwyli/swopy/blob/main/swopy/systems/pahlavi.py):
+   * `InscriptionalParthian`, supporting integers between 1 and 9,999
+   * `InscriptionalPahlavi`, supporting integers between 1 and 9,999
+   * `PsalterPahlavi`, supporting integers between 1 and 999
+* [Phoenician](https://github.com/gwyli/swopy/blob/main/swopy/systems/phoenician.py):
+   * `Phoenician`, supporting integers between 1 and 999
 * [Roman](https://github.com/gwyli/swopy/blob/main/swopy/systems/roman.py), in the forms:
-   * Early, supporting integers between 1 and 899
-   * Standard, supporting integers and base-12 fractions between 1/12 and 3,999
-   * Apostrophus, supporting integers between 1 and 100,000
+   * `Early`, supporting integers between 1 and 899
+   * `Standard`, supporting integers and base-12 fractions between 1/12 and 3,999
+   * `Apostrophus`, supporting integers between 1 and 100,000
+* [Sino-Tibetan](https://github.com/gwyli/swopy/blob/main/swopy/systems/sino_tibetan.py):
+   * `Chinese`, supporting integers between 1 and 99,999,999
+   * `Khitan`, supporting integers between 1 and 99,999,999
+   * `Suzhou`, supporting integers between 0 and infinity
+   * `Tangut`, supporting integers between 1 and 99,999,999
+* [Siyaq](https://github.com/gwyli/swopy/blob/main/swopy/systems/siyaq.py):
+   * `IndicSiyaq`, supporting integers between 1 and 99,999
+   * `OttomanSiyaq`, supporting integers between 1 and 99,999
+* [Sogdian](https://github.com/gwyli/swopy/blob/main/swopy/systems/sogdian.py):
+   * `Manichaean`, supporting integers between 1 and 999
+   * `OldSogdian`, supporting integers between 1 and 999
+   * `Sogdian`, supporting integers between 1 and 999
+* [South Arabian](https://github.com/gwyli/swopy/blob/main/swopy/systems/south_arabian.py):
+   * `AncientNorthArabian`, supporting integers between 1 and 99
+   * `AncientSouthArabian`, supporting integers between 1 and 99,999
 
 ## Installation
 
@@ -51,12 +109,14 @@ import pprint
 systems = swopy.get_all_systems()
 pprint.pprint(systems)
 
-# {'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
+#{'arabic.Arabic': <class 'swopy.systems.arabic.Arabic'>,
 # 'egyptian.Egyptian': <class 'swopy.systems.egyptian.Egyptian'>,
 # 'etruscan.Etruscan': <class 'swopy.systems.etruscan.Etruscan'>,
-#  'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
-#  'roman.Early': <class 'swopy.systems.roman.Early'>,
-#  'roman.Standard': <class 'swopy.systems.roman.Standard'>}
+# 'greek.Milesian': <class 'swopy.systems.greek.Milesian'>,
+# 'roman.Apostrophus': <class 'swopy.systems.roman.Apostrophus'>,
+# 'roman.Early': <class 'swopy.systems.roman.Early'>,
+# 'roman.Standard': <class 'swopy.systems.roman.Standard'>
+# ...}
 
 swopy.swop(42, systems['arabic.Arabic'], systems['roman.Early'])
 # 'XLII'

@@ -33,7 +33,7 @@ def swop[
     then performs the conversion via Arabic numerals.
 
     Args:
-        number: The number to convert, in whatever format the source system accepts.
+        numeral: The number to convert, in whatever format the source system accepts.
         from_system: The source numeral system.
         to_system: The target numeral system.
 
@@ -46,7 +46,7 @@ def swop[
         TypeError: If the number cannot be represented in the target system.
 
     Examples:
-        >>> swop(10, systems.arabic.Arabic, systems.egyptian.Egyptian)
+        >>> swop(10, systems.hindu_arabic.Arabic, systems.egyptian.Egyptian)
         '\U00013386'
         >>> swop('Ⅹ', systems.roman.Standard, \
             systems.egyptian.Egyptian)
@@ -55,17 +55,7 @@ def swop[
         'Ⅹ'
     """
 
-    if encode not in from_system.encodings:
-        raise ValueError(
-            f"Encoding '{encode}' is not supported for {from_system.__name__}."
-        )
-
-    if encode not in to_system.encodings:
-        raise ValueError(
-            f"Encoding '{encode}' is not supported for {to_system.__name__}."
-        )
-
-    intermediate: TFromDenotation = from_system.from_numeral(numeral, encode=encode)
+    intermediate: TFromDenotation = from_system.from_numeral(numeral)
 
     if to_system.is_valid_denotation(intermediate):
         return to_system.to_numeral(intermediate, encode=encode)
@@ -90,7 +80,7 @@ def get_all_systems() -> dict[str, type[System[Any, Any]]]:
         >>> all_systems = get_all_systems()
         >>> 'roman.Standard' in all_systems
         True
-        >>> 'arabic.Arabic' in all_systems
+        >>> 'hindu_arabic.Arabic' in all_systems
         True
 
         Get system properties:

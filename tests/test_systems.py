@@ -53,7 +53,7 @@ def test_reversibility(
     Verifies that numeral systems can be converted to their representation
     and back without loss of precision.
     """
-    base_types: tuple[type] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
+    base_types: tuple[type, ...] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
 
     assert len(base_types) >= 1, "System must have at least one base type"
 
@@ -61,9 +61,7 @@ def test_reversibility(
         number = data.draw(make_strategy(system))
 
         encoded: Numeral = system.to_numeral(number, encode=encoding)
-        decoded: str | int | float | Fraction = system.from_numeral(
-            encoded, encode=encoding
-        )
+        decoded: str | int | float | Fraction = system.from_numeral(encoded)
 
         assert decoded == number, f"Failed round-trip for {system} with value {number}"
         assert type(decoded) is type(number), (
@@ -77,8 +75,11 @@ def test_reversibility(
         x
         for x in SYSTEMS
         # Special case `System.maximum_is_many` and don't test maxima and minima if they
-        # are unbounded
-        if not x.maximum_is_many and not (x.minimum == -inf and x.maximum == inf)
+        # are unbounded (no upper bound means there is nothing above maximum to falsify)
+        # FIXME: At the moment this works for the two number systems that reach infinity
+        # Mayan and Arabic, if in the future there is a number system from -inf -> some
+        # bounded value then this needs to be rethought.
+        if not x.maximum_is_many and x.maximum != inf
     ],
 )
 @given(strategies.data())
@@ -144,9 +145,8 @@ def test_invalid_characters(system: type[System[str, Denotation]], value: str) -
 
     assume(not all(c.upper() in character_string for c in value))
 
-    for encoding in system.encodings:
-        with pytest.raises(ValueError):
-            system.from_numeral(value, encode=encoding)
+    with pytest.raises(ValueError):
+        system.from_numeral(value)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -184,9 +184,8 @@ def test_invalid_numerals(
 
     number = data.draw(load_strategies(system, base_types))
 
-    for encoding in system.encodings:
-        with pytest.raises(TypeError):
-            system.from_numeral(number, encode=encoding)
+    with pytest.raises(TypeError):
+        system.from_numeral(number)
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
@@ -204,26 +203,3 @@ def test_invalid_encodings_to_numeral(
     for encoding in set(System.encodings) - set(system.encodings):
         with pytest.raises(ValueError):
             system.to_numeral(number, encode=encoding)
-
-
-@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
-@given(strategies.data())
-def test_invalid_encodings_from_numeral(
-    system: type[System[Numeral, Denotation]],
-    data: strategies.DataObject,
-) -> None:
-    """Verifies that a ValueError is raised when attempting to use an
-    invalid encoding when converting from a numeral system.
-
-    Args:
-        number: A valid number for the numeral system.
-    """
-
-    alphabet = [
-        x for x in system.from_numeral_map() if isinstance(x, str) and len(x) == 1
-    ]
-    numeral = data.draw(strategies.text(alphabet=alphabet))
-
-    for encoding in set(System.encodings) - set(system.encodings):
-        with pytest.raises(ValueError):
-            system.from_numeral(numeral, encode=encoding)

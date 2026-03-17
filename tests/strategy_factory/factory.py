@@ -17,6 +17,7 @@ Usage
         ...
 """
 
+from fractions import Fraction
 from math import inf
 from typing import Any
 
@@ -25,7 +26,7 @@ from hypothesis.strategies import SearchStrategy, one_of
 from swopy import Denotation, Numeral, System
 
 from . import builders
-from .numeric_type import infer_numeric_kind
+from .numeric_type import BaseNFraction, infer_numeric_kind
 
 
 def _resolve_bounds[
@@ -171,7 +172,21 @@ def make_double_strategy[
         A Hypothesis SearchStrategy for all (in)valid types for the Systems
     """
     if not falsify:
-        kinds = infer_numeric_kind(from_system) & infer_numeric_kind(to_system)
+        from_kinds = infer_numeric_kind(from_system)
+        to_kinds = infer_numeric_kind(to_system)
+        kinds = from_kinds & to_kinds
+        frac_bases = [
+            k.base for k in (*from_kinds, *to_kinds) if isinstance(k, BaseNFraction)
+        ]
+        if frac_bases:
+            min_base = min(frac_bases)
+            resolved: set[BaseNFraction | type] = set()
+            for k in kinds:
+                if isinstance(k, BaseNFraction) or k is Fraction:
+                    resolved.add(BaseNFraction(min_base))
+                else:
+                    resolved.add(k)
+            kinds = resolved
     else:
         kinds = infer_numeric_kind(from_system) ^ infer_numeric_kind(to_system)
 
