@@ -1,6 +1,6 @@
 [project]
 name = "swopy"
-version = "0.1.7"
+version = "0.1.8"
 description = "A library for biredirectional conversion between numeral systems. Supports 46 different systems across all numeral systems available in Unicode. Families include Aramaic, Brahmi, Cuneiform, Egyptian, Ethiopic, Greek, Hebrew, Hindu-Arabic, Kaktovik, Kharosthi, Mayan, Medefaidrin, Nabataean, Pahlavi, Phoenician, Roman, Sino-Tibetan, Siyaq, Sogdian, and South Arabian."
 readme = "README.md"
 requires-python = ">=3.13"
