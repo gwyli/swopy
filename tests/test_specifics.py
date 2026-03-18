@@ -292,3 +292,18 @@ class TestMedefaidrinMedefaidrin:
         """Checks that alternate digit forms for 1-3 are accepted as input."""
         assert systems.medefaidrin.Medefaidrin.from_numeral("\U00016e94") == 1
         assert systems.medefaidrin.Medefaidrin.from_numeral("\U00016e96") == 3  # noqa: PLR2004
+
+
+class TestSinoTibetanSuzhou:
+    """Specific tests for systems.sino_tibetan.Suzhou."""
+
+    def test_shorthand_standalone(self) -> None:
+        """Checks that standalone shorthand glyphs decode to 10, 20, and 30."""
+        assert systems.sino_tibetan.Suzhou.from_numeral("\u3038") == 10  # noqa: PLR2004  # 〸
+        assert systems.sino_tibetan.Suzhou.from_numeral("\u3039") == 20  # noqa: PLR2004  # 〹
+        assert systems.sino_tibetan.Suzhou.from_numeral("\u303a") == 30  # noqa: PLR2004  # 〺
+
+    def test_shorthand_mid_string_raises(self) -> None:
+        """Checks that a shorthand glyph (〸/〹/〺) inside a longer string raises."""
+        with pytest.raises(ValueError, match="Invalid Suzhou character"):
+            systems.sino_tibetan.Suzhou.from_numeral("\u3038\u3021")  # 〸〡
