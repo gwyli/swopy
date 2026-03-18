@@ -43,6 +43,7 @@ from ..system import Encodings, System
 from ._algorithms import (
     multiplicative_myriad_from_numeral,
     multiplicative_myriad_to_numeral,
+    positional_to_numeral,
 )
 
 
@@ -367,8 +368,10 @@ class Suzhou(System[str, int]):
 
     encodings: ClassVar[Encodings] = {"utf8"}
 
-    _to_numeral_map: Mapping[int, str] = {i: chr(0x3020 + i) for i in range(1, 10)}
-    # U+3007 = 〇 IDEOGRAPHIC NUMBER ZERO
+    _to_numeral_map: Mapping[int, str] = {
+        0: "\u3007",  # 〇 IDEOGRAPHIC NUMBER ZERO
+        **{i: chr(0x3020 + i) for i in range(1, 10)},
+    }
 
     _from_numeral_map: Mapping[str, int] = {
         "\u3007": 0,  # 〇 zero
@@ -409,13 +412,7 @@ class Suzhou(System[str, int]):
             >>> Suzhou._to_numeral(100)
             '〡〇〇'
         """
-        if number == 0:
-            return "\u3007"
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 10)
-            parts.append(cls._to_numeral_map.get(remainder, "\u3007"))
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

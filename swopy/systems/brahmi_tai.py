@@ -20,6 +20,7 @@ from math import inf
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import positional_to_numeral
 
 
 class Ahom(System[str, int]):
@@ -84,13 +85,7 @@ class Ahom(System[str, int]):
             >>> Ahom._to_numeral(100)
             '\U00011731\U00011730\U00011730'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 10)
-            parts.append(cls._to_numeral_map[remainder])
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

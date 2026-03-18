@@ -7,6 +7,57 @@ from fractions import Fraction
 from typing import overload
 
 
+def positional_to_numeral(number: int, to_map: Mapping[int, str], base: int) -> str:
+    """Convert a non-negative integer to its positional base-N numeral string.
+
+    Encodes ``number`` in base ``base``, emitting the most-significant digit
+    first (left-to-right). Zero is represented by the single glyph ``to_map[0]``.
+
+    Args:
+        number: The non-negative integer to convert.
+        to_map: Mapping from digit values (0 to base-1) to their glyphs.
+        base: The positional base (e.g. 7, 10, 20).
+
+    Returns:
+        The numeral string representation of ``number``.
+    """
+    if number == 0:
+        return to_map[0]
+    parts: list[str] = []
+    while number:
+        number, remainder = divmod(number, base)
+        parts.append(to_map[remainder])
+    return "".join(reversed(parts))
+
+
+def positional_from_numeral(
+    numeral: str, from_map: Mapping[str, int], system_name: str, base: int
+) -> int:
+    """Convert a positional base-N numeral string to its integer value.
+
+    Scans each character left-to-right, accumulating
+    ``total = total * base + digit``.
+
+    Args:
+        numeral: The numeral string to convert.
+        from_map: Mapping from digit glyphs to their values (0 to base-1).
+        system_name: Human-readable system name used in the error message.
+        base: The positional base (e.g. 7, 10, 20).
+
+    Returns:
+        The integer value of ``numeral``.
+
+    Raises:
+        ValueError: If any character is not present in ``from_map``.
+    """
+    total = 0
+    for char in numeral:
+        if char not in from_map:
+            raise ValueError(f"Invalid {system_name} character: {char!r}")
+        total = total * base + from_map[char]
+    return total
+
+
 def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> str:
     """Convert an integer to a numeral string using greedy additive decomposition.
 

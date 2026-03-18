@@ -21,6 +21,7 @@ from math import inf
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Medefaidrin(System[str, int]):
@@ -86,13 +87,7 @@ class Medefaidrin(System[str, int]):
             >>> Medefaidrin._to_numeral(400)
             '\U00016e81\U00016e80\U00016e80'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 20)
-            parts.append(cls._to_numeral_map[remainder])
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -129,9 +124,4 @@ class Medefaidrin(System[str, int]):
                 ...
             ValueError: Invalid Medefaidrin character: '?'
         """
-        total = 0
-        for char in numeral:
-            if char not in cls._from_numeral_map:
-                raise ValueError(f"Invalid Medefaidrin character: {char!r}")
-            total = total * 20 + cls._from_numeral_map[char]
-        return total
+        return positional_from_numeral(numeral, cls._from_numeral_map, cls.__name__, 20)

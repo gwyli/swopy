@@ -31,6 +31,7 @@ from math import inf
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Mayan(System[str, int]):
@@ -53,9 +54,6 @@ class Mayan(System[str, int]):
     maximum: ClassVar[int | float | Fraction] = inf
 
     encodings: ClassVar[Encodings] = {"utf8"}
-
-    # Ordered list of digit glyphs: index == digit value
-    _digits: ClassVar[list[str]] = [chr(0x1D2E0 + i) for i in range(20)]
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x1D2E0 + i) for i in range(20)}
     _from_numeral_map: Mapping[str, int] = {chr(0x1D2E0 + i): i for i in range(20)}
@@ -92,13 +90,7 @@ class Mayan(System[str, int]):
             >>> Mayan._to_numeral(8000)
             '𝋡𝋠𝋠𝋠'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 20)
-            parts.append(cls._to_numeral_map[remainder])
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -133,9 +125,4 @@ class Mayan(System[str, int]):
                 ...
             ValueError: Invalid Mayan character: '?'
         """
-        total = 0
-        for char in numeral:
-            if char not in cls._from_numeral_map:
-                raise ValueError(f"Invalid {cls.__name__} character: {char!r}")
-            total = total * 20 + cls._from_numeral_map[char]
-        return total
+        return positional_from_numeral(numeral, cls._from_numeral_map, cls.__name__, 20)
