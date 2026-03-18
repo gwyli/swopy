@@ -38,6 +38,7 @@ from math import inf
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Grantha(System[str, int]):
@@ -94,13 +95,7 @@ class Grantha(System[str, int]):
             >>> Grantha._to_numeral(49)
             '𑍧𑍦𑍦'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 7)
-            parts.append(cls._to_numeral_map[remainder])
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 7)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -134,12 +129,7 @@ class Grantha(System[str, int]):
                 ...
             ValueError: Invalid Grantha character: '?'
         """
-        total = 0
-        for char in numeral:
-            if char not in cls._from_numeral_map:
-                raise ValueError(f"Invalid Grantha character: {char!r}")
-            total = total * 7 + cls._from_numeral_map[char]
-        return total
+        return positional_from_numeral(numeral, cls._from_numeral_map, cls.__name__, 7)
 
 
 class Saurashtra(System[str, int]):
@@ -197,13 +187,7 @@ class Saurashtra(System[str, int]):
             >>> Saurashtra._to_numeral(100)
             '\ua8d1\ua8d0\ua8d0'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 10)
-            parts.append(cls._to_numeral_map[remainder])
-        return "".join(reversed(parts))
+        return positional_to_numeral(number, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -239,12 +223,7 @@ class Saurashtra(System[str, int]):
                 ...
             ValueError: Invalid Saurashtra character: '?'
         """
-        total = 0
-        for char in numeral:
-            if char not in cls._from_numeral_map:
-                raise ValueError(f"Invalid Saurashtra character: {char!r}")
-            total = total * 10 + cls._from_numeral_map[char]
-        return total
+        return positional_from_numeral(numeral, cls._from_numeral_map, cls.__name__, 10)
 
 
 class Tamil(System[str, int]):

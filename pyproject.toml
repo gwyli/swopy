@@ -128,3 +128,8 @@ known-first-party=["swopy"]
 "tests/**/*.py" = [
     "S101", # Allow assert
 ]
+
+[tool.zizmor]
+ignore = [
+    "secrets-outside-env" # No environments
+]

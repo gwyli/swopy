@@ -21,6 +21,7 @@ from math import inf
 from typing import ClassVar
 
 from ..system import Encodings, System
+from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Kaktovik(System[str, int]):
@@ -99,17 +100,9 @@ class Kaktovik(System[str, int]):
             >>> Kaktovik._to_numeral(-42)
             '-𝋂𝋂'
         """
-        if number == 0:
-            return cls._to_numeral_map[0]
-        sign = ""
         if number < 0:
-            sign = "-"
-            number = -number
-        parts: list[str] = []
-        while number:
-            number, remainder = divmod(number, 20)
-            parts.append(cls._to_numeral_map[remainder])
-        return sign + "".join(reversed(parts))
+            return "-" + positional_to_numeral(-number, cls._to_numeral_map, 20)
+        return positional_to_numeral(number, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -157,9 +150,5 @@ class Kaktovik(System[str, int]):
         digits = numeral[1:] if negative else numeral
         if not digits:
             raise ValueError(f"Invalid Kaktovik numeral: {numeral!r}")
-        total = 0
-        for char in digits:
-            if char not in cls._from_numeral_map:
-                raise ValueError(f"Invalid Kaktovik character: {char!r}")
-            total = total * 20 + cls._from_numeral_map[char]
+        total = positional_from_numeral(digits, cls._from_numeral_map, cls.__name__, 20)
         return -total if negative else total

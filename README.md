@@ -1,6 +1,6 @@
 # Swopy
 
-A library for biredirectional conversion between numeral systems. Supports 46 different systems across all numeral systems available in Unicode. Families include Aramaic, Brahmi, Cuneiform, Egyptian, Ethiopic, Greek, Hebrew, Hindu-Arabic, Kaktovik, Kharosthi, Mayan, Medefaidrin, Nabataean, Pahlavi, Phoenician, Roman, Sino-Tibetan, Siyaq, Sogdian, and South Arabian.
+A library for biredirectional conversion between numeral systems. Supports 46 different systems across all numeral systems available in Unicode.
 
 ## Supported Numeral Systems
 
