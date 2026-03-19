@@ -99,6 +99,24 @@ class TestKharosthiKharosthi:
         # 2+4+10+20+20+20+20 + 100x(1+4+4) + 1000
         assert systems.kharosthi.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
 
+    @staticmethod
+    def _units_str_reference(n: int, m: Mapping[int, str]) -> str:
+        """Verbatim copy of the original _units_str for regression testing."""
+        result = ""
+        for value in (4, 3, 2, 1):
+            result += m[value] * (n // value)
+            n %= value
+        return result
+
+    @given(strategies.integers(min_value=0, max_value=9))
+    def test_units_str_matches_reference(self, n: int) -> None:
+        """_units_str must match the reference loop implementation."""
+        m = systems.kharosthi.Kharosthi._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert (
+            systems.kharosthi.Kharosthi._units_str(n)  # pyright: ignore[reportPrivateUsage]
+            == self._units_str_reference(n, m)
+        )
+
 
 class TestGreekAttic:
     """Specific tests for systems.greek.Attic."""
