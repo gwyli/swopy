@@ -407,7 +407,8 @@ def multiplicative_myriad_to_numeral(
     def encode_sub(n: int) -> str:
         res = ""
         for mult, glyph in sub_mult:
-            coeff, n = divmod(n, mult)
+            coeff = n // mult
+            n = n % mult
             if coeff:
                 if coeff > 1 or (explicit_one_tens and mult == _ten):
                     res += digit_map[coeff]
@@ -416,7 +417,8 @@ def multiplicative_myriad_to_numeral(
             res += digit_map[n]
         return res
 
-    myriads, remainder = divmod(number, _myriad)
+    myriads = number // _myriad
+    remainder = number % _myriad
     result = ""
     if myriads:
         if myriads > 1 or explicit_one_tens:

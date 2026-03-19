@@ -78,7 +78,8 @@ def _decode_sub100(numeral: str, system_name: str) -> int:
 def _encode_sub9999(n: int) -> str:
     """Encode an integer 1-9999 using Ethiopic sub-hundred encoding."""
     result = ""
-    hundreds, remainder = divmod(n, 100)
+    hundreds = n // 100
+    remainder = n % 100
     if hundreds:
         if hundreds != 1:
             result += _encode_sub100(hundreds)
@@ -176,7 +177,8 @@ class Ethiopic(System[str, int]):
             >>> Ethiopic._to_numeral(99999999)
             '፺፱፻፺፱፼፺፱፻፺፱'
         """
-        myriads, remainder = divmod(number, 10000)
+        myriads = number // 10000
+        remainder = number % 10000
         result = ""
         if myriads:
             if myriads != 1:

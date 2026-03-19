@@ -101,6 +101,7 @@ Optimisations applied (in order):
 1. `_to_numeral_items` ClassVar — pre-computes `dict.items()` view, passed to `greedy_additive_to_numeral`
 2. `frozenset` runtime types — `type(val) in frozenset` replaces `isinstance(..., tuple)`
 3. `//` / `%` replace `divmod()` in `multiplicative_additive_to_numeral` and `Kharosthi._to_numeral` — eliminated 300k+ built-in calls, −37% tottime on those functions
+4. `//` / `%` replace `divmod()` in `multiplicative_myriad_to_numeral`, `_encode_sub9999`, `Ethiopic._to_numeral`, and `Tamil._to_numeral` — eliminated remaining 300k+ `divmod` calls flagged by profiler
 
 ## Tooling
 
