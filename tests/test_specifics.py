@@ -17,6 +17,7 @@ from hypothesis import given, strategies
 from swopy import systems
 from swopy.systems._algorithms import (
     greedy_additive_to_numeral,
+    longest_match_from_numeral,
     reversed_greedy_additive_to_numeral,
 )
 
@@ -350,4 +351,85 @@ class TestAlgorithmsGreedyAdditive:
         assert (
             reversed_greedy_additive_to_numeral(number, m)
             == self._reference(number, m)[::-1]
+        )
+
+
+class TestAlgorithmsLongestMatch:
+    """Checks that any new longest_match_from_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(  # noqa: PLR0913
+        numeral: str,
+        from_map: Mapping[str, int],
+        system_name: str,
+        *,
+        case_fold: bool = False,
+        enforce_descending: bool = False,
+        initial_max: int | None = None,
+    ) -> int:
+        if case_fold:
+            numeral = numeral.upper()
+
+        last_value: int = (
+            (initial_max if initial_max is not None else max(from_map.values()) + 1)
+            if enforce_descending
+            else 0
+        )
+
+        total = 0
+        i = 0
+        while i < len(numeral):
+            matched = False
+            for symbol, value in from_map.items():
+                if numeral.startswith(symbol, i):
+                    if enforce_descending and value > last_value:
+                        raise ValueError(
+                            f"Invalid {system_name} sequence: {symbol!r} cannot"
+                            " follow a smaller value."
+                        )
+                    total += value
+                    last_value = value
+                    i += len(symbol)
+                    matched = True
+                    break
+
+            if not matched:
+                raise ValueError(
+                    f"Invalid {system_name} character at position {i}: {numeral[i]!r}"
+                )
+
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_hebrew(self, number: int) -> None:
+        """Hebrew map: 37 entries, default options."""
+        numeral = systems.hebrew.Hebrew.to_numeral(number)
+        m = systems.hebrew.Hebrew._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(numeral, m, "Hebrew") == self._reference(
+            numeral, m, "Hebrew"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_greek_milesian(self, number: int) -> None:
+        """Greek Milesian map: 72 entries — largest map, exercises the hot path."""
+        numeral = systems.greek.Milesian.to_numeral(number)
+        m = systems.greek.Milesian._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(numeral, m, "Milesian") == self._reference(
+            numeral, m, "Milesian"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=100_000))
+    def test_roman_apostrophus(self, number: int) -> None:
+        """Roman Apostrophus: case_fold + enforce_descending + multi-char tokens."""
+        numeral = systems.roman.Apostrophus.to_numeral(number)
+        m = systems.roman.Apostrophus._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(
+            numeral, m, "Apostrophus", case_fold=True, enforce_descending=True
+        ) == self._reference(
+            numeral, m, "Apostrophus", case_fold=True, enforce_descending=True
         )

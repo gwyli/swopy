@@ -287,7 +287,7 @@ def longest_match_from_numeral(  # noqa: PLR0913
     while i < len(numeral):
         matched = False
         for symbol, value in from_map.items():
-            if numeral.startswith(symbol, i):
+            if numeral[i] == symbol[0] and numeral.startswith(symbol, i):
                 if enforce_descending and value > last_value:
                     raise ValueError(
                         f"Invalid {system_name} sequence: {symbol!r} cannot follow"
