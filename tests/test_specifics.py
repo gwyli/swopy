@@ -320,6 +320,20 @@ class TestSinoTibetanSuzhou:
             systems.sino_tibetan.Suzhou.from_numeral("\u3038\u3021")  # 〸〡
 
 
+class TestEthiopicEthiopic:
+    """Specific tests for systems.ethiopic.Ethiopic."""
+
+    def test_myriad_no_remainder(self) -> None:
+        """Checks that exact multiples of 10,000 round-trip correctly.
+
+        Exercises the empty-string branch of _decode_sub9999 (line 93 of
+        ethiopic.py), which returns 0 when the myriad glyph is the last
+        character and there is no trailing remainder segment.
+        """
+        assert systems.ethiopic.Ethiopic.from_numeral("\u137c") == 10000  # noqa: PLR2004
+        assert systems.ethiopic.Ethiopic.from_numeral("\u136a\u137c") == 20000  # noqa: PLR2004
+
+
 class TestAlgorithmsGreedyAdditive:
     """Checks that any new greedy_additive_to_numeral matches the verbatim original.
 
