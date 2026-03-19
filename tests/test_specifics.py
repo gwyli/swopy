@@ -16,8 +16,12 @@ from hypothesis import given, strategies
 
 from swopy import systems
 from swopy.systems._algorithms import (
+    char_sum_from_numeral,
     greedy_additive_to_numeral,
     longest_match_from_numeral,
+    multiplicative_additive_from_numeral,
+    multiplicative_myriad_from_numeral,
+    positional_to_numeral,
     reversed_greedy_additive_to_numeral,
 )
 
@@ -433,3 +437,186 @@ class TestAlgorithmsLongestMatch:
         ) == self._reference(
             numeral, m, "Apostrophus", case_fold=True, enforce_descending=True
         )
+
+
+class TestAlgorithmsMultiplicativeAdditive:
+    """Checks multiplicative_additive_from_numeral against the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(numeral: str, from_map: Mapping[str, int], system_name: str) -> int:
+        unit_glyphs = frozenset(g for g, v in from_map.items() if 1 <= v <= 9)  # noqa: PLR2004
+        multiplier_glyphs = {g: v for g, v in from_map.items() if v in {100, 1000}}
+        decade_glyphs = {g: v for g, v in from_map.items() if 10 <= v <= 90}  # noqa: PLR2004
+
+        total = 0
+        unit_buffer = 0
+
+        for char in numeral:
+            if char not in from_map:
+                raise ValueError(f"Invalid {system_name} character: {char!r}")
+
+            if char in unit_glyphs:
+                unit_buffer += from_map[char]
+            elif char in multiplier_glyphs:
+                total += multiplier_glyphs[char] * max(unit_buffer, 1)
+                unit_buffer = 0
+            else:
+                total += unit_buffer
+                unit_buffer = 0
+                total += decade_glyphs[char]
+
+        total += unit_buffer
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_sinhala_archaic(self, number: int) -> None:
+        """SinhalaArchaic: thousands/hundreds/tens/units — multiplicative-additive."""
+        numeral = systems.brahmi_gupta.SinhalaArchaic.to_numeral(number)
+        m = systems.brahmi_gupta.SinhalaArchaic._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_additive_from_numeral(numeral, m, "SinhalaArchaic")
+        assert got == self._reference(numeral, m, "SinhalaArchaic")
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_kharosthi(self, number: int) -> None:
+        """Kharosthi: exercises a different glyph set for the same algorithm."""
+        numeral = systems.kharosthi.Kharosthi.to_numeral(number)
+        m = systems.kharosthi.Kharosthi._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_additive_from_numeral(numeral, m, "Kharosthi")
+        assert got == self._reference(numeral, m, "Kharosthi")
+
+
+class TestAlgorithmsCharSum:
+    """Checks that any new char_sum_from_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(numeral: str, from_map: Mapping[str, int], system_name: str) -> int:
+        total: int = 0
+        for char in numeral:
+            if char not in from_map:
+                raise ValueError(f"Invalid {system_name} character: {char!r}")
+            total += from_map[char]
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=999_999))
+    def test_egyptian(self, number: int) -> None:
+        """Egyptian: powers-of-10 map up to 1,000,000 — large additive sums."""
+        numeral = systems.egyptian.Egyptian.to_numeral(number)
+        m = systems.egyptian.Egyptian._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert char_sum_from_numeral(numeral, m, "Egyptian") == self._reference(
+            numeral, m, "Egyptian"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=999))
+    def test_nabataean(self, number: int) -> None:
+        """Nabataean: non-power-of-10 denominations — exercises sparse glyph sums."""
+        numeral = systems.nabataean.Nabataean.to_numeral(number)
+        m = systems.nabataean.Nabataean._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert char_sum_from_numeral(numeral, m, "Nabataean") == self._reference(
+            numeral, m, "Nabataean"
+        )
+
+
+class TestAlgorithmsPositionalTo:
+    """Checks that any new positional_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, to_map: Mapping[int, str], base: int) -> str:
+        if number == 0:
+            return to_map[0]
+        parts: list[str] = []
+        while number:
+            number, remainder = divmod(number, base)
+            parts.append(to_map[remainder])
+        return "".join(reversed(parts))
+
+    @given(strategies.integers(min_value=0, max_value=1_000_000))
+    def test_kaktovik(self, number: int) -> None:
+        """Kaktovik: base-20 vigesimal — exercises multi-digit positional encoding."""
+        m = systems.kaktovik.Kaktovik._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert positional_to_numeral(number, m, 20) == self._reference(number, m, 20)
+
+    @given(strategies.integers(min_value=0, max_value=8000))
+    def test_mayan(self, number: int) -> None:
+        """Mayan: base-20 — different glyph set, same algorithm."""
+        m = systems.mayan.Mayan._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert positional_to_numeral(number, m, 20) == self._reference(number, m, 20)
+
+
+class TestAlgorithmsMyriad:
+    """Checks multiplicative_myriad_from_numeral against the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(
+        numeral: str,
+        digit_map: Mapping[str, int],
+        multiplier_map: Mapping[str, int],
+        system_name: str,
+    ) -> int:
+        _myriad = 10000
+        myriad_glyph = next(g for g, v in multiplier_map.items() if v == _myriad)
+        sub_mult_map = {g: v for g, v in multiplier_map.items() if v != _myriad}
+
+        def parse_sub(s: str) -> int:
+            total = 0
+            i = 0
+            while i < len(s):
+                c = s[i]
+                if c in digit_map:
+                    digit = digit_map[c]
+                    i += 1
+                    if i < len(s) and s[i] in sub_mult_map:
+                        total += digit * sub_mult_map[s[i]]
+                        i += 1
+                    else:
+                        total += digit
+                elif c in sub_mult_map:
+                    total += sub_mult_map[c]
+                    i += 1
+                else:
+                    raise ValueError(f"Invalid {system_name} character: {c!r}")
+            return total
+
+        if myriad_glyph in numeral:
+            idx = numeral.index(myriad_glyph)
+            coeff = parse_sub(numeral[:idx]) if idx > 0 else 1
+            remainder = parse_sub(numeral[idx + 1 :]) if idx + 1 < len(numeral) else 0
+            return coeff * 10000 + remainder
+        return parse_sub(numeral)
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_tangut(self, number: int) -> None:
+        """Tangut: explicit-one-tens, max 99,999,999 — exercises the myriad split."""
+        numeral = systems.sino_tibetan.Tangut.to_numeral(number)
+        dm = systems.sino_tibetan.Tangut._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Tangut._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Tangut")
+        assert got == self._reference(numeral, dm, mm, "Tangut")
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_khitan(self, number: int) -> None:
+        """Khitan: no explicit-one-tens — exercises the implicit-one variant."""
+        numeral = systems.sino_tibetan.Khitan.to_numeral(number)
+        dm = systems.sino_tibetan.Khitan._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Khitan._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Khitan")
+        assert got == self._reference(numeral, dm, mm, "Khitan")
