@@ -195,6 +195,8 @@ def subtractive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> str:
         while number >= value:
             result += glyph
             number -= value
+        if not number:
+            break
     return result
 
 

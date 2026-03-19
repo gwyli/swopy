@@ -10,6 +10,7 @@ have its own class for organisation in the form Test<Module><Class>
 
 from collections.abc import Mapping
 from fractions import Fraction
+from typing import Any, ClassVar
 
 import pytest
 from hypothesis import given, strategies
@@ -23,6 +24,7 @@ from swopy.systems._algorithms import (
     multiplicative_myriad_from_numeral,
     positional_to_numeral,
     reversed_greedy_additive_to_numeral,
+    subtractive_to_numeral,
 )
 
 
@@ -649,3 +651,152 @@ class TestAlgorithmsMyriad:
         mm = systems.sino_tibetan.Khitan._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
         got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Khitan")
         assert got == self._reference(numeral, dm, mm, "Khitan")
+
+
+class TestAlgorithmsSubtractiveTo:
+    """Checks that any new subtractive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction, numeral_map: Mapping[Any, str]) -> str:
+        result = ""
+        for value, glyph in numeral_map.items():
+            while number >= value:
+                result += glyph
+                number -= value
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_integers(self, number: int) -> None:
+        """Roman Standard: integer inputs exercise the integer portion of the map
+        and confirm early termination does not affect the result.
+        """
+        m = systems.roman.Standard.to_numeral_map()
+        assert subtractive_to_numeral(number, m) == self._reference(number, m)  # type: ignore[arg-type]
+
+    @given(
+        strategies.fractions(
+            min_value=Fraction(1, 12),
+            max_value=Fraction(11, 12),
+            max_denominator=12,
+        )
+    )
+    def test_roman_standard_fractions(self, number: Fraction) -> None:
+        """Roman Standard: fractional inputs exercise the Fraction tail of the map."""
+        m = systems.roman.Standard.to_numeral_map()
+        assert (  # type: ignore[arg-type]
+            subtractive_to_numeral(number, m)  # type: ignore[arg-type]
+            == self._reference(number, m)
+        )
+
+
+class TestRomanStandardToNumeralLoop:
+    """Regression tests for the roman.Standard._to_numeral inline loop.
+
+    The reference below is a verbatim copy of the _to_numeral implementation
+    before any optimisation.  These tests should remain unchanged so that future
+    rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction) -> str:
+        result: str = ""
+        integer = int(number)
+        proper_fraction = abs(int(number) - number)
+        for arabic, roman in systems.roman.Standard.to_numeral_map().items():
+            while integer >= arabic:
+                result += roman
+                integer -= arabic
+        if proper_fraction == 0:
+            return result
+        try:
+            result += systems.roman.Standard.to_numeral_map()[proper_fraction]
+        except KeyError as e:
+            raise ValueError(f"{number} cannot be represented in Standard.") from e
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_integers(self, number: int) -> None:
+        """Integer inputs: confirm that an early break at integer==0 does not
+        affect output, covering values where the Fraction tail would otherwise
+        be iterated.
+        """
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+    # Fractions representable as a single Roman uncia glyph
+    _VALID_FRACTIONS: ClassVar[list[Fraction]] = [
+        k for k in systems.roman.Standard.to_numeral_map() if isinstance(k, Fraction)
+    ]
+
+    @given(strategies.sampled_from(_VALID_FRACTIONS))
+    def test_proper_fractions(self, number: Fraction) -> None:
+        """Pure fractional inputs: integer part is zero so the break fires
+        immediately; the fraction glyph must still be looked up correctly.
+        """
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+    @given(
+        strategies.integers(min_value=1, max_value=3998),
+        strategies.sampled_from(_VALID_FRACTIONS),
+    )
+    def test_mixed(self, integer: int, frac: Fraction) -> None:
+        """Mixed integer+fraction inputs: both the integer and fractional
+        glyphs must be produced correctly after early break.
+        """
+        number = Fraction(integer) + frac
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+
+class TestGreekAtticToNumeral:
+    """Regression tests for greek.Attic._to_numeral.
+
+    The reference below is a verbatim copy of the _to_numeral implementation
+    before any optimisation.  These tests should remain unchanged so that future
+    rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction) -> str:
+        n = Fraction(number)
+        integer_part = int(n)
+        frac_part = n - integer_part
+        result = ""
+        for value, glyph in systems.greek.Attic._to_numeral_map.items():  # pyright: ignore[reportPrivateUsage]
+            if isinstance(value, Fraction):
+                continue
+            count, integer_part = divmod(integer_part, value)
+            result += glyph * count
+        if frac_part >= Fraction(1, 2):
+            result += systems.greek.Attic._to_numeral_map[Fraction(1, 2)]  # pyright: ignore[reportPrivateUsage]
+            frac_part -= Fraction(1, 2)
+        if frac_part >= Fraction(1, 4):
+            result += systems.greek.Attic._to_numeral_map[Fraction(1, 4)]  # pyright: ignore[reportPrivateUsage]
+            frac_part -= Fraction(1, 4)
+        if frac_part:
+            raise ValueError(f"{number} cannot be represented in Attic.")
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=99999))
+    def test_integers(self, number: int) -> None:
+        """Integer inputs: the common case — confirm no Fraction construction
+        changes the result.
+        """
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+    @given(strategies.sampled_from([Fraction(1, 4), Fraction(1, 2), Fraction(3, 4)]))
+    def test_pure_fractions(self, number: Fraction) -> None:
+        """Pure fractional inputs (1/4, 1/2, 3/4): integer part is zero."""
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+    @given(
+        strategies.integers(min_value=1, max_value=99998),
+        strategies.sampled_from([Fraction(1, 4), Fraction(1, 2), Fraction(3, 4)]),
+    )
+    def test_mixed(self, integer: int, frac: Fraction) -> None:
+        """Mixed integer+fraction inputs: both parts must be encoded correctly."""
+        number = Fraction(integer) + frac
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)

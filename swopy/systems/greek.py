@@ -492,6 +492,24 @@ class Attic(System[str, int | Fraction]):
         Fraction(1, 4): "\U00010140",  # 𐅀
     }
 
+    # Integer-only subset of _to_numeral_map; used in _to_numeral to avoid
+    # isinstance(value, Fraction) checks inside the hot loop.
+    _int_to_numeral_map: ClassVar[Mapping[int, str]] = {
+        50000: "\U00010147",  # 𐅇
+        10000: "\u039c",  # Μ
+        5000: "\U00010146",  # 𐅆
+        1000: "\u03a7",  # Χ
+        500: "\U00010145",  # 𐅅
+        100: "\u0397",  # Η
+        50: "\U00010144",  # 𐅄
+        10: "\u0394",  # Δ
+        5: "\U00010143",  # 𐅃
+        1: "\u0399",  # Ι
+    }
+
+    _HALF: ClassVar[Fraction] = Fraction(1, 2)
+    _QUARTER: ClassVar[Fraction] = Fraction(1, 4)
+
     # Both uppercase and lowercase Greek letters are included so that either
     # form is accepted as input.
     _from_numeral_map: Mapping[str, int | Fraction] = {
@@ -551,23 +569,21 @@ class Attic(System[str, int | Fraction]):
             >>> Attic._to_numeral(99999)
             '𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ'
         """
-        n = Fraction(number)
-        integer_part = int(n)
-        frac_part = n - integer_part
+        if isinstance(number, int):
+            return greedy_additive_to_numeral(number, cls._int_to_numeral_map)
 
-        result = ""
-        for value, glyph in cls._to_numeral_map.items():
-            if isinstance(value, Fraction):
-                continue
-            count, integer_part = divmod(integer_part, value)
-            result += glyph * count
+        frac = Fraction(number)
+        integer_part = int(frac)
+        frac_part = frac - integer_part
 
-        if frac_part >= Fraction(1, 2):
-            result += cls._to_numeral_map[Fraction(1, 2)]
-            frac_part -= Fraction(1, 2)
-        if frac_part >= Fraction(1, 4):
-            result += cls._to_numeral_map[Fraction(1, 4)]
-            frac_part -= Fraction(1, 4)
+        result = greedy_additive_to_numeral(integer_part, cls._int_to_numeral_map)
+
+        if frac_part >= cls._HALF:
+            result += cls._to_numeral_map[cls._HALF]
+            frac_part -= cls._HALF
+        if frac_part >= cls._QUARTER:
+            result += cls._to_numeral_map[cls._QUARTER]
+            frac_part -= cls._QUARTER
         if frac_part:
             raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
 
