@@ -98,6 +98,12 @@ class Tangut(System[str, int]):
         v: k for k, v in _multiplier_map.items()
     }
 
+    _myriad_sub_mult: ClassVar[tuple[tuple[int, str], ...]] = tuple(
+        (k, v)
+        for k, v in _multiplier_map.items()
+        if k != 10000  # noqa: PLR2004
+    )
+
     @classmethod
     def from_numeral_map(cls) -> Mapping[str, int]:
         """Returns all valid Tangut characters mapped to their numeric values.
@@ -154,6 +160,7 @@ class Tangut(System[str, int]):
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=True,
+            sub_mult=cls._myriad_sub_mult,
         )
 
     @classmethod
@@ -248,6 +255,12 @@ class Khitan(System[str, int]):
         v: k for k, v in _multiplier_map.items()
     }
 
+    _myriad_sub_mult: ClassVar[tuple[tuple[int, str], ...]] = tuple(
+        (k, v)
+        for k, v in _multiplier_map.items()
+        if k != 10000  # noqa: PLR2004
+    )
+
     @classmethod
     def from_numeral_map(cls) -> Mapping[str, int]:
         """Returns all valid Khitan characters mapped to their numeric values.
@@ -299,6 +312,7 @@ class Khitan(System[str, int]):
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=False,
+            sub_mult=cls._myriad_sub_mult,
         )
 
     @classmethod
@@ -510,6 +524,12 @@ class Chinese(System[str, int]):
         v: k for k, v in _multiplier_map.items()
     }
 
+    _myriad_sub_mult: ClassVar[tuple[tuple[int, str], ...]] = tuple(
+        (k, v)
+        for k, v in _multiplier_map.items()
+        if k != 10000  # noqa: PLR2004
+    )
+
     @classmethod
     def from_numeral_map(cls) -> Mapping[str, int]:
         """Returns all valid Chinese characters mapped to their numeric values.
@@ -563,6 +583,7 @@ class Chinese(System[str, int]):
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=False,
+            sub_mult=cls._myriad_sub_mult,
         )
 
     @classmethod

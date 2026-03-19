@@ -263,7 +263,7 @@ class Standard(System[str, int | Fraction]):
         integer = int(number)
         proper_fraction = abs(int(number) - number)
 
-        for arabic, roman in cls.to_numeral_map().items():
+        for arabic, roman in cls._to_numeral_items:
             while integer >= arabic:
                 result += roman
                 integer -= arabic
@@ -274,7 +274,7 @@ class Standard(System[str, int | Fraction]):
             return result
 
         try:
-            result += cls.to_numeral_map()[proper_fraction]
+            result += cls._to_numeral_map[proper_fraction]
         except KeyError as e:
             raise ValueError(
                 f"{number} cannot be represented in {cls.__name__}."
