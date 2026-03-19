@@ -8,11 +8,17 @@ have its own class for organisation in the form Test<Module><Class>
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF002 RUF003
 
+from collections.abc import Mapping
 from fractions import Fraction
 
 import pytest
+from hypothesis import given, strategies
 
 from swopy import systems
+from swopy.systems._algorithms import (
+    greedy_additive_to_numeral,
+    reversed_greedy_additive_to_numeral,
+)
 
 
 class TestRomanStandard:
@@ -307,3 +313,41 @@ class TestSinoTibetanSuzhou:
         """Checks that a shorthand glyph (〸/〹/〺) inside a longer string raises."""
         with pytest.raises(ValueError, match="Invalid Suzhou character"):
             systems.sino_tibetan.Suzhou.from_numeral("\u3038\u3021")  # 〸〡
+
+
+class TestAlgorithmsGreedyAdditive:
+    """Checks that any new greedy_additive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, numeral_map: Mapping[int, str]) -> str:
+        result: str = ""
+        for value, glyph in numeral_map.items():
+            count, number = divmod(number, value)
+            result += glyph * count
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=999_999))
+    def test_egyptian(self, number: int) -> None:
+        """Egyptian map: powers of 10 up to 1,000,000 — exercises large counts."""
+        m = systems.egyptian.Egyptian.to_numeral_map()
+        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+
+    @given(strategies.integers(min_value=1, max_value=999))
+    def test_nabataean(self, number: int) -> None:
+        """Nabataean map: non-power-of-10 denominations — exercises sparse glyphs."""
+        m = systems.nabataean.Nabataean.to_numeral_map()
+        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_reversed_pahlavi(self, number: int) -> None:
+        """InscriptionalParthian — exercises the reversed (RTL) variant."""
+        m = systems.pahlavi.InscriptionalParthian.to_numeral_map()
+        assert (
+            reversed_greedy_additive_to_numeral(number, m)
+            == self._reference(number, m)[::-1]
+        )

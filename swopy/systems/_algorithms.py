@@ -74,8 +74,11 @@ def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> s
     """
     result: str = ""
     for value, glyph in numeral_map.items():
-        count, number = divmod(number, value)
+        count = number // value
+        number %= value
         result += glyph * count
+        if not number:
+            break
     return result
 
 
