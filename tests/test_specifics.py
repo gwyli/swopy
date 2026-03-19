@@ -8,11 +8,22 @@ have its own class for organisation in the form Test<Module><Class>
 # Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF002 RUF003
 
+from collections.abc import Mapping
 from fractions import Fraction
 
 import pytest
+from hypothesis import given, strategies
 
-from swopy import systems
+from swopy import swop, systems
+from swopy.systems._algorithms import (
+    char_sum_from_numeral,
+    greedy_additive_to_numeral,
+    longest_match_from_numeral,
+    multiplicative_additive_from_numeral,
+    multiplicative_myriad_from_numeral,
+    positional_to_numeral,
+    reversed_greedy_additive_to_numeral,
+)
 
 
 class TestRomanStandard:
@@ -307,3 +318,334 @@ class TestSinoTibetanSuzhou:
         """Checks that a shorthand glyph (〸/〹/〺) inside a longer string raises."""
         with pytest.raises(ValueError, match="Invalid Suzhou character"):
             systems.sino_tibetan.Suzhou.from_numeral("\u3038\u3021")  # 〸〡
+
+
+class TestSwop:
+    """Regression tests for swopy.swop() behaviour."""
+
+    def test_incompatible_type_raises_type_error(self) -> None:
+        """Checks that swop() raises TypeError when the intermediate value is
+        incompatible with the target system's denotation type.
+
+        Roman Standard produces Fraction values (e.g. S = 1/2). Mayan only
+        accepts integers. Swapping from Standard to Mayan for a fractional
+        numeral must raise TypeError.
+        """
+        with pytest.raises(TypeError):
+            swop("S", systems.roman.Standard, systems.mayan.Mayan)
+
+
+class TestEthiopicEthiopic:
+    """Specific tests for systems.ethiopic.Ethiopic."""
+
+    def test_myriad_no_remainder(self) -> None:
+        """Checks that exact multiples of 10,000 round-trip correctly.
+
+        Exercises the empty-string branch of _decode_sub9999 (line 93 of
+        ethiopic.py), which returns 0 when the myriad glyph is the last
+        character and there is no trailing remainder segment.
+        """
+        assert systems.ethiopic.Ethiopic.from_numeral("\u137c") == 10000  # noqa: PLR2004
+        assert systems.ethiopic.Ethiopic.from_numeral("\u136a\u137c") == 20000  # noqa: PLR2004
+
+
+class TestAlgorithmsGreedyAdditive:
+    """Checks that any new greedy_additive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, numeral_map: Mapping[int, str]) -> str:
+        result: str = ""
+        for value, glyph in numeral_map.items():
+            count, number = divmod(number, value)
+            result += glyph * count
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=999_999))
+    def test_egyptian(self, number: int) -> None:
+        """Egyptian map: powers of 10 up to 1,000,000 — exercises large counts."""
+        m = systems.egyptian.Egyptian.to_numeral_map()
+        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+
+    @given(strategies.integers(min_value=1, max_value=999))
+    def test_nabataean(self, number: int) -> None:
+        """Nabataean map: non-power-of-10 denominations — exercises sparse glyphs."""
+        m = systems.nabataean.Nabataean.to_numeral_map()
+        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_reversed_pahlavi(self, number: int) -> None:
+        """InscriptionalParthian — exercises the reversed (RTL) variant."""
+        m = systems.pahlavi.InscriptionalParthian.to_numeral_map()
+        assert (
+            reversed_greedy_additive_to_numeral(number, m)
+            == self._reference(number, m)[::-1]
+        )
+
+
+class TestAlgorithmsLongestMatch:
+    """Checks that any new longest_match_from_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(  # noqa: PLR0913
+        numeral: str,
+        from_map: Mapping[str, int],
+        system_name: str,
+        *,
+        case_fold: bool = False,
+        enforce_descending: bool = False,
+        initial_max: int | None = None,
+    ) -> int:
+        if case_fold:
+            numeral = numeral.upper()
+
+        last_value: int = (
+            (initial_max if initial_max is not None else max(from_map.values()) + 1)
+            if enforce_descending
+            else 0
+        )
+
+        total = 0
+        i = 0
+        while i < len(numeral):
+            matched = False
+            for symbol, value in from_map.items():
+                if numeral.startswith(symbol, i):
+                    if enforce_descending and value > last_value:
+                        raise ValueError(
+                            f"Invalid {system_name} sequence: {symbol!r} cannot"
+                            " follow a smaller value."
+                        )
+                    total += value
+                    last_value = value
+                    i += len(symbol)
+                    matched = True
+                    break
+
+            if not matched:
+                raise ValueError(
+                    f"Invalid {system_name} character at position {i}: {numeral[i]!r}"
+                )
+
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_hebrew(self, number: int) -> None:
+        """Hebrew map: 37 entries, default options."""
+        numeral = systems.hebrew.Hebrew.to_numeral(number)
+        m = systems.hebrew.Hebrew._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(numeral, m, "Hebrew") == self._reference(
+            numeral, m, "Hebrew"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_greek_milesian(self, number: int) -> None:
+        """Greek Milesian map: 72 entries — largest map, exercises the hot path."""
+        numeral = systems.greek.Milesian.to_numeral(number)
+        m = systems.greek.Milesian._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(numeral, m, "Milesian") == self._reference(
+            numeral, m, "Milesian"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=100_000))
+    def test_roman_apostrophus(self, number: int) -> None:
+        """Roman Apostrophus: case_fold + enforce_descending + multi-char tokens."""
+        numeral = systems.roman.Apostrophus.to_numeral(number)
+        m = systems.roman.Apostrophus._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert longest_match_from_numeral(
+            numeral, m, "Apostrophus", case_fold=True, enforce_descending=True
+        ) == self._reference(
+            numeral, m, "Apostrophus", case_fold=True, enforce_descending=True
+        )
+
+
+class TestAlgorithmsMultiplicativeAdditive:
+    """Checks multiplicative_additive_from_numeral against the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(numeral: str, from_map: Mapping[str, int], system_name: str) -> int:
+        unit_glyphs = frozenset(g for g, v in from_map.items() if 1 <= v <= 9)  # noqa: PLR2004
+        multiplier_glyphs = {g: v for g, v in from_map.items() if v in {100, 1000}}
+        decade_glyphs = {g: v for g, v in from_map.items() if 10 <= v <= 90}  # noqa: PLR2004
+
+        total = 0
+        unit_buffer = 0
+
+        for char in numeral:
+            if char not in from_map:
+                raise ValueError(f"Invalid {system_name} character: {char!r}")
+
+            if char in unit_glyphs:
+                unit_buffer += from_map[char]
+            elif char in multiplier_glyphs:
+                total += multiplier_glyphs[char] * max(unit_buffer, 1)
+                unit_buffer = 0
+            else:
+                total += unit_buffer
+                unit_buffer = 0
+                total += decade_glyphs[char]
+
+        total += unit_buffer
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_sinhala_archaic(self, number: int) -> None:
+        """SinhalaArchaic: thousands/hundreds/tens/units — multiplicative-additive."""
+        numeral = systems.brahmi_gupta.SinhalaArchaic.to_numeral(number)
+        m = systems.brahmi_gupta.SinhalaArchaic._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_additive_from_numeral(numeral, m, "SinhalaArchaic")
+        assert got == self._reference(numeral, m, "SinhalaArchaic")
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_kharosthi(self, number: int) -> None:
+        """Kharosthi: exercises a different glyph set for the same algorithm."""
+        numeral = systems.kharosthi.Kharosthi.to_numeral(number)
+        m = systems.kharosthi.Kharosthi._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_additive_from_numeral(numeral, m, "Kharosthi")
+        assert got == self._reference(numeral, m, "Kharosthi")
+
+
+class TestAlgorithmsCharSum:
+    """Checks that any new char_sum_from_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(numeral: str, from_map: Mapping[str, int], system_name: str) -> int:
+        total: int = 0
+        for char in numeral:
+            if char not in from_map:
+                raise ValueError(f"Invalid {system_name} character: {char!r}")
+            total += from_map[char]
+        return total
+
+    @given(strategies.integers(min_value=1, max_value=999_999))
+    def test_egyptian(self, number: int) -> None:
+        """Egyptian: powers-of-10 map up to 1,000,000 — large additive sums."""
+        numeral = systems.egyptian.Egyptian.to_numeral(number)
+        m = systems.egyptian.Egyptian._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert char_sum_from_numeral(numeral, m, "Egyptian") == self._reference(
+            numeral, m, "Egyptian"
+        )
+
+    @given(strategies.integers(min_value=1, max_value=999))
+    def test_nabataean(self, number: int) -> None:
+        """Nabataean: non-power-of-10 denominations — exercises sparse glyph sums."""
+        numeral = systems.nabataean.Nabataean.to_numeral(number)
+        m = systems.nabataean.Nabataean._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert char_sum_from_numeral(numeral, m, "Nabataean") == self._reference(
+            numeral, m, "Nabataean"
+        )
+
+
+class TestAlgorithmsPositionalTo:
+    """Checks that any new positional_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, to_map: Mapping[int, str], base: int) -> str:
+        if number == 0:
+            return to_map[0]
+        parts: list[str] = []
+        while number:
+            number, remainder = divmod(number, base)
+            parts.append(to_map[remainder])
+        return "".join(reversed(parts))
+
+    @given(strategies.integers(min_value=0, max_value=1_000_000))
+    def test_kaktovik(self, number: int) -> None:
+        """Kaktovik: base-20 vigesimal — exercises multi-digit positional encoding."""
+        m = systems.kaktovik.Kaktovik._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert positional_to_numeral(number, m, 20) == self._reference(number, m, 20)
+
+    @given(strategies.integers(min_value=0, max_value=8000))
+    def test_mayan(self, number: int) -> None:
+        """Mayan: base-20 — different glyph set, same algorithm."""
+        m = systems.mayan.Mayan._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert positional_to_numeral(number, m, 20) == self._reference(number, m, 20)
+
+
+class TestAlgorithmsMyriad:
+    """Checks multiplicative_myriad_from_numeral against the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(
+        numeral: str,
+        digit_map: Mapping[str, int],
+        multiplier_map: Mapping[str, int],
+        system_name: str,
+    ) -> int:
+        _myriad = 10000
+        myriad_glyph = next(g for g, v in multiplier_map.items() if v == _myriad)
+        sub_mult_map = {g: v for g, v in multiplier_map.items() if v != _myriad}
+
+        def parse_sub(s: str) -> int:
+            total = 0
+            i = 0
+            while i < len(s):
+                c = s[i]
+                if c in digit_map:
+                    digit = digit_map[c]
+                    i += 1
+                    if i < len(s) and s[i] in sub_mult_map:
+                        total += digit * sub_mult_map[s[i]]
+                        i += 1
+                    else:
+                        total += digit
+                elif c in sub_mult_map:
+                    total += sub_mult_map[c]
+                    i += 1
+                else:
+                    raise ValueError(f"Invalid {system_name} character: {c!r}")
+            return total
+
+        if myriad_glyph in numeral:
+            idx = numeral.index(myriad_glyph)
+            coeff = parse_sub(numeral[:idx]) if idx > 0 else 1
+            remainder = parse_sub(numeral[idx + 1 :]) if idx + 1 < len(numeral) else 0
+            return coeff * 10000 + remainder
+        return parse_sub(numeral)
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_tangut(self, number: int) -> None:
+        """Tangut: explicit-one-tens, max 99,999,999 — exercises the myriad split."""
+        numeral = systems.sino_tibetan.Tangut.to_numeral(number)
+        dm = systems.sino_tibetan.Tangut._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Tangut._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Tangut")
+        assert got == self._reference(numeral, dm, mm, "Tangut")
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_khitan(self, number: int) -> None:
+        """Khitan: no explicit-one-tens — exercises the implicit-one variant."""
+        numeral = systems.sino_tibetan.Khitan.to_numeral(number)
+        dm = systems.sino_tibetan.Khitan._from_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Khitan._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
+        got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Khitan")
+        assert got == self._reference(numeral, dm, mm, "Khitan")

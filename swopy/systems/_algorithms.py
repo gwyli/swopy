@@ -25,7 +25,8 @@ def positional_to_numeral(number: int, to_map: Mapping[int, str], base: int) -> 
         return to_map[0]
     parts: list[str] = []
     while number:
-        number, remainder = divmod(number, base)
+        remainder = number % base
+        number //= base
         parts.append(to_map[remainder])
     return "".join(reversed(parts))
 
@@ -74,8 +75,11 @@ def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> s
     """
     result: str = ""
     for value, glyph in numeral_map.items():
-        count, number = divmod(number, value)
+        count = number // value
+        number %= value
         result += glyph * count
+        if not number:
+            break
     return result
 
 
@@ -284,7 +288,7 @@ def longest_match_from_numeral(  # noqa: PLR0913
     while i < len(numeral):
         matched = False
         for symbol, value in from_map.items():
-            if numeral.startswith(symbol, i):
+            if numeral[i] == symbol[0] and numeral.startswith(symbol, i):
                 if enforce_descending and value > last_value:
                     raise ValueError(
                         f"Invalid {system_name} sequence: {symbol!r} cannot follow"
@@ -441,9 +445,9 @@ def multiplicative_myriad_from_numeral(
     Raises:
         ValueError: If an unrecognised character is encountered.
     """
-    _myriad = 10000
-    myriad_glyph = next(g for g, v in multiplier_map.items() if v == _myriad)
-    sub_mult_map = {g: v for g, v in multiplier_map.items() if v != _myriad}
+    items = list(multiplier_map.items())
+    myriad_glyph = items[0][0]
+    sub_mult_map = dict(items[1:])
 
     def parse_sub(s: str) -> int:
         total = 0
@@ -505,27 +509,24 @@ def multiplicative_additive_from_numeral(
     Raises:
         ValueError: If ``numeral`` contains an unrecognised character.
     """
-    unit_glyphs = frozenset(g for g, v in from_map.items() if 1 <= v <= 9)  # noqa: PLR2004
-    multiplier_glyphs = {g: v for g, v in from_map.items() if v in {100, 1000}}
-    decade_glyphs = {g: v for g, v in from_map.items() if 10 <= v <= 90}  # noqa: PLR2004
-
     total = 0
     unit_buffer = 0
 
     for char in numeral:
-        if char not in from_map:
+        v = from_map.get(char)
+        if v is None:
             raise ValueError(f"Invalid {system_name} character: {char!r}")
 
-        if char in unit_glyphs:
-            unit_buffer += from_map[char]
-        elif char in multiplier_glyphs:
-            total += multiplier_glyphs[char] * max(unit_buffer, 1)
+        if 1 <= v <= 9:  # noqa: PLR2004
+            unit_buffer += v
+        elif v in {100, 1000}:
+            total += v * max(unit_buffer, 1)
             unit_buffer = 0
         else:
             # Decade glyph: flush accumulated units as ones first
             total += unit_buffer
             unit_buffer = 0
-            total += decade_glyphs[char]
+            total += v
 
     total += unit_buffer
     return total
