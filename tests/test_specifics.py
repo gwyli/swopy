@@ -388,6 +388,13 @@ class TestAlgorithmsGreedyAdditive:
             == self._reference(number, m)[::-1]
         )
 
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_ottoman_siyaq(self, number: int) -> None:
+        """OttomanSiyaq map: 45 entries — exercises large-map systems where
+        leading denominations exceed the input value on most calls."""
+        m = systems.siyaq.OttomanSiyaq.to_numeral_map()
+        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+
 
 class TestAlgorithmsLongestMatch:
     """Checks that any new longest_match_from_numeral matches the verbatim original.
@@ -800,3 +807,85 @@ class TestGreekAtticToNumeral:
         """Mixed integer+fraction inputs: both parts must be encoded correctly."""
         number = Fraction(integer) + frac
         assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+
+class TestLimitsBounded:
+    """Regression tests for the _bounded short-circuit in System._limits().
+
+    The reference below replicates the original _limits logic (without the
+    _bounded flag) so that any change to the fast path can be validated.
+    """
+
+    @staticmethod
+    def _reference(system: Any, number: Any) -> Any:
+        number_ = number
+        minimum = system.minimum
+        maximum = system.maximum
+        if number_ < minimum:
+            raise ValueError(f"Number must be greater or equal to {minimum}.")
+        if system.maximum_is_many and number_ > maximum:
+            return maximum
+        if number_ > maximum:
+            raise ValueError(f"Number must be less than or equal to {maximum}.")
+        return number_
+
+    @given(strategies.integers())
+    def test_arabic_unbounded(self, number: int) -> None:
+        """Arabic has minimum=-inf, maximum=inf: _limits must be a no-op."""
+        assert systems.hindu_arabic.Arabic._bounded is False  # pyright: ignore[reportPrivateUsage]
+        assert systems.hindu_arabic.Arabic._limits(number) == self._reference(  # pyright: ignore[reportPrivateUsage]
+            systems.hindu_arabic.Arabic, number
+        )
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_in_range(self, number: int) -> None:
+        """Roman Standard is bounded; in-range inputs must pass through unchanged."""
+        assert systems.roman.Standard._bounded is True  # pyright: ignore[reportPrivateUsage]
+        assert systems.roman.Standard._limits(number) == self._reference(  # pyright: ignore[reportPrivateUsage]
+            systems.roman.Standard, number
+        )
+
+    def test_roman_standard_below_minimum_raises(self) -> None:
+        """Roman Standard: values below minimum must still raise ValueError."""
+        with pytest.raises(ValueError, match="greater or equal"):
+            systems.roman.Standard._limits(0)  # pyright: ignore[reportPrivateUsage]
+
+    def test_roman_standard_above_maximum_raises(self) -> None:
+        """Roman Standard: values above maximum must still raise ValueError."""
+        with pytest.raises(ValueError, match="less than or equal"):
+            systems.roman.Standard._limits(4000)  # pyright: ignore[reportPrivateUsage]
+
+
+class TestFromNumeralTrusted:
+    """Regression tests for System.from_numeral_trusted().
+
+    Verifies that from_numeral_trusted() produces the same denotation as
+    from_numeral() for all valid inputs.  The trusted variant omits the
+    is_valid_numeral guard; these tests confirm that removing the guard does
+    not alter the result on well-typed inputs.
+    """
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_integers(self, number: int) -> None:
+        """Roman Standard: integer round-trip — covers the common int path."""
+        numeral = systems.roman.Standard.to_numeral(number)
+        assert systems.roman.Standard.from_numeral_trusted(numeral) == (
+            systems.roman.Standard.from_numeral(numeral)
+        )
+
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_ottoman_siyaq(self, number: int) -> None:
+        """OttomanSiyaq: large map — confirms trusted path is correct for
+        systems with many denominations."""
+        numeral = systems.siyaq.OttomanSiyaq.to_numeral(number)
+        assert systems.siyaq.OttomanSiyaq.from_numeral_trusted(numeral) == (
+            systems.siyaq.OttomanSiyaq.from_numeral(numeral)
+        )
+
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_greek_aegean(self, number: int) -> None:
+        """Greek Aegean: 45-entry map, UTF-8 multi-char glyphs."""
+        numeral = systems.greek.Aegean.to_numeral(number)
+        assert systems.greek.Aegean.from_numeral_trusted(numeral) == (
+            systems.greek.Aegean.from_numeral(numeral)
+        )
