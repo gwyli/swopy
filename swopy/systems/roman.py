@@ -261,7 +261,7 @@ class Standard(System[str, int | Fraction]):
         # Non-integer/fraction numbers and negative numbers are gated
         # in System.to_numeral()
         integer = int(number)
-        proper_fraction = abs(int(number) - number)
+        proper_fraction = number - integer
 
         for arabic, roman in cls._to_numeral_items:
             while integer >= arabic:
@@ -273,14 +273,11 @@ class Standard(System[str, int | Fraction]):
         if proper_fraction == 0:
             return result
 
-        try:
-            result += cls._to_numeral_map[proper_fraction]
-        except KeyError as e:
-            raise ValueError(
-                f"{number} cannot be represented in {cls.__name__}."
-            ) from e
+        fraction_glyph = cls._to_numeral_map.get(proper_fraction)
+        if fraction_glyph is None:
+            raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
 
-        return result
+        return result + fraction_glyph
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
@@ -317,19 +314,16 @@ class Standard(System[str, int | Fraction]):
         prev_char: str | None = None
 
         for char in reversed(numeral.upper()):
-            current_value = cls.from_numeral_map().get(char, None)
+            current_value = cls.from_numeral_map().get(char)
 
             if current_value is None:
                 raise ValueError(f"Invalid Roman character: {char}")
 
             if char == "S" and prev_char:
-                total -= prev_value
-                try:
-                    total += cls.from_numeral_map()[char + prev_char]
-                except KeyError as e:
-                    raise ValueError(
-                        f"Invalid Roman character: {char + prev_char}"
-                    ) from e
+                combined_value = cls.from_numeral_map().get(char + prev_char)
+                if combined_value is None:
+                    raise ValueError(f"Invalid Roman character: {char + prev_char}")
+                total += combined_value - prev_value
             elif current_value < prev_value:
                 total -= current_value
             else:
