@@ -4,7 +4,7 @@
 
 from collections.abc import Iterable, Mapping
 from fractions import Fraction
-from typing import overload
+from typing import Any, overload
 
 
 def positional_to_numeral(number: int, to_map: Mapping[int, str], base: int) -> str:
@@ -23,12 +23,11 @@ def positional_to_numeral(number: int, to_map: Mapping[int, str], base: int) -> 
     """
     if number == 0:
         return to_map[0]
-    parts: list[str] = []
+    result = ""
     while number:
-        remainder = number % base
+        result = to_map[number % base] + result
         number //= base
-        parts.append(to_map[remainder])
-    return "".join(reversed(parts))
+    return result
 
 
 def positional_from_numeral(
@@ -372,12 +371,46 @@ def multiplicative_additive_to_numeral(
     return result
 
 
+def _encode_sub_myriad(
+    n: int,
+    sub_mult: tuple[tuple[Any, str], ...],
+    digit_map: Mapping[int, str],
+    explicit_one_tens: bool,
+) -> str:
+    """Encode a sub-myriad integer (0–9999) for multiplicative-myriad systems.
+
+    Args:
+        n: The sub-myriad integer to encode (0–9999).
+        sub_mult: Pre-computed sub-myriad multiplier items (1000, 100, 10),
+            largest first.
+        digit_map: Mapping from digit values (1–9) to their glyphs.
+        explicit_one_tens: If ``True``, the digit 1 is written before the tens
+            multiplier even when the coefficient is 1.
+
+    Returns:
+        The numeral string for ``n``.
+    """
+    _ten = 10
+    res = ""
+    for mult, glyph in sub_mult:
+        coeff = n // mult
+        n = n % mult
+        if coeff:
+            if coeff > 1 or (explicit_one_tens and mult == _ten):
+                res += digit_map[coeff]
+            res += glyph
+    if n:
+        res += digit_map[n]
+    return res
+
+
 def multiplicative_myriad_to_numeral(
     number: int,
     digit_map: Mapping[int, str],
     multiplier_map: Mapping[int, str],
     *,
     explicit_one_tens: bool = False,
+    sub_mult: tuple[tuple[Any, str], ...] | None = None,
 ) -> str:
     """Convert an integer to a multiplicative-myriad numeral string.
 
@@ -395,35 +428,30 @@ def multiplicative_myriad_to_numeral(
         explicit_one_tens: If ``True``, the digit 1 is always written before
             the tens multiplier (e.g. Tangut). If ``False``, the digit 1 is
             omitted before all multipliers including tens (e.g. Khitan).
+        sub_mult: Pre-computed sub-myriad multiplier items (1000, 100, 10),
+            largest first. When provided, skips the per-call filtering of
+            ``multiplier_map``. Pass ``cls._myriad_sub_mult`` from callers to
+            avoid the per-call allocation.
 
     Returns:
         The numeral string representation of ``number``.
     """
     _myriad = 10000
-    _ten = 10
     myriad_glyph = multiplier_map[_myriad]
-    sub_mult = [(k, v) for k, v in multiplier_map.items() if k != _myriad]
+    if sub_mult is None:
+        sub_mult = tuple((k, v) for k, v in multiplier_map.items() if k != _myriad)
 
-    def encode_sub(n: int) -> str:
-        res = ""
-        for mult, glyph in sub_mult:
-            coeff, n = divmod(n, mult)
-            if coeff:
-                if coeff > 1 or (explicit_one_tens and mult == _ten):
-                    res += digit_map[coeff]
-                res += glyph
-        if n:
-            res += digit_map[n]
-        return res
-
-    myriads, remainder = divmod(number, _myriad)
+    myriads = number // _myriad
+    remainder = number % _myriad
     result = ""
     if myriads:
         if myriads > 1 or explicit_one_tens:
-            result += encode_sub(myriads)
+            result += _encode_sub_myriad(
+                myriads, sub_mult, digit_map, explicit_one_tens
+            )
         result += myriad_glyph
     if remainder:
-        result += encode_sub(remainder)
+        result += _encode_sub_myriad(remainder, sub_mult, digit_map, explicit_one_tens)
     return result
 
 

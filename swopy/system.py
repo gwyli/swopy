@@ -142,28 +142,22 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             ValueError: If the number is outside the valid range.
         """
 
-        if not cls._bounded:
-            return number
+        if cls._bounded:
+            maximum = cls.maximum
 
-        number_: TDenotation = number
-        # Avoiding class instance lookups saves an average of 5% of execution time
-        minimum = cls.minimum
-        maximum = cls.maximum
+            if number < cls.minimum:
+                raise ValueError(f"Number must be greater or equal to {cls.minimum}.")
 
-        if number_ < minimum:
-            raise ValueError(f"Number must be greater or equal to {minimum}.")
+            if cls.maximum_is_many and number > maximum:
+                # cls.maximum is a float, which is not assignable to number_
+                # Ignore the type checker to remove an average of two cast() calls per
+                # call to swopy.swop()
+                return maximum  # pyright: ignore[reportReturnType]
 
-        if cls.maximum_is_many and number_ > maximum:
-            # cls.maximum is a float, which is not assignable to number_
-            # Ignore the type checker to remove an average of two cast() calls per call
-            # to swopy.swop(), which was taking 4.6-12.5% of execution time.
-            return maximum  # pyright: ignore[reportReturnType]
+            if number > maximum:
+                raise ValueError(f"Number must be less than or equal to {maximum}.")
 
-        if number_ > maximum:
-            raise ValueError(f"Number must be less than or equal to {maximum}.")
-
-        # and back again to the expected type
-        return number_
+        return number
 
     @classmethod
     @abstractmethod

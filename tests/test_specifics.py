@@ -23,6 +23,7 @@ from swopy.systems._algorithms import (
     multiplicative_additive_from_numeral,
     multiplicative_additive_to_numeral,
     multiplicative_myriad_from_numeral,
+    multiplicative_myriad_to_numeral,
     positional_to_numeral,
     reversed_greedy_additive_to_numeral,
     subtractive_to_numeral,
@@ -97,6 +98,24 @@ class TestKharosthiKharosthi:
     def test_to_numeral(self):
         # 2+4+10+20+20+20+20 + 100x(1+4+4) + 1000
         assert systems.kharosthi.Kharosthi.to_numeral(1996) == "𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁"
+
+    @staticmethod
+    def _units_str_reference(n: int, m: Mapping[int, str]) -> str:
+        """Verbatim copy of the original _units_str for regression testing."""
+        result = ""
+        for value in (4, 3, 2, 1):
+            result += m[value] * (n // value)
+            n %= value
+        return result
+
+    @given(strategies.integers(min_value=0, max_value=9))
+    def test_units_str_matches_reference(self, n: int) -> None:
+        """_units_str must match the reference loop implementation."""
+        m = systems.kharosthi.Kharosthi._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert (
+            systems.kharosthi.Kharosthi._units_str(n)  # pyright: ignore[reportPrivateUsage]
+            == self._units_str_reference(n, m)
+        )
 
 
 class TestGreekAttic:
@@ -730,6 +749,68 @@ class TestAlgorithmsMyriad:
         assert got == self._reference(numeral, dm, mm, "Khitan")
 
 
+class TestAlgorithmsMyriadTo:
+    """Checks multiplicative_myriad_to_numeral against the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(
+        number: int,
+        digit_map: Mapping[int, str],
+        multiplier_map: Mapping[int, str],
+        *,
+        explicit_one_tens: bool = False,
+    ) -> str:
+        _myriad = 10000
+        _ten = 10
+        myriad_glyph = multiplier_map[_myriad]
+        sub_mult = [(k, v) for k, v in multiplier_map.items() if k != _myriad]
+
+        def encode_sub(n: int) -> str:
+            res = ""
+            for mult, glyph in sub_mult:
+                coeff, n = divmod(n, mult)
+                if coeff:
+                    if coeff > 1 or (explicit_one_tens and mult == _ten):
+                        res += digit_map[coeff]
+                    res += glyph
+            if n:
+                res += digit_map[n]
+            return res
+
+        myriads, remainder = divmod(number, _myriad)
+        result = ""
+        if myriads:
+            if myriads > 1 or explicit_one_tens:
+                result += encode_sub(myriads)
+            result += myriad_glyph
+        if remainder:
+            result += encode_sub(remainder)
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_tangut(self, number: int) -> None:
+        """Tangut: explicit-one-tens — exercises the myriad split and sub-encoding."""
+        dm = systems.sino_tibetan.Tangut._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Tangut._multiplier_map  # pyright: ignore[reportPrivateUsage]
+        assert multiplicative_myriad_to_numeral(
+            number, dm, mm, explicit_one_tens=True
+        ) == self._reference(number, dm, mm, explicit_one_tens=True)
+
+    @given(strategies.integers(min_value=1, max_value=99_999_999))
+    def test_khitan(self, number: int) -> None:
+        """Khitan: no explicit-one-tens — exercises the implicit-one variant."""
+        dm = systems.sino_tibetan.Khitan._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.sino_tibetan.Khitan._multiplier_map  # pyright: ignore[reportPrivateUsage]
+        assert multiplicative_myriad_to_numeral(number, dm, mm) == self._reference(
+            number, dm, mm
+        )
+
+
 class TestAlgorithmsSubtractiveTo:
     """Checks that any new subtractive_to_numeral matches the verbatim original.
 
@@ -877,6 +958,82 @@ class TestGreekAtticToNumeral:
         """Mixed integer+fraction inputs: both parts must be encoded correctly."""
         number = Fraction(integer) + frac
         assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+
+class TestEthiopicToNumeral:
+    """Regression tests for ethiopic.Ethiopic._to_numeral (and _encode_sub9999).
+
+    The reference below is a verbatim copy of the implementation before the
+    divmod -> // / % optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference_encode_sub9999(n: int) -> str:
+        _encode_sub100 = systems.ethiopic._encode_sub100  # pyright: ignore[reportPrivateUsage]
+        result = ""
+        hundreds, remainder = divmod(n, 100)
+        if hundreds:
+            if hundreds != 1:
+                result += _encode_sub100(hundreds)
+            result += "\u137b"
+        result += _encode_sub100(remainder) if remainder else ""
+        return result
+
+    @staticmethod
+    def _reference(number: int) -> str:
+        _encode_sub9999 = systems.ethiopic._encode_sub9999  # pyright: ignore[reportPrivateUsage]
+        myriads, remainder = divmod(number, 10000)
+        result = ""
+        if myriads:
+            if myriads != 1:
+                result += _encode_sub9999(myriads)
+            result += "\u137c"
+        result += _encode_sub9999(remainder) if remainder else ""
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_sub9999(self, number: int) -> None:
+        """Sub-myriad range: exercises the hundreds divmod in _encode_sub9999."""
+        assert systems.ethiopic.Ethiopic.to_numeral(
+            number
+        ) == self._reference_encode_sub9999(number)
+
+    @given(strategies.integers(min_value=10000, max_value=99_999_999))
+    def test_myriad(self, number: int) -> None:
+        """Myriad range: exercises the top-level divmod in Ethiopic._to_numeral."""
+        assert systems.ethiopic.Ethiopic.to_numeral(number) == self._reference(number)
+
+
+class TestTamilToNumeral:
+    """Regression tests for brahmi_dravidian.Tamil._to_numeral.
+
+    The reference below is a verbatim copy of the implementation before the
+    divmod -> // / % optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int) -> str:
+        dm = systems.brahmi_dravidian.Tamil._digit_map  # pyright: ignore[reportPrivateUsage]
+        mm = systems.brahmi_dravidian.Tamil._multiplier_map  # pyright: ignore[reportPrivateUsage]
+        result = ""
+        for mult in [1000, 100, 10]:
+            coeff, number = divmod(number, mult)
+            if coeff:
+                if coeff > 1:
+                    result += dm[coeff]
+                result += mm[mult]
+        if number:
+            result += dm[number]
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_integers(self, number: int) -> None:
+        """Full valid range — exercises all multiplier tiers."""
+        assert systems.brahmi_dravidian.Tamil.to_numeral(number) == self._reference(
+            number
+        )
 
 
 class TestLimitsBounded:

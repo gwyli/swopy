@@ -133,7 +133,6 @@ class BaseNFractionStrategyBuilder(StrategyBuilder[Any]):
         minimum: Fraction | None = None,
         maximum: Fraction | None = None,
     ) -> st.SearchStrategy:
-
         if not minimum and not maximum:
             raise ValueError(
                 "Both minimum and maximum must be passed to base N fraction builders"

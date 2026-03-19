@@ -313,7 +313,8 @@ class Tamil(System[str, int]):
         """
         result = ""
         for mult in [1000, 100, 10]:
-            coeff, number = divmod(number, mult)
+            coeff = number // mult
+            number = number % mult
             if coeff:
                 if coeff > 1:
                     result += cls._digit_map[coeff]

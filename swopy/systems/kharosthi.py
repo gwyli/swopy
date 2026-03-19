@@ -25,6 +25,19 @@ from ._algorithms import (
 )
 
 
+def _make_units_table(m: Mapping[int, str]) -> tuple[str, ...]:
+    """Pre-compute the greedy (4,3,2,1) decomposition for all integers 0–9."""
+    table: list[str] = []
+    for n in range(10):
+        s = ""
+        rem = n
+        for v in (4, 3, 2, 1):
+            s += m[v] * (rem // v)
+            rem %= v
+        table.append(s)
+    return tuple(table)
+
+
 class Kharosthi(System[str, int]):
     """Kharosthi numeral system converter.
 
@@ -82,6 +95,7 @@ class Kharosthi(System[str, int]):
     }
 
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
+    _units_table: ClassVar[tuple[str, ...]] = _make_units_table(_to_numeral_map)
 
     @classmethod
     def _units_str(cls, n: int) -> str:
@@ -101,11 +115,7 @@ class Kharosthi(System[str, int]):
             >>> Kharosthi._units_str(9)
             '𐩃𐩃𐩀'
         """
-        result = ""
-        for value in (4, 3, 2, 1):
-            result += cls._to_numeral_map[value] * (n // value)
-            n %= value
-        return result
+        return cls._units_table[n]
 
     @classmethod
     def _to_numeral(cls, number: int) -> str:
