@@ -21,6 +21,7 @@ from swopy.systems._algorithms import (
     greedy_additive_to_numeral,
     longest_match_from_numeral,
     multiplicative_additive_from_numeral,
+    multiplicative_additive_to_numeral,
     multiplicative_myriad_from_numeral,
     positional_to_numeral,
     reversed_greedy_additive_to_numeral,
@@ -537,6 +538,64 @@ class TestAlgorithmsMultiplicativeAdditive:
         m = systems.kharosthi.Kharosthi._from_numeral_map  # pyright: ignore[reportPrivateUsage]
         got = multiplicative_additive_from_numeral(numeral, m, "Kharosthi")
         assert got == self._reference(numeral, m, "Kharosthi")
+
+
+class TestAlgorithmsMultiplicativeAdditiveTo:
+    """Checks any new multiplicative_additive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, numeral_map: Mapping[int, str]) -> str:
+        result = ""
+
+        thousands, number = divmod(number, 1000)
+        if thousands:
+            if thousands > 1:
+                result += numeral_map[thousands]
+            result += numeral_map[1000]
+
+        hundreds, number = divmod(number, 100)
+        if hundreds:
+            if hundreds > 1:
+                result += numeral_map[hundreds]
+            result += numeral_map[100]
+
+        tens, number = divmod(number, 10)
+        if tens:
+            result += numeral_map[tens * 10]
+
+        if number:
+            result += numeral_map[number]
+
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_sinhala_archaic(self, number: int) -> None:
+        """SinhalaArchaic: twenty-glyph map — canonical multiplicative-additive caller."""  # noqa: E501
+        m = systems.brahmi_gupta.SinhalaArchaic.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_brahmi(self, number: int) -> None:
+        """Brahmi: different glyph set, same algorithm structure."""
+        m = systems.brahmi.Brahmi.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_bakhshali(self, number: int) -> None:
+        """Bakhshali: third caller — exercises the same code path with a third glyph set."""  # noqa: E501
+        m = systems.hindu_arabic.Bakhshali.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
 
 
 class TestAlgorithmsCharSum:

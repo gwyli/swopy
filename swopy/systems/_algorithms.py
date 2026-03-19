@@ -344,21 +344,24 @@ def multiplicative_additive_to_numeral(
     result = ""
 
     # Thousands group: unit multiplier (omitted if 1) + thousands glyph
-    thousands, number = divmod(number, 1000)
+    thousands = number // 1000
+    number = number % 1000
     if thousands:
         if thousands > 1:
             result += numeral_map[thousands]
         result += numeral_map[1000]
 
     # Hundreds group: unit multiplier (omitted if 1) + hundreds glyph
-    hundreds, number = divmod(number, 100)
+    hundreds = number // 100
+    number = number % 100
     if hundreds:
         if hundreds > 1:
             result += numeral_map[hundreds]
         result += numeral_map[100]
 
     # Tens: dedicated decade glyph
-    tens, number = divmod(number, 10)
+    tens = number // 10
+    number = number % 10
     if tens:
         result += numeral_map[tens * 10]
 
