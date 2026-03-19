@@ -23,12 +23,11 @@ def positional_to_numeral(number: int, to_map: Mapping[int, str], base: int) -> 
     """
     if number == 0:
         return to_map[0]
-    parts: list[str] = []
+    result = ""
     while number:
-        remainder = number % base
+        result = to_map[number % base] + result
         number //= base
-        parts.append(to_map[remainder])
-    return "".join(reversed(parts))
+    return result
 
 
 def positional_from_numeral(

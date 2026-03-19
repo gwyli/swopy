@@ -102,6 +102,7 @@ Optimisations applied (in order):
 2. `frozenset` runtime types — `type(val) in frozenset` replaces `isinstance(..., tuple)`
 3. `//` / `%` replace `divmod()` in `multiplicative_additive_to_numeral` and `Kharosthi._to_numeral` — eliminated 300k+ built-in calls, −37% tottime on those functions
 4. `//` / `%` replace `divmod()` in `multiplicative_myriad_to_numeral`, `_encode_sub9999`, `Ethiopic._to_numeral`, and `Tamil._to_numeral` — eliminated remaining 300k+ `divmod` calls flagged by profiler
+5. String prepend (`result = char + result`) in `positional_to_numeral` — replaces `list` + `append` + `reversed()` + `join`; 700k calls, −61% tottime (0.505s → 0.195s); `list.reverse()` variant tried first and was slower (+7%)
 
 ## Tooling
 
