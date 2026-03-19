@@ -267,6 +267,8 @@ class Standard(System[str, int | Fraction]):
             while integer >= arabic:
                 result += roman
                 integer -= arabic
+            if not integer:
+                break
 
         if proper_fraction == 0:
             return result

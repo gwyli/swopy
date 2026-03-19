@@ -271,7 +271,7 @@ class Bhaiksuki(System[str, int]):
             >>> Bhaiksuki._to_numeral(999)
             '𑱢𑱬𑱫𑱢'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

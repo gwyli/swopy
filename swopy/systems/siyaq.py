@@ -143,7 +143,7 @@ class OttomanSiyaq(System[str, int]):
             >>> OttomanSiyaq._to_numeral(99999)
             '𞴉𞴒𞴛𞴤𞴭'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -302,7 +302,7 @@ class IndicSiyaq(System[str, int]):
             >>> IndicSiyaq._to_numeral(99999)
             '𞱹𞲂𞲋𞲔𞲝'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

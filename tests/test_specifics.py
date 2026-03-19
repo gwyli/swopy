@@ -10,6 +10,7 @@ have its own class for organisation in the form Test<Module><Class>
 
 from collections.abc import Mapping
 from fractions import Fraction
+from typing import Any, ClassVar
 
 import pytest
 from hypothesis import given, strategies
@@ -20,9 +21,11 @@ from swopy.systems._algorithms import (
     greedy_additive_to_numeral,
     longest_match_from_numeral,
     multiplicative_additive_from_numeral,
+    multiplicative_additive_to_numeral,
     multiplicative_myriad_from_numeral,
     positional_to_numeral,
     reversed_greedy_additive_to_numeral,
+    subtractive_to_numeral,
 )
 
 
@@ -355,6 +358,11 @@ class TestAlgorithmsGreedyAdditive:
     The reference implementation below is a permanent copy of the algorithm as it
     existed before any optimisation.  These tests should remain unchanged so that
     future rewrites can be validated against it.
+
+    The reference accepts a Mapping and calls .items() internally.  The live
+    function now accepts a pre-computed items sequence (tuple of pairs) so tests
+    pass ``tuple(m.items())`` to bridge the two APIs while keeping the reference
+    unchanged.
     """
 
     @staticmethod
@@ -369,21 +377,34 @@ class TestAlgorithmsGreedyAdditive:
     def test_egyptian(self, number: int) -> None:
         """Egyptian map: powers of 10 up to 1,000,000 — exercises large counts."""
         m = systems.egyptian.Egyptian.to_numeral_map()
-        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
+        )
 
     @given(strategies.integers(min_value=1, max_value=999))
     def test_nabataean(self, number: int) -> None:
         """Nabataean map: non-power-of-10 denominations — exercises sparse glyphs."""
         m = systems.nabataean.Nabataean.to_numeral_map()
-        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
+        )
 
     @given(strategies.integers(min_value=1, max_value=9999))
     def test_reversed_pahlavi(self, number: int) -> None:
         """InscriptionalParthian — exercises the reversed (RTL) variant."""
         m = systems.pahlavi.InscriptionalParthian.to_numeral_map()
         assert (
-            reversed_greedy_additive_to_numeral(number, m)
+            reversed_greedy_additive_to_numeral(number, tuple(m.items()))
             == self._reference(number, m)[::-1]
+        )
+
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_ottoman_siyaq(self, number: int) -> None:
+        """OttomanSiyaq map: 45 entries — exercises large-map systems where
+        leading denominations exceed the input value on most calls."""
+        m = systems.siyaq.OttomanSiyaq.to_numeral_map()
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
         )
 
 
@@ -519,6 +540,64 @@ class TestAlgorithmsMultiplicativeAdditive:
         assert got == self._reference(numeral, m, "Kharosthi")
 
 
+class TestAlgorithmsMultiplicativeAdditiveTo:
+    """Checks any new multiplicative_additive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as it
+    existed before any optimisation.  These tests should remain unchanged so that
+    future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int, numeral_map: Mapping[int, str]) -> str:
+        result = ""
+
+        thousands, number = divmod(number, 1000)
+        if thousands:
+            if thousands > 1:
+                result += numeral_map[thousands]
+            result += numeral_map[1000]
+
+        hundreds, number = divmod(number, 100)
+        if hundreds:
+            if hundreds > 1:
+                result += numeral_map[hundreds]
+            result += numeral_map[100]
+
+        tens, number = divmod(number, 10)
+        if tens:
+            result += numeral_map[tens * 10]
+
+        if number:
+            result += numeral_map[number]
+
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_sinhala_archaic(self, number: int) -> None:
+        """SinhalaArchaic: twenty-glyph map — canonical multiplicative-additive caller."""  # noqa: E501
+        m = systems.brahmi_gupta.SinhalaArchaic.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_brahmi(self, number: int) -> None:
+        """Brahmi: different glyph set, same algorithm structure."""
+        m = systems.brahmi.Brahmi.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
+
+    @given(strategies.integers(min_value=1, max_value=9999))
+    def test_bakhshali(self, number: int) -> None:
+        """Bakhshali: third caller — exercises the same code path with a third glyph set."""  # noqa: E501
+        m = systems.hindu_arabic.Bakhshali.to_numeral_map()
+        assert multiplicative_additive_to_numeral(number, m) == self._reference(
+            number, m
+        )
+
+
 class TestAlgorithmsCharSum:
     """Checks that any new char_sum_from_numeral matches the verbatim original.
 
@@ -649,3 +728,293 @@ class TestAlgorithmsMyriad:
         mm = systems.sino_tibetan.Khitan._multiplier_from_map  # pyright: ignore[reportPrivateUsage]
         got = multiplicative_myriad_from_numeral(numeral, dm, mm, "Khitan")
         assert got == self._reference(numeral, dm, mm, "Khitan")
+
+
+class TestAlgorithmsSubtractiveTo:
+    """Checks that any new subtractive_to_numeral matches the verbatim original.
+
+    The reference implementation below is a permanent copy of the algorithm as
+    it existed before any optimisation.  These tests should remain unchanged so
+    that future rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction, numeral_map: Mapping[Any, str]) -> str:
+        result = ""
+        for value, glyph in numeral_map.items():
+            while number >= value:
+                result += glyph
+                number -= value
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_integers(self, number: int) -> None:
+        """Roman Standard: integer inputs exercise the integer portion of the map
+        and confirm early termination does not affect the result.
+        """
+        m = systems.roman.Standard.to_numeral_map()
+        assert subtractive_to_numeral(number, m) == self._reference(number, m)  # type: ignore[arg-type]
+
+    @given(
+        strategies.fractions(
+            min_value=Fraction(1, 12),
+            max_value=Fraction(11, 12),
+            max_denominator=12,
+        )
+    )
+    def test_roman_standard_fractions(self, number: Fraction) -> None:
+        """Roman Standard: fractional inputs exercise the Fraction tail of the map."""
+        m = systems.roman.Standard.to_numeral_map()
+        assert (  # type: ignore[arg-type]
+            subtractive_to_numeral(number, m)  # type: ignore[arg-type]
+            == self._reference(number, m)
+        )
+
+
+class TestRomanStandardToNumeralLoop:
+    """Regression tests for the roman.Standard._to_numeral inline loop.
+
+    The reference below is a verbatim copy of the _to_numeral implementation
+    before any optimisation.  These tests should remain unchanged so that future
+    rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction) -> str:
+        result: str = ""
+        integer = int(number)
+        proper_fraction = abs(int(number) - number)
+        for arabic, roman in systems.roman.Standard.to_numeral_map().items():
+            while integer >= arabic:
+                result += roman
+                integer -= arabic
+        if proper_fraction == 0:
+            return result
+        try:
+            result += systems.roman.Standard.to_numeral_map()[proper_fraction]
+        except KeyError as e:
+            raise ValueError(f"{number} cannot be represented in Standard.") from e
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_integers(self, number: int) -> None:
+        """Integer inputs: confirm that an early break at integer==0 does not
+        affect output, covering values where the Fraction tail would otherwise
+        be iterated.
+        """
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+    # Fractions representable as a single Roman uncia glyph
+    _VALID_FRACTIONS: ClassVar[list[Fraction]] = [
+        k for k in systems.roman.Standard.to_numeral_map() if isinstance(k, Fraction)
+    ]
+
+    @given(strategies.sampled_from(_VALID_FRACTIONS))
+    def test_proper_fractions(self, number: Fraction) -> None:
+        """Pure fractional inputs: integer part is zero so the break fires
+        immediately; the fraction glyph must still be looked up correctly.
+        """
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+    @given(
+        strategies.integers(min_value=1, max_value=3998),
+        strategies.sampled_from(_VALID_FRACTIONS),
+    )
+    def test_mixed(self, integer: int, frac: Fraction) -> None:
+        """Mixed integer+fraction inputs: both the integer and fractional
+        glyphs must be produced correctly after early break.
+        """
+        number = Fraction(integer) + frac
+        assert systems.roman.Standard.to_numeral(number) == self._reference(number)
+
+
+class TestGreekAtticToNumeral:
+    """Regression tests for greek.Attic._to_numeral.
+
+    The reference below is a verbatim copy of the _to_numeral implementation
+    before any optimisation.  These tests should remain unchanged so that future
+    rewrites can be validated against it.
+    """
+
+    @staticmethod
+    def _reference(number: int | Fraction) -> str:
+        n = Fraction(number)
+        integer_part = int(n)
+        frac_part = n - integer_part
+        result = ""
+        for value, glyph in systems.greek.Attic._to_numeral_map.items():  # pyright: ignore[reportPrivateUsage]
+            if isinstance(value, Fraction):
+                continue
+            count, integer_part = divmod(integer_part, value)
+            result += glyph * count
+        if frac_part >= Fraction(1, 2):
+            result += systems.greek.Attic._to_numeral_map[Fraction(1, 2)]  # pyright: ignore[reportPrivateUsage]
+            frac_part -= Fraction(1, 2)
+        if frac_part >= Fraction(1, 4):
+            result += systems.greek.Attic._to_numeral_map[Fraction(1, 4)]  # pyright: ignore[reportPrivateUsage]
+            frac_part -= Fraction(1, 4)
+        if frac_part:
+            raise ValueError(f"{number} cannot be represented in Attic.")
+        return result
+
+    @given(strategies.integers(min_value=1, max_value=99999))
+    def test_integers(self, number: int) -> None:
+        """Integer inputs: the common case — confirm no Fraction construction
+        changes the result.
+        """
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+    @given(strategies.sampled_from([Fraction(1, 4), Fraction(1, 2), Fraction(3, 4)]))
+    def test_pure_fractions(self, number: Fraction) -> None:
+        """Pure fractional inputs (1/4, 1/2, 3/4): integer part is zero."""
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+    @given(
+        strategies.integers(min_value=1, max_value=99998),
+        strategies.sampled_from([Fraction(1, 4), Fraction(1, 2), Fraction(3, 4)]),
+    )
+    def test_mixed(self, integer: int, frac: Fraction) -> None:
+        """Mixed integer+fraction inputs: both parts must be encoded correctly."""
+        number = Fraction(integer) + frac
+        assert systems.greek.Attic.to_numeral(number) == self._reference(number)
+
+
+class TestLimitsBounded:
+    """Regression tests for the _bounded short-circuit in System._limits().
+
+    The reference below replicates the original _limits logic (without the
+    _bounded flag) so that any change to the fast path can be validated.
+    """
+
+    @staticmethod
+    def _reference(system: Any, number: Any) -> Any:
+        number_ = number
+        minimum = system.minimum
+        maximum = system.maximum
+        if number_ < minimum:
+            raise ValueError(f"Number must be greater or equal to {minimum}.")
+        if system.maximum_is_many and number_ > maximum:
+            return maximum
+        if number_ > maximum:
+            raise ValueError(f"Number must be less than or equal to {maximum}.")
+        return number_
+
+    @given(strategies.integers())
+    def test_arabic_unbounded(self, number: int) -> None:
+        """Arabic has minimum=-inf, maximum=inf: _limits must be a no-op."""
+        assert systems.hindu_arabic.Arabic._bounded is False  # pyright: ignore[reportPrivateUsage]
+        assert systems.hindu_arabic.Arabic._limits(number) == self._reference(  # pyright: ignore[reportPrivateUsage]
+            systems.hindu_arabic.Arabic, number
+        )
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_in_range(self, number: int) -> None:
+        """Roman Standard is bounded; in-range inputs must pass through unchanged."""
+        assert systems.roman.Standard._bounded is True  # pyright: ignore[reportPrivateUsage]
+        assert systems.roman.Standard._limits(number) == self._reference(  # pyright: ignore[reportPrivateUsage]
+            systems.roman.Standard, number
+        )
+
+    def test_roman_standard_below_minimum_raises(self) -> None:
+        """Roman Standard: values below minimum must still raise ValueError."""
+        with pytest.raises(ValueError, match="greater or equal"):
+            systems.roman.Standard._limits(0)  # pyright: ignore[reportPrivateUsage]
+
+    def test_roman_standard_above_maximum_raises(self) -> None:
+        """Roman Standard: values above maximum must still raise ValueError."""
+        with pytest.raises(ValueError, match="less than or equal"):
+            systems.roman.Standard._limits(4000)  # pyright: ignore[reportPrivateUsage]
+
+
+class TestFromNumeralTrusted:
+    """Regression tests for System.from_numeral_trusted().
+
+    Verifies that from_numeral_trusted() produces the same denotation as
+    from_numeral() for all valid inputs.  The trusted variant omits the
+    is_valid_numeral guard; these tests confirm that removing the guard does
+    not alter the result on well-typed inputs.
+    """
+
+    @given(strategies.integers(min_value=1, max_value=3999))
+    def test_roman_standard_integers(self, number: int) -> None:
+        """Roman Standard: integer round-trip — covers the common int path."""
+        numeral = systems.roman.Standard.to_numeral(number)
+        assert systems.roman.Standard.from_numeral_trusted(numeral) == (
+            systems.roman.Standard.from_numeral(numeral)
+        )
+
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_ottoman_siyaq(self, number: int) -> None:
+        """OttomanSiyaq: large map — confirms trusted path is correct for
+        systems with many denominations."""
+        numeral = systems.siyaq.OttomanSiyaq.to_numeral(number)
+        assert systems.siyaq.OttomanSiyaq.from_numeral_trusted(numeral) == (
+            systems.siyaq.OttomanSiyaq.from_numeral(numeral)
+        )
+
+    @given(strategies.integers(min_value=1, max_value=99_999))
+    def test_greek_aegean(self, number: int) -> None:
+        """Greek Aegean: 45-entry map, UTF-8 multi-char glyphs."""
+        numeral = systems.greek.Aegean.to_numeral(number)
+        assert systems.greek.Aegean.from_numeral_trusted(numeral) == (
+            systems.greek.Aegean.from_numeral(numeral)
+        )
+
+
+class TestToNumeralItems:
+    """Regression tests verifying that _to_numeral_items matches
+    _to_numeral_map.items().
+
+    The _to_numeral_items ClassVar is pre-computed in __init_subclass__ and passed
+    directly to greedy_additive_to_numeral, bypassing the per-call .items() view
+    allocation.  These tests confirm the pre-computed data is correct.
+    """
+
+    def test_roman_standard_items_match_map(self) -> None:
+        """roman.Standard: 24-entry map with int and Fraction keys."""
+        m = systems.roman.Standard._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.roman.Standard._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_ottoman_siyaq_items_match_map(self) -> None:
+        """OttomanSiyaq: 45-entry map — largest standard greedy map."""
+        m = systems.siyaq.OttomanSiyaq._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.siyaq.OttomanSiyaq._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_greek_aegean_items_match_map(self) -> None:
+        """Aegean: 45-entry map, Unicode multi-char glyphs."""
+        m = systems.greek.Aegean._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.greek.Aegean._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_attic_int_items_match_map(self) -> None:
+        """Attic: the integer-only subset map used in the hot path."""
+        m = systems.greek.Attic._int_to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.greek.Attic._int_to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+
+class TestIsValidDenotation:
+    """Regression tests for System.is_valid_denotation() type-check fast path.
+
+    The fast path uses ``type(val) in frozenset`` which bypasses isinstance MRO
+    traversal for the common case.  These tests confirm that the bool/subclass
+    fallback and the wrong-type rejection still behave correctly.
+    """
+
+    def test_plain_int_accepted(self) -> None:
+        """Plain int is the common denotation type — must return True."""
+        assert systems.hindu_arabic.Arabic.is_valid_denotation(42)
+
+    def test_bool_as_int_not_accepted(self) -> None:
+        """bool is a subclass of int; must return True despite type(True) != int."""
+        assert not systems.hindu_arabic.Arabic.is_valid_denotation(True)
+
+    def test_fraction_accepted_for_roman_standard(self) -> None:
+        """roman.Standard accepts int | Fraction denotations."""
+        assert systems.roman.Standard.is_valid_denotation(Fraction(1, 2))
+
+    def test_str_rejected_for_int_system(self) -> None:
+        """str is not a valid denotation for Arabic."""
+        assert not systems.hindu_arabic.Arabic.is_valid_denotation("42")
+
+    def test_fraction_rejected_for_int_only_system(self) -> None:
+        """Fraction is not valid for systems that only accept int."""
+        assert not systems.mayan.Mayan.is_valid_denotation(Fraction(1, 2))

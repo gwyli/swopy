@@ -98,7 +98,7 @@ class CountingRod(System[str, int]):
             >>> CountingRod._to_numeral(99)
             '𝍱𝍨'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

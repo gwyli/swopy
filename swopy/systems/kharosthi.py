@@ -148,23 +148,27 @@ class Kharosthi(System[str, int]):
         result = ""
 
         # Thousands group: unit multiplier (omitted if 1) + 𐩇
-        thousands, number = divmod(number, 1000)
+        thousands = number // 1000
+        number = number % 1000
         if thousands:
             if thousands > 1:
                 result += cls._units_str(thousands)
             result += cls._to_numeral_map[1000]
 
         # Hundreds group: unit multiplier (omitted if 1) + 𐩆
-        hundreds, number = divmod(number, 100)
+        hundreds = number // 100
+        number = number % 100
         if hundreds:
             if hundreds > 1:
                 result += cls._units_str(hundreds)
             result += cls._to_numeral_map[100]
 
         # Tens: additive 20s then optional 10
-        twenties, number = divmod(number, 20)
+        twenties = number // 20
+        number = number % 20
         result += cls._to_numeral_map[20] * twenties
-        tens, number = divmod(number, 10)
+        tens = number // 10
+        number = number % 10
         result += cls._to_numeral_map[10] * tens
 
         # Ones: additive 4, 3, 2, 1

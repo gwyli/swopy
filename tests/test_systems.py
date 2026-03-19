@@ -53,9 +53,6 @@ def test_reversibility(
     Verifies that numeral systems can be converted to their representation
     and back without loss of precision.
     """
-    base_types: tuple[type, ...] = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
-
-    assert len(base_types) >= 1, "System must have at least one base type"
 
     for encoding in system.encodings:
         number = data.draw(make_strategy(system))
@@ -134,7 +131,10 @@ def test_maximum_is_many(
         )
 
 
-@pytest.mark.parametrize("system", [x for x in SYSTEMS if str in x._get_base_types(0)])  # pyright: ignore[reportPrivateUsage]
+@pytest.mark.parametrize(
+    "system",
+    [x for x in SYSTEMS if str in x._numeral_runtime_type],  # pyright: ignore[reportPrivateUsage]
+)
 @given(strategies.text())
 def test_invalid_characters(system: type[System[str, Denotation]], value: str) -> None:
     """Verifies that a ValueError is raised when attempting to convert a string
@@ -159,10 +159,10 @@ def test_invalid_denotations(
     of an invalid type for the numeral system.
     """
 
-    base_types: Container[type] = tuple(system._get_base_types(1))  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
-
-    number = data.draw(load_strategies(system, base_types))
+    assert len(system._denotation_runtime_type) >= 1, (  # pyright: ignore[reportPrivateUsage]
+        "System must have at least one base type"
+    )
+    number = data.draw(load_strategies(system, tuple(system._denotation_runtime_type)))  # pyright: ignore[reportPrivateUsage]
 
     for encoding in system.encodings:
         with pytest.raises(TypeError):
@@ -178,11 +178,10 @@ def test_invalid_numerals(
     """Verifies that a ValueError is raised when attempting to convert a number
     of an invalid type for the numeral system.
     """
-
-    base_types: Container[type] = tuple(system._get_base_types(0))  # pyright: ignore[reportPrivateUsage]
-    assert len(base_types) >= 1, "System must have at least one base type"
-
-    number = data.draw(load_strategies(system, base_types))
+    assert len(system._numeral_runtime_type) >= 1, (  # pyright: ignore[reportPrivateUsage]
+        "System must have at least one base type"
+    )
+    number = data.draw(load_strategies(system, tuple(system._numeral_runtime_type)))  # pyright: ignore[reportPrivateUsage]
 
     with pytest.raises(TypeError):
         system.from_numeral(number)

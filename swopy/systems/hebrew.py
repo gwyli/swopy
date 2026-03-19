@@ -173,7 +173,7 @@ class Hebrew(System[str, int]):
             >>> Hebrew._to_numeral(5784)
             '׳התשפד'
         """
-        result = greedy_additive_to_numeral(number, cls._to_numeral_map)
+        result = greedy_additive_to_numeral(number, cls._to_numeral_items)
         # Traditional substitutions to avoid abbreviated divine names
         result = result.replace(
             "\u05d9\u05d4",

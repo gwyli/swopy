@@ -47,8 +47,10 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     _to_numeral_map: Mapping[TDenotation, TNumeral]
     _from_numeral_map: Mapping[TNumeral, TDenotation]
 
-    _numeral_runtime_type: ClassVar[tuple[type, ...]]
-    _denotation_runtime_type: ClassVar[tuple[type, ...]]
+    _numeral_runtime_type: ClassVar[frozenset[type]]
+    _denotation_runtime_type: ClassVar[frozenset[type]]
+    _bounded: ClassVar[bool] = True
+    _to_numeral_items: ClassVar[tuple[tuple[Any, Any], ...]]
     encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
@@ -57,8 +59,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         super().__init_subclass__(**kwargs)
 
-        cls._numeral_runtime_type = cls._get_base_types(0)
-        cls._denotation_runtime_type = cls._get_base_types(1)
+        cls._numeral_runtime_type = frozenset(cls._get_base_types(0))
+        cls._denotation_runtime_type = frozenset(cls._get_base_types(1))
+        cls._bounded = not (cls.minimum == -inf and cls.maximum == inf)
+
+        if hasattr(cls, "_to_numeral_map"):
+            cls._to_numeral_items = tuple(cls._to_numeral_map.items())
 
     @classmethod
     def to_numeral_map(cls) -> Mapping[TDenotation, TNumeral]:
@@ -84,7 +90,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         Additional rationale detailed in ``to_numeral_map()``
 
         Returns:
-            A mapping from the numberal systems denotation to Arabic numerals
+            A mapping from the numeral systems denotation to Arabic numerals
         """
         return cls._from_numeral_map
 
@@ -93,7 +99,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.
 
-        Returns:# Code review agent
+        Returns:
             The base type(s) used for numeral representation in this system.
         """
 
@@ -114,12 +120,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     @classmethod
     def is_valid_numeral(cls, val: Any) -> TypeIs[TNumeral]:
         """Checks if a numeral has a valid type for this numeral system."""
-        return isinstance(val, cls._numeral_runtime_type)
+        return type(val) in cls._numeral_runtime_type
 
     @classmethod
     def is_valid_denotation(cls, val: Any) -> TypeIs[TDenotation]:
         """Checks if a denotation has a valid type for this numeral system."""
-        return isinstance(val, cls._denotation_runtime_type)
+        return type(val) in cls._denotation_runtime_type
 
     @classmethod
     def _limits(cls, number: TDenotation) -> TDenotation:
@@ -135,6 +141,9 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         Raises:
             ValueError: If the number is outside the valid range.
         """
+
+        if not cls._bounded:
+            return number
 
         number_: TDenotation = number
         # Avoiding class instance lookups saves an average of 5% of execution time
@@ -200,7 +209,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
 
         if not cls.is_valid_denotation(number):
-            raise TypeError(
+            raise TypeError(  # pyright: ignore[reportUnreachable]
                 f"{number} of type {type(number).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
@@ -244,6 +253,27 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             return numeral.translate(ASCII)  # pyright: ignore[reportReturnType]
 
         return numeral
+
+    @classmethod
+    def from_numeral_trusted(cls, numeral: TNumeral) -> TDenotation:
+        """Like from_numeral() but omits the is_valid_numeral guard.
+
+        Called from swop() after the caller has already confirmed the numeral
+        type via the generic type signature.  Do not call directly unless the
+        type of ``numeral`` is already validated.
+
+        Args:
+            numeral: The numeral to convert (type already validated by caller).
+
+        Returns:
+            The denotation of the numeral in Arabic numerals.
+
+        Raises:
+            ValueError: If the Arabic representation of the numeral is outside
+                the valid range, or if the numeral is structurally invalid.
+        """
+        number: TDenotation = cls._from_numeral(numeral)
+        return cls._limits(number)
 
     @classmethod
     @abstractmethod

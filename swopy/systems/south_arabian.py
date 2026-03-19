@@ -98,7 +98,7 @@ class AncientSouthArabian(System[str, int]):
             >>> AncientSouthArabian._to_numeral(40000)
             '𐩲𐩲𐩲𐩲'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -203,7 +203,7 @@ class AncientNorthArabian(System[str, int]):
             >>> AncientNorthArabian._to_numeral(99)
             '𐪟𐪟𐪟𐪟𐪞𐪝𐪝𐪝𐪝𐪝𐪝𐪝𐪝𐪝'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

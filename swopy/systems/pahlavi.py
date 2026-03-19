@@ -90,7 +90,7 @@ class InscriptionalParthian(System[str, int]):
             >>> InscriptionalParthian._to_numeral(1001)
             '𐭘𐭟'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -195,7 +195,7 @@ class InscriptionalPahlavi(System[str, int]):
             >>> InscriptionalPahlavi._to_numeral(1001)
             '𐭸𐭿'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -297,7 +297,7 @@ class PsalterPahlavi(System[str, int]):
             >>> PsalterPahlavi._to_numeral(999)
             '𐮩𐮬𐮬𐮭𐮮𐮮𐮮𐮮𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
