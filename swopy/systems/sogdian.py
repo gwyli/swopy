@@ -83,7 +83,7 @@ class Manichaean(System[str, int]):
             >>> Manichaean._to_numeral(999)
             '𐫫𐫫𐫫𐫫𐫬𐫭𐫮𐫮𐫮𐫮𐫯𐫯𐫯𐫯𐫯𐫯𐫯𐫯𐫯'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -187,7 +187,7 @@ class OldSogdian(System[str, int]):
             >>> OldSogdian._to_numeral(999)
             '𐼠𐼡𐼤𐼤𐼤𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -283,7 +283,7 @@ class Sogdian(System[str, int]):
             >>> Sogdian._to_numeral(999)
             '𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽒𐽓𐽓𐽓𐽓𐽔𐽔𐽔𐽔𐽔𐽔𐽔𐽔𐽔'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

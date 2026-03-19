@@ -86,7 +86,7 @@ class Palmyrene(System[str, int]):
             >>> Palmyrene._to_numeral(99)
             '𐡿𐡿𐡿𐡿𐡾𐡽𐡼'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -174,7 +174,7 @@ class Hatran(System[str, int]):
             >>> Hatran._to_numeral(999)
             '𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣾𐣾𐣾𐣾𐣽𐣼𐣻𐣻𐣻𐣻'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -273,7 +273,7 @@ class ImperialAramaic(System[str, int]):
             >>> ImperialAramaic._to_numeral(99999)
             '𐡚𐡚𐡚𐡛𐡜𐡜𐡜𐡜𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡟𐡟𐡟𐡟𐡟𐡟𐡟𐡟𐡟'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

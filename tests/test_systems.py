@@ -162,7 +162,7 @@ def test_invalid_denotations(
     assert len(system._denotation_runtime_type) >= 1, (  # pyright: ignore[reportPrivateUsage]
         "System must have at least one base type"
     )
-    number = data.draw(load_strategies(system, system._denotation_runtime_type))  # pyright: ignore[reportPrivateUsage]
+    number = data.draw(load_strategies(system, tuple(system._denotation_runtime_type)))  # pyright: ignore[reportPrivateUsage]
 
     for encoding in system.encodings:
         with pytest.raises(TypeError):
@@ -181,7 +181,7 @@ def test_invalid_numerals(
     assert len(system._numeral_runtime_type) >= 1, (  # pyright: ignore[reportPrivateUsage]
         "System must have at least one base type"
     )
-    number = data.draw(load_strategies(system, system._numeral_runtime_type))  # pyright: ignore[reportPrivateUsage]
+    number = data.draw(load_strategies(system, tuple(system._numeral_runtime_type)))  # pyright: ignore[reportPrivateUsage]
 
     with pytest.raises(TypeError):
         system.from_numeral(number)

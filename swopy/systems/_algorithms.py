@@ -2,7 +2,7 @@
 
 # ruff: noqa: RUF002
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from fractions import Fraction
 from typing import overload
 
@@ -59,22 +59,27 @@ def positional_from_numeral(
     return total
 
 
-def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> str:
+def greedy_additive_to_numeral(
+    number: int, numeral_items: Iterable[tuple[int, str]]
+) -> str:
     """Convert an integer to a numeral string using greedy additive decomposition.
 
-    Iterates the map in its defined order (largest denomination first), consuming
-    as many copies of each denomination as fit, and concatenates the corresponding
-    glyphs.
+    Iterates the items in their defined order (largest denomination first),
+    consuming as many copies of each denomination as fit, and concatenates the
+    corresponding glyphs.
 
     Args:
         number: The Arabic number to convert.
-        numeral_map: Ordered mapping from denomination values to their glyphs.
+        numeral_items: Ordered iterable of ``(denomination, glyph)`` pairs,
+            largest denomination first.  Callers should pass a pre-computed
+            items tuple (e.g. ``cls._to_numeral_items``) to avoid repeated
+            ``dict.items()`` view allocations on the hot path.
 
     Returns:
         The numeral string representation of ``number``.
     """
     result: str = ""
-    for value, glyph in numeral_map.items():
+    for value, glyph in numeral_items:
         if value > number:
             continue
         count = number // value
@@ -86,7 +91,7 @@ def greedy_additive_to_numeral(number: int, numeral_map: Mapping[int, str]) -> s
 
 
 def reversed_greedy_additive_to_numeral(
-    number: int, numeral_map: Mapping[int, str]
+    number: int, numeral_items: Iterable[tuple[int, str]]
 ) -> str:
     """Convert an integer to a right-to-left numeral string.
 
@@ -96,13 +101,14 @@ def reversed_greedy_additive_to_numeral(
 
     Args:
         number: The Arabic number to convert.
-        numeral_map: Ordered mapping from denomination values to their glyphs.
+        numeral_items: Ordered iterable of ``(denomination, glyph)`` pairs,
+            largest denomination first.  See ``greedy_additive_to_numeral``.
 
     Returns:
         The numeral string representation of ``number``, with glyphs in
         right-to-left order (largest denomination rightmost).
     """
-    return greedy_additive_to_numeral(number, numeral_map)[::-1]
+    return greedy_additive_to_numeral(number, numeral_items)[::-1]
 
 
 @overload

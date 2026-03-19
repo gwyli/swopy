@@ -86,7 +86,7 @@ def infer_numeric_kind(system: type[System[Any, Any]]) -> set[NumericKind]:
 
     values: list[Any] = []
 
-    types_ = system._get_base_types(1)  # pyright: ignore[reportPrivateUsage]
+    types_ = system._denotation_runtime_type  # pyright: ignore[reportPrivateUsage]
     kinds: set[NumericKind] = set()
 
     for t in types_:

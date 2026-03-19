@@ -47,9 +47,10 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     _to_numeral_map: Mapping[TDenotation, TNumeral]
     _from_numeral_map: Mapping[TNumeral, TDenotation]
 
-    _numeral_runtime_type: ClassVar[tuple[type, ...]]
-    _denotation_runtime_type: ClassVar[tuple[type, ...]]
+    _numeral_runtime_type: ClassVar[frozenset[type]]
+    _denotation_runtime_type: ClassVar[frozenset[type]]
     _bounded: ClassVar[bool] = True
+    _to_numeral_items: ClassVar[tuple[tuple[Any, Any], ...]]
     encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
@@ -58,9 +59,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         super().__init_subclass__(**kwargs)
 
-        cls._numeral_runtime_type = cls._get_base_types(0)
-        cls._denotation_runtime_type = cls._get_base_types(1)
+        cls._numeral_runtime_type = frozenset(cls._get_base_types(0))
+        cls._denotation_runtime_type = frozenset(cls._get_base_types(1))
         cls._bounded = not (cls.minimum == -inf and cls.maximum == inf)
+
+        if hasattr(cls, "_to_numeral_map"):
+            cls._to_numeral_items = tuple(cls._to_numeral_map.items())
 
     @classmethod
     def to_numeral_map(cls) -> Mapping[TDenotation, TNumeral]:
@@ -86,7 +90,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         Additional rationale detailed in ``to_numeral_map()``
 
         Returns:
-            A mapping from the numberal systems denotation to Arabic numerals
+            A mapping from the numeral systems denotation to Arabic numerals
         """
         return cls._from_numeral_map
 
@@ -95,7 +99,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """Returns the base type of the numeral system. When multiple types are
         supported, unfurl the UnionType and return all base types.
 
-        Returns:# Code review agent
+        Returns:
             The base type(s) used for numeral representation in this system.
         """
 
@@ -116,12 +120,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
     @classmethod
     def is_valid_numeral(cls, val: Any) -> TypeIs[TNumeral]:
         """Checks if a numeral has a valid type for this numeral system."""
-        return isinstance(val, cls._numeral_runtime_type)
+        return type(val) in cls._numeral_runtime_type
 
     @classmethod
     def is_valid_denotation(cls, val: Any) -> TypeIs[TDenotation]:
         """Checks if a denotation has a valid type for this numeral system."""
-        return isinstance(val, cls._denotation_runtime_type)
+        return type(val) in cls._denotation_runtime_type
 
     @classmethod
     def _limits(cls, number: TDenotation) -> TDenotation:

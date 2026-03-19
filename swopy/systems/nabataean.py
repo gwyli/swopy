@@ -86,7 +86,7 @@ class Nabataean(System[str, int]):
             >>> Nabataean._to_numeral(999)
             '𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢮𐢮𐢮𐢮𐢭𐢬𐢪'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

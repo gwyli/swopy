@@ -83,7 +83,7 @@ class Phoenician(System[str, int]):
             >>> Phoenician._to_numeral(999)
             '𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤘𐤘𐤘𐤘𐤗𐤛𐤛𐤛'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

@@ -94,7 +94,7 @@ class Cuneiform(System[str, int]):
             >>> Cuneiform._to_numeral(99)
             '𒐎𒐇'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

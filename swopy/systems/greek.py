@@ -229,7 +229,7 @@ class Milesian(System[str, int]):
             >>> Milesian._to_numeral(9999)
             '͵θϡϙθ'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -393,7 +393,7 @@ class Aegean(System[str, int]):
             >>> Aegean._to_numeral(99999)
             '𐄳𐄪𐄡𐄘𐄏'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -506,6 +506,9 @@ class Attic(System[str, int | Fraction]):
         5: "\U00010143",  # 𐅃
         1: "\u0399",  # Ι
     }
+    _int_to_numeral_items: ClassVar[tuple[tuple[int, str], ...]] = tuple(
+        _int_to_numeral_map.items()
+    )
 
     _HALF: ClassVar[Fraction] = Fraction(1, 2)
     _QUARTER: ClassVar[Fraction] = Fraction(1, 4)
@@ -570,13 +573,13 @@ class Attic(System[str, int | Fraction]):
             '𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ'
         """
         if isinstance(number, int):
-            return greedy_additive_to_numeral(number, cls._int_to_numeral_map)
+            return greedy_additive_to_numeral(number, cls._int_to_numeral_items)
 
         frac = Fraction(number)
         integer_part = int(frac)
         frac_part = frac - integer_part
 
-        result = greedy_additive_to_numeral(integer_part, cls._int_to_numeral_map)
+        result = greedy_additive_to_numeral(integer_part, cls._int_to_numeral_items)
 
         if frac_part >= cls._HALF:
             result += cls._to_numeral_map[cls._HALF]
@@ -699,7 +702,7 @@ class Etruscan(System[str, int]):
             >>> Etruscan._to_numeral(399)
             '𐌠𐌠𐌠𐌠𐌡𐌢𐌢𐌢𐌢𐌣𐌣𐌣𐌣𐌣𐌣𐌣'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -914,7 +917,7 @@ class Alphabetic(System[str, int]):
             >>> Alphabetic._to_numeral(9999)
             '͵ΘϠϘΘʹ'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map) + _KERAIA
+        return greedy_additive_to_numeral(number, cls._to_numeral_items) + _KERAIA
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

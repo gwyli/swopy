@@ -91,7 +91,7 @@ class Egyptian(System[str, int]):
             >>> Egyptian.to_numeral(1000001)
             '\U00013069'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -256,7 +256,7 @@ class CopticEpact(System[str, int]):
             >>> CopticEpact._to_numeral(9999)
             '𐋠𐋩𐋻𐋲𐋩'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_map)
+        return greedy_additive_to_numeral(number, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

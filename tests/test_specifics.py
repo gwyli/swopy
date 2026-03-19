@@ -357,6 +357,11 @@ class TestAlgorithmsGreedyAdditive:
     The reference implementation below is a permanent copy of the algorithm as it
     existed before any optimisation.  These tests should remain unchanged so that
     future rewrites can be validated against it.
+
+    The reference accepts a Mapping and calls .items() internally.  The live
+    function now accepts a pre-computed items sequence (tuple of pairs) so tests
+    pass ``tuple(m.items())`` to bridge the two APIs while keeping the reference
+    unchanged.
     """
 
     @staticmethod
@@ -371,20 +376,24 @@ class TestAlgorithmsGreedyAdditive:
     def test_egyptian(self, number: int) -> None:
         """Egyptian map: powers of 10 up to 1,000,000 — exercises large counts."""
         m = systems.egyptian.Egyptian.to_numeral_map()
-        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
+        )
 
     @given(strategies.integers(min_value=1, max_value=999))
     def test_nabataean(self, number: int) -> None:
         """Nabataean map: non-power-of-10 denominations — exercises sparse glyphs."""
         m = systems.nabataean.Nabataean.to_numeral_map()
-        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
+        )
 
     @given(strategies.integers(min_value=1, max_value=9999))
     def test_reversed_pahlavi(self, number: int) -> None:
         """InscriptionalParthian — exercises the reversed (RTL) variant."""
         m = systems.pahlavi.InscriptionalParthian.to_numeral_map()
         assert (
-            reversed_greedy_additive_to_numeral(number, m)
+            reversed_greedy_additive_to_numeral(number, tuple(m.items()))
             == self._reference(number, m)[::-1]
         )
 
@@ -393,7 +402,9 @@ class TestAlgorithmsGreedyAdditive:
         """OttomanSiyaq map: 45 entries — exercises large-map systems where
         leading denominations exceed the input value on most calls."""
         m = systems.siyaq.OttomanSiyaq.to_numeral_map()
-        assert greedy_additive_to_numeral(number, m) == self._reference(number, m)
+        assert greedy_additive_to_numeral(number, tuple(m.items())) == self._reference(
+            number, m
+        )
 
 
 class TestAlgorithmsLongestMatch:
@@ -889,3 +900,62 @@ class TestFromNumeralTrusted:
         assert systems.greek.Aegean.from_numeral_trusted(numeral) == (
             systems.greek.Aegean.from_numeral(numeral)
         )
+
+
+class TestToNumeralItems:
+    """Regression tests verifying that _to_numeral_items matches
+    _to_numeral_map.items().
+
+    The _to_numeral_items ClassVar is pre-computed in __init_subclass__ and passed
+    directly to greedy_additive_to_numeral, bypassing the per-call .items() view
+    allocation.  These tests confirm the pre-computed data is correct.
+    """
+
+    def test_roman_standard_items_match_map(self) -> None:
+        """roman.Standard: 24-entry map with int and Fraction keys."""
+        m = systems.roman.Standard._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.roman.Standard._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_ottoman_siyaq_items_match_map(self) -> None:
+        """OttomanSiyaq: 45-entry map — largest standard greedy map."""
+        m = systems.siyaq.OttomanSiyaq._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.siyaq.OttomanSiyaq._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_greek_aegean_items_match_map(self) -> None:
+        """Aegean: 45-entry map, Unicode multi-char glyphs."""
+        m = systems.greek.Aegean._to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.greek.Aegean._to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+    def test_attic_int_items_match_map(self) -> None:
+        """Attic: the integer-only subset map used in the hot path."""
+        m = systems.greek.Attic._int_to_numeral_map  # pyright: ignore[reportPrivateUsage]
+        assert tuple(m.items()) == systems.greek.Attic._int_to_numeral_items  # pyright: ignore[reportPrivateUsage]
+
+
+class TestIsValidDenotation:
+    """Regression tests for System.is_valid_denotation() type-check fast path.
+
+    The fast path uses ``type(val) in frozenset`` which bypasses isinstance MRO
+    traversal for the common case.  These tests confirm that the bool/subclass
+    fallback and the wrong-type rejection still behave correctly.
+    """
+
+    def test_plain_int_accepted(self) -> None:
+        """Plain int is the common denotation type — must return True."""
+        assert systems.hindu_arabic.Arabic.is_valid_denotation(42)
+
+    def test_bool_as_int_not_accepted(self) -> None:
+        """bool is a subclass of int; must return True despite type(True) != int."""
+        assert not systems.hindu_arabic.Arabic.is_valid_denotation(True)
+
+    def test_fraction_accepted_for_roman_standard(self) -> None:
+        """roman.Standard accepts int | Fraction denotations."""
+        assert systems.roman.Standard.is_valid_denotation(Fraction(1, 2))
+
+    def test_str_rejected_for_int_system(self) -> None:
+        """str is not a valid denotation for Arabic."""
+        assert not systems.hindu_arabic.Arabic.is_valid_denotation("42")
+
+    def test_fraction_rejected_for_int_only_system(self) -> None:
+        """Fraction is not valid for systems that only accept int."""
+        assert not systems.mayan.Mayan.is_valid_denotation(Fraction(1, 2))
