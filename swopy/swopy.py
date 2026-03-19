@@ -57,12 +57,7 @@ def swop[
 
     intermediate: TFromDenotation = from_system.from_numeral(numeral)
 
-    if to_system.is_valid_denotation(intermediate):
-        return to_system.to_numeral(intermediate, encode=encode)
-
-    raise TypeError(
-        f"{numeral} of type {type(numeral).__name__} cannot be represented in {to_system.__name__}."  # noqa: E501
-    )
+    return to_system.to_numeral(intermediate, encode=encode)
 
 
 def get_all_systems() -> dict[str, type[System[Any, Any]]]:

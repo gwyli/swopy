@@ -14,7 +14,7 @@ from fractions import Fraction
 import pytest
 from hypothesis import given, strategies
 
-from swopy import systems
+from swopy import swop, systems
 from swopy.systems._algorithms import (
     char_sum_from_numeral,
     greedy_additive_to_numeral,
@@ -318,6 +318,21 @@ class TestSinoTibetanSuzhou:
         """Checks that a shorthand glyph (〸/〹/〺) inside a longer string raises."""
         with pytest.raises(ValueError, match="Invalid Suzhou character"):
             systems.sino_tibetan.Suzhou.from_numeral("\u3038\u3021")  # 〸〡
+
+
+class TestSwop:
+    """Regression tests for swopy.swop() behaviour."""
+
+    def test_incompatible_type_raises_type_error(self) -> None:
+        """Checks that swop() raises TypeError when the intermediate value is
+        incompatible with the target system's denotation type.
+
+        Roman Standard produces Fraction values (e.g. S = 1/2). Mayan only
+        accepts integers. Swapping from Standard to Mayan for a fractional
+        numeral must raise TypeError.
+        """
+        with pytest.raises(TypeError):
+            swop("S", systems.roman.Standard, systems.mayan.Mayan)
 
 
 class TestEthiopicEthiopic:
