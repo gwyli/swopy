@@ -151,13 +151,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             if cls.maximum_is_many and number > maximum:
                 # cls.maximum is a float, which is not assignable to number_
                 # Ignore the type checker to remove an average of two cast() calls per
-                # call to swopy.swop(), which was taking 4.6-12.5% of execution time.
+                # call to swopy.swop()
                 return maximum  # pyright: ignore[reportReturnType]
 
             if number > maximum:
                 raise ValueError(f"Number must be less than or equal to {maximum}.")
 
-            # and back again to the expected type
         return number
 
     @classmethod
