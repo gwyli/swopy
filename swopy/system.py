@@ -204,6 +204,30 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
                 f"{number} of type {type(number).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
+        return cls.to_numeral_trusted(number, encode=encode)
+
+    @classmethod
+    def to_numeral_trusted(
+        cls,
+        number: TDenotation,
+        encode: Literal["utf8", "ascii"] = "utf8",
+    ) -> TNumeral:
+        """Like to_numeral() but omits the is_valid_denotation guard.
+
+        Called from swop() after TypeIs narrowing has already confirmed the
+        denotation type. Do not call directly unless type is already validated.
+
+        Args:
+            number: The Arabic number to convert (type already validated by caller).
+            encode: The encoding to use for the output string.
+
+        Returns:
+            The representation of the number in this numeral system.
+
+        Raises:
+            ValueError: If the number is outside the valid range or encoding is
+                unsupported.
+        """
         if encode not in cls.encodings:
             raise ValueError(
                 f"Encoding '{encode}' is not supported for {cls.__name__}."
@@ -264,7 +288,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
             ValueError: If the numeral representation is invalid.
         """
         if not cls.is_valid_numeral(numeral):
-            raise TypeError(
+            raise TypeError(  # pyright: ignore[reportUnreachable]
                 f"{numeral} of type {type(numeral).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 

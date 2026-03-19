@@ -58,7 +58,7 @@ def swop[
     intermediate: TFromDenotation = from_system.from_numeral(numeral)
 
     if to_system.is_valid_denotation(intermediate):
-        return to_system.to_numeral(intermediate, encode=encode)
+        return to_system.to_numeral_trusted(intermediate, encode=encode)
 
     raise TypeError(
         f"{intermediate} of type {type(intermediate).__name__} cannot be represented in {to_system.__name__}."  # noqa: E501
