@@ -336,7 +336,8 @@ class Apostrophus(Early):
     numerals.
 
     - Uses Unicode block U+2160-U+2169 plus multi-character Apostrophus forms (CⅠↃ,
-      CCⅠↃↃ, ⅠↃↃ, ⅠↃↃↃ, CCCⅠↃↃↃ); ASCII I, V, X, L are also accepted as input
+      CCⅠↃↃ, ⅠↃↃ, ⅠↃↃↃ, CCCⅠↃↃↃ); ASCII equivalents use ) for Ↄ (e.g. CI),
+      I)), CCI)), I))), CCCI)))); ASCII I, V, X, L are also accepted as input
     - The system is subtractive with dedicated signs for 1, 5, 10, 50, and 100,
       extended by Apostrophus forms for 500, 1,000, 5,000, 10,000, 50,000, and 100,000
     - Longest-match decoding resolves multi-character tokens before constituent
@@ -364,11 +365,17 @@ class Apostrophus(Early):
     }
     _from_numeral_map: Mapping[str, int] = {
         "CCCⅠↃↃↃ": 100_000,
+        "CCCI)))": 100_000,
         "ⅠↃↃↃ": 50_000,
+        "I)))": 50_000,
         "CCⅠↃↃ": 10_000,
+        "CCI))": 10_000,
         "ⅠↃↃ": 5_000,
+        "I))": 5_000,
         "CⅠↃ": 1_000,
+        "CI)": 1_000,
         "ⅠↃ": 500,
+        "I)": 500,
         "C": 100,
         "\u216c": 50,
         "L": 50,

@@ -19,6 +19,7 @@ UTF8_TO_LATIN = {
     "\u216d": "C",
     "\u216e": "D",
     "\u216f": "M",
+    "\u2183": ")",
 }
 
 ASCII = str.maketrans(UTF8_TO_LATIN)
