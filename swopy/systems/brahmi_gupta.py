@@ -38,47 +38,24 @@ _BHAIKSUKI_HUNDREDS_MARK = "\U00011c6c"
 
 
 class SinhalaArchaic(System[str, int]):
-    """Sinhala Archaic numeral system converter.
+    """Implements bidirectional conversion between integers and Sinhala Archaic
+    numerals.
 
-    Implements bidirectional conversion between integers and Sinhala Archaic
-    numeral strings using Unicode block U+111E0-U+111FF. The system is
-    multiplicative-additive, identical in structure to Brahmi: unit symbols
-    (1-9) preceding a hundreds or thousands symbol act as a multiplier
-    (omitted when 1); each decade (10-90) has its own symbol; ones are written
-    directly. The most significant group appears first (leftmost).
-
-    Twenty distinct Unicode symbols are used:
-
-        𑇡  U+111E1  SINHALA ARCHAIC DIGIT ONE          ->  1
-        𑇢  U+111E2  SINHALA ARCHAIC DIGIT TWO          ->  2
-        𑇣  U+111E3  SINHALA ARCHAIC DIGIT THREE        ->  3
-        𑇤  U+111E4  SINHALA ARCHAIC DIGIT FOUR         ->  4
-        𑇥  U+111E5  SINHALA ARCHAIC DIGIT FIVE         ->  5
-        𑇦  U+111E6  SINHALA ARCHAIC DIGIT SIX          ->  6
-        𑇧  U+111E7  SINHALA ARCHAIC DIGIT SEVEN        ->  7
-        𑇨  U+111E8  SINHALA ARCHAIC DIGIT EIGHT        ->  8
-        𑇩  U+111E9  SINHALA ARCHAIC DIGIT NINE         ->  9
-        𑇪  U+111EA  SINHALA ARCHAIC NUMBER TEN         ->  10
-        𑇫  U+111EB  SINHALA ARCHAIC NUMBER TWENTY      ->  20
-        𑇬  U+111EC  SINHALA ARCHAIC NUMBER THIRTY      ->  30
-        𑇭  U+111ED  SINHALA ARCHAIC NUMBER FORTY       ->  40
-        𑇮  U+111EE  SINHALA ARCHAIC NUMBER FIFTY       ->  50
-        𑇯  U+111EF  SINHALA ARCHAIC NUMBER SIXTY       ->  60
-        𑇰  U+111F0  SINHALA ARCHAIC NUMBER SEVENTY     ->  70
-        𑇱  U+111F1  SINHALA ARCHAIC NUMBER EIGHTY      ->  80
-        𑇲  U+111F2  SINHALA ARCHAIC NUMBER NINETY      ->  90
-        𑇳  U+111F3  SINHALA ARCHAIC NUMBER ONE HUNDRED ->  100
-        𑇴  U+111F4  SINHALA ARCHAIC NUMBER ONE THOUSAND->  1000
+    - Uses Unicode block U+111E1-U+111F4 within block U+111E0-U+111FF (twenty glyphs:
+      units 1-9, decades 10-90, hundred 𑇳, thousand 𑇴)
+    - The system is multiplicative-additive: unit symbols (1-9) preceding a hundreds or
+      thousands symbol act as a multiplier (omitted when 1)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -176,29 +153,23 @@ class SinhalaArchaic(System[str, int]):
 
 
 class Bhaiksuki(System[str, int]):
-    """Bhaiksuki numeral system converter.
+    """Implements bidirectional conversion between integers and Bhaiksuki numerals.
 
-    Implements bidirectional conversion between integers and Bhaiksuki numeral
-    strings using Unicode block U+11C00-U+11C6F. The system uses dedicated
-    unit signs (1-9) at U+11C5A-U+11C62, decade signs (10-90) at
-    U+11C63-U+11C6B, and a hundreds unit mark (U+11C6C) that follows a unit
-    sign to form hundreds (100-900). The valid range is 1-999.
-
-    The hundreds group is encoded as a two-character sequence: the unit sign
-    for the coefficient followed by the hundreds mark. Encoding uses greedy
-    additive decomposition (largest denomination first); decoding uses
-    longest-match scanning so that two-character hundred tokens are resolved
-    before their constituent single-character unit signs.
+    - Uses Unicode block U+11C00-U+11C6F (unit signs 1-9 at U+11C5A-U+11C62,
+      decade signs 10-90 at U+11C63-U+11C6B, hundreds mark U+11C6C)
+    - The system is purely additive; hundreds are encoded as a two-character sequence
+      (unit sign + hundreds mark), decoded via longest-match scanning
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

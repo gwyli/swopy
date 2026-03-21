@@ -1,16 +1,15 @@
-# ruff: noqa: RUF002
 """Numeric notation system converters.
 
 This module implements generic numeric notation systems not tied to a single
 cultural script family.
 Currently supports:
 
-    Counting Rod Numerals  U+1D360-U+1D371  (eighteen glyphs: unit digits 1–9,
-                                              tens digits 10–90)
+    Counting Rod Numerals  U+1D360-U+1D371  (eighteen glyphs: unit digits 1-9,
+                                              tens digits 10-90)
 
 Counting Rod is a purely additive system that encodes each decimal place with a
-dedicated glyph: nine unit-digit glyphs (1–9) for the ones place and nine
-tens-digit glyphs (10–90) for the tens place.  Numbers are encoded as
+dedicated glyph: nine unit-digit glyphs (1-9) for the ones place and nine
+tens-digit glyphs (10-90) for the tens place.  Numbers are encoded as
 (optional tens glyph)(optional unit glyph).  Greedy decomposition is used for
 encoding and character-sum for decoding.
 """
@@ -24,25 +23,23 @@ from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class CountingRod(System[str, int]):
-    """Counting Rod numeral system converter.
+    """Implements bidirectional conversion between integers and Counting Rod numerals.
 
-    Implements bidirectional conversion between integers and Counting Rod numeral
-    strings using Unicode block U+1D360-U+1D371. The system encodes each decimal
-    place with a dedicated glyph: nine unit-digit glyphs (1-9) for the ones place
-    and nine tens-digit glyphs (10-90) for the tens place.
-
-    Numbers are encoded as (optional tens glyph)(optional unit glyph), e.g.
-    11 = 𝍩𝍠 (tens-digit-1 + unit-digit-1). Multiples of 10 omit the unit glyph.
+    - Uses Unicode block U+1D360-U+1D371
+    - The system is purely additive with dedicated glyphs for units (1-9) and
+      tens (10-90)
+    - Numbers are encoded as (optional tens glyph)(optional unit glyph)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99)
+        maximum_is_many: False - integers greater than 99 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

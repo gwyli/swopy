@@ -1,4 +1,3 @@
-# ruff: noqa: RUF002
 """Nabataean numeral system converters.
 
 This module implements numeral systems from the Nabataean script family.
@@ -16,25 +15,29 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Nabataean(System[str, int]):
-    """Nabataean numeral system converter.
+    """Implements bidirectional conversion between integers and Nabataean numerals.
 
-    Implements bidirectional conversion between integers and Nabataean numeral
-    strings using Unicode block U+10880–U+108AF. The system is purely additive
-    with dedicated signs for 1, 2, 3, 4, 5, 10, 20, and 100. An alternative
-    cruciform form of 4 (U+108AB) is accepted as input. The valid range is 1–999.
+    - Uses Unicode block U+10880-U+108AF
+    - The system is purely additive with dedicated signs for 1, 2, 3, 4, 5, 10,
+      20, and 100
+    - An alternative cruciform form of 4 (U+108AB) is accepted as input
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U000108af",  # 𐢯 NABATAEAN NUMBER ONE HUNDRED

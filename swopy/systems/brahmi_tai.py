@@ -24,26 +24,24 @@ from ._algorithms import positional_to_numeral
 
 
 class Ahom(System[str, int]):
-    """Ahom decimal numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and Ahom
+    numerals.
 
-    Implements bidirectional conversion between non-negative integers and Ahom
-    numeral strings using Unicode block U+11700-U+1174F. The system is
-    positional in base 10, using ten digit glyphs (0-9) at U+11730-U+11739.
-    Numbers are encoded as a sequence of digit glyphs representing the decimal
-    expansion, most-significant digit first (left-to-right).
-
-    The dedicated ten (U+1173A) and twenty (U+1173B) signs are accepted as
-    input (decoding to 10 and 20 respectively) but are not emitted on output.
+    - Uses Unicode block U+11730-U+11739 (digit glyphs 0-9) within block U+11700-U+1174F
+    - The system is positional in base 10, written most-significant digit first
+    - Dedicated signs for ten (U+1173A) and twenty (U+1173B) are accepted as input
+      but not emitted
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x11730 + i) for i in range(10)}

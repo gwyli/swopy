@@ -101,28 +101,24 @@ def _decode_sub9999(numeral: str, system_name: str) -> int:
 
 
 class Ethiopic(System[str, int]):
-    """Ethiopic numeral system converter.
+    """Implements bidirectional conversion between integers and Ethiopic numerals.
 
-    Implements bidirectional conversion between integers and Ethiopic numeral
-    strings using Unicode glyphs U+1369-U+137C.  The system is a two-tier
-    multiplicative-additive system:
-
-    - Digits 1-9: dedicated glyphs ፩-፱.
-    - Decades 10-90: dedicated glyphs ፲-፺.
-    - Hundreds: digit/decade coefficient (omitted when 1) + ፻.
-    - Ten-thousands: sub-9999 coefficient + ፼ + sub-9999 remainder.
-
-    The valid range is 1-99,999,999.
+    - Uses Unicode block U+1369-U+137C
+    - The system is two-tier multiplicative-additive: digit glyphs (1-9) combine with
+      decade glyphs (10-90), a hundreds sign (፻), and a ten-thousands sign (፼) acting
+      as multipliers
+    - Hundreds and ten-thousands coefficients of 1 are omitted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

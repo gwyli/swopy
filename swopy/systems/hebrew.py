@@ -24,7 +24,7 @@ to avoid forming abbreviated divine names.
 Both regular and final letterforms are accepted in decoding.
 """
 
-# ruff: noqa: RUF002, RUF003
+# ruff: noqa: RUF002 RUF003
 
 from collections.abc import Mapping
 from fractions import Fraction
@@ -38,28 +38,25 @@ _GERESH = "\u05f3"  # ׳
 
 
 class Hebrew(System[str, int]):
-    """Hebrew alphabetic numeral system converter.
+    """Implements bidirectional conversion between integers and Hebrew numerals.
 
-    Implements bidirectional conversion between integers and Hebrew numeral
-    strings using Hebrew letters (U+0590-U+05FF).  The system is purely
-    additive: each letter contributes its face value and numerals are written
-    largest-to-smallest.
-
-    Thousands 1,000-9,000 are expressed as Geresh (U+05F3) + unit letter.
-    The Gershayim punctuation mark (U+05F4) is accepted in decoding but
-    contributes no value.  Both regular and final letterforms are accepted.
-
-    Traditional substitutions 15→ט״ו and 16→ט״ז are applied in encoding.
+    - Uses Unicode block U+0590-U+05FF (Hebrew letters as numerals)
+    - The system is purely additive, written largest-to-smallest
+    - Thousands 1,000-9,000 are expressed as Geresh (U+05F3) prefix + unit letter
+    - Traditional substitutions apply: 15→ט״ו and 16→ט״ז
+    - Gershayim (U+05F4) is accepted in decoding but carries no value
+    - Both regular and final letterforms are accepted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only; Hebrew letters have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

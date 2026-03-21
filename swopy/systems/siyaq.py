@@ -21,7 +21,7 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -29,24 +29,26 @@ from ._algorithms import (
 
 
 class OttomanSiyaq(System[str, int]):
-    """Ottoman Siyaq numeral system converter.
+    """Implements bidirectional conversion between integers and Ottoman Siyaq numerals.
 
-    Implements bidirectional conversion between integers and Ottoman Siyaq
-    numeral strings using Unicode block U+1ED00-U+1ED4F. Each value from 1 to
-    90,000 in the appropriate denomination has its own unique glyph; no glyph
-    is ever repeated in a single numeral. The system is written right-to-left
-    (largest denomination on the right). The valid range is 1-99,999.
-
-    Alternate glyph forms (U+1ED2F-U+1ED3B) are accepted on input but are
-    never emitted on output.
+    - Uses Unicode block U+1ED00-U+1ED4F (forty-five standard glyphs: units 1-9, decades
+      10-90, hundreds 100-900, thousands 1,000-9,000, ten-thousands 10,000-90,000;
+      alternate forms at U+1ED2F-U+1ED3B accepted as input but not emitted)
+    - The system is purely additive with one unique glyph per denomination; written
+      right-to-left (largest denomination on the right)
+    - Encoding reverses the greedy result; decoding reverses the input before summing
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         90000: "\U0001ed2d",  # 𞴭 OTTOMAN SIYAQ NUMBER NINETY THOUSAND
@@ -188,25 +190,26 @@ class OttomanSiyaq(System[str, int]):
 
 
 class IndicSiyaq(System[str, int]):
-    """Indic Siyaq numeral system converter.
+    """Implements bidirectional conversion between integers and Indic Siyaq numerals.
 
-    Implements bidirectional conversion between integers and Indic Siyaq
-    numeral strings using Unicode block U+1EC70-U+1ECBF. Each value from 1 to
-    90,000 in the appropriate denomination has its own unique glyph; no glyph
-    is ever repeated in a single numeral. The system is written right-to-left
-    (largest denomination on the right). The valid range is 1-99,999.
-
-    Alternate and prefixed glyph forms are accepted on input but are never
-    emitted on output. Higher values (lakh, karor) use a separate multiplicative
-    prefix notation not implemented here.
+    - Uses Unicode block U+1EC70-U+1ECBF (forty-five standard glyphs: units 1-9, decades
+      10-90, hundreds 100-900, thousands 1,000-9,000, ten-thousands 10,000-90,000;
+      alternate and prefixed forms also accepted as input but not emitted)
+    - The system is purely additive with one unique glyph per denomination; written
+      right-to-left (largest denomination on the right)
+    - Encoding reverses the greedy result; decoding reverses the input before summing
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         90000: "\U0001ec9d",  # 𞲝 INDIC SIYAQ NUMBER NINETY THOUSAND

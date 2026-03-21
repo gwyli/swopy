@@ -6,7 +6,7 @@ Currently supports:
     Mayan  U+1D2E0-U+1D2F3  (twenty glyphs: zero through nineteen)
 
 Mayan is a positional base-20 (vigesimal) system; each of the 20 unique glyphs
-represents a digit (0–19).  Numbers are encoded most-significant digit first,
+represents a digit (0-19).  Numbers are encoded most-significant digit first,
 analogous to the top-to-bottom writing direction of original Mayan inscriptions.
 
 Unicode glyphs:
@@ -35,24 +35,22 @@ from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Mayan(System[str, int]):
-    """Mayan vigesimal (base-20) numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and Mayan
+    numerals.
 
-    Implements bidirectional conversion between non-negative integers and Mayan
-    numeral strings. Each character encodes a single vigesimal digit (0-19);
-    digits are written most-significant first.
-
-    The system includes zero (𝋠) and has no natural upper bound, so the valid
-    range is 0 to infinity.
+    - Uses Unicode block U+1D2E0-U+1D2F3
+    - The system is positional in base 20, using twenty unique digit glyphs (0-19)
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x1D2E0 + i) for i in range(20)}

@@ -12,36 +12,35 @@ NINE DISH) and unit signs (TWO ASH through NINE ASH) are combined greedily;
 the value 20 is represented by two DISH signs.
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Cuneiform(System[str, int]):
-    """Cuneiform numeral system converter.
+    """Implements bidirectional conversion between integers and Cuneiform numerals.
 
-    Implements bidirectional conversion between integers and Cuneiform numeral
-    strings. Cuneiform numerals use pre-composed signs from the Unicode
-    Cuneiform Numbers and Punctuation block (U+12400–U+1247F), supplemented
-    by the base ASH (1) and DISH (10) signs from the main Cuneiform block.
-
-    The system is purely additive: multiple-of-10 signs (THREE DISH through
-    NINE DISH) and unit signs (TWO ASH through NINE ASH) are combined greedily.
-    The value 20 is represented by two DISH signs; 2–9 by the corresponding
-    pre-composed ASH sign.
+    - Uses Unicode blocks U+12400-U+1247F (Numbers and Punctuation) and
+      U+12000-U+123FF (main block)
+    - The system is purely additive, with pre-composed signs for units
+      (TWO ASH-NINE ASH) and multiples of 10 (THREE DISH-NINE DISH)
+    - Value 20 is represented by two DISH signs; the base ASH (1) and DISH (10)
+      come from the main block
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         90: "\U0001240e",  # 𒐎 CUNEIFORM NUMERIC SIGN NINE DISH

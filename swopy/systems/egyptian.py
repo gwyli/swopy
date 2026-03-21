@@ -33,20 +33,19 @@ from ._algorithms import (
 
 
 class Egyptian(System[str, int]):
-    """Egyptian hieroglyphic numeral system converter.
+    """Implements bidirectional conversion between integers and Egyptian Hieroglyphic
+    numerals.
 
-    Implements bidirectional conversion between integers and Egyptian hieroglyphic
-    numerals. Uses a base-10 system with individual hieroglyph symbols for powers of 10
-    (1, 10, 100, 1000, 10000, 100000, 1000000). Numbers above 999,999 are
-    considered "many" and capped at the maximum of 1,000,000.
+    - Uses Unicode block U+13000-U+1342F (seven glyphs for powers of 10:
+      1 to 1,000,000)
+    - The system is purely additive, written largest-to-smallest
+    - Values above 999,999 are treated as "many" and capped at 1,000,000
 
     Attributes:
-        to_numeral_map: Mapping of powers of 10 to their corresponding hieroglyph.
-        from_numeral_map: Reverse mapping of hieroglyphs to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum representable value (1,000,000).
-        maximum_is_many: True, indicating the maximum represents "many" in Egyptian
-            notation.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (1,000,000)
+        maximum_is_many: True - 1,000,000 represents "many" in Egyptian notation
+        encodings: UTF-8 only
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -121,25 +120,24 @@ class Egyptian(System[str, int]):
 
 
 class CopticEpact(System[str, int]):
-    """Coptic Epact numeral system converter.
+    """Implements bidirectional conversion between integers and Coptic Epact numerals.
 
-    Implements bidirectional conversion between integers and Coptic Epact numeral
-    strings using Unicode block U+102E0-U+102FB. The system is a ciphered additive
-    system with unique glyphs for each unit (1-9), decade (10-90), and century
-    (100-900). Thousands (1000-9000) are expressed by prefixing the COPTIC EPACT
-    THOUSANDS MARK (U+102E0, 𐋠) before the corresponding unit glyph.
-
-    The valid range is 1-9999.
+    - Uses Unicode block U+102E0-U+102FF
+    - The system is ciphered additive with unique glyphs for each unit (1-9), decade
+      (10-90), and century (100-900)
+    - Thousands (1,000-9,000) are expressed as the COPTIC EPACT THOUSANDS MARK (U+102E0)
+      prefixed before the corresponding unit glyph
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

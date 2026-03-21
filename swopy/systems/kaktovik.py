@@ -13,8 +13,6 @@ digit first, matching the left-to-right convention.
 Negative numbers are prefixed with a hyphen-minus (U+002D).
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from math import inf
@@ -25,27 +23,22 @@ from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Kaktovik(System[str, int]):
-    """Kaktovik vigesimal (base-20) numeral system converter.
+    """Implements bidirectional conversion between integers and Kaktovik numerals.
 
-    Implements bidirectional conversion between integers and Kaktovik numeral
-    strings using Unicode block U+1D2C0–U+1D2DF.  The system is positional
-    in base 20, with twenty unique digit glyphs encoding 0-19:
-
-    - Digits 0-19 are each represented by a unique glyph.
-    - Numbers are written most-significant digit first (left-to-right).
-    - Zero is represented by the single glyph 𝋀.
-    - Negative numbers are prefixed with a hyphen-minus (U+002D).
-    - There is no natural upper or lower bound.
+    - Uses Unicode block U+1D2C0-U+1D2DF
+    - The system is positional in base 20, using twenty unique digit glyphs (0-19)
+    - Negative numbers are prefixed with a hyphen-minus (U+002D)
 
     Attributes:
-        minimum: Minimum valid value (-infinity).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (-infinity)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = -inf
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x1D2C0 + i) for i in range(20)}

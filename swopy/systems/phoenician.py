@@ -1,4 +1,3 @@
-# ruff: noqa: RUF002
 """Phoenician numeral system converters.
 
 This module implements numeral systems from the Phoenician script family.
@@ -8,8 +7,8 @@ Currently supports:
 
 Phoenician is a purely additive system using greedy decomposition for encoding
 and character-sum for decoding.  No sign exists for 5, 50, or 1000, so values
-such as 4–9 are expressed by combining smaller signs (e.g. 9 = 3+3+3 = 𐤛𐤛𐤛).
-The valid range is 1–999.
+such as 4-9 are expressed by combining smaller signs (e.g. 9 = 3+3+3 = 𐤛𐤛𐤛).
+The valid range is 1-999.
 """
 
 from collections.abc import Mapping
@@ -21,22 +20,23 @@ from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Phoenician(System[str, int]):
-    """Phoenician numeral system converter.
+    """Implements bidirectional conversion between integers and Phoenician numerals.
 
-    Implements bidirectional conversion between integers and Phoenician numeral
-    strings. The system is purely additive with six signs: dedicated glyphs for
-    1, 2, 3, 10, 20, and 100. Values not directly represented (e.g. 4-9) are
-    expressed by repeating and combining smaller signs greedily.
+    - Uses Unicode block U+10916-U+1091B
+    - The system is purely additive with dedicated signs for 1, 2, 3, 10, 20, and 100
+    - No sign exists for 5 or 50, so values like 9 are expressed by repeating
+      smaller signs (e.g. 9 = 3+3+3)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

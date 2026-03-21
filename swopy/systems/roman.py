@@ -13,8 +13,8 @@ additionally supports base-12 fractions (twelfths) expressed with dot and S
 symbols.  Apostrophus extends the alphabet with parenthetical forms for large
 values.
 """
-# Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
-# ruff: noqa: RUF001 RUF002 RUF003
+
+# ruff: noqa: RUF001, RUF002
 
 from collections.abc import Mapping
 from fractions import Fraction
@@ -29,19 +29,18 @@ from ._algorithms import (
 
 
 class Early(System[str, int]):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers and Early Roman numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
+    - Uses Unicode block U+2160-U+216E (Roman numeral characters); ASCII I, V, X,
+      L, C, D are also accepted as input
+    - The system is subtractive with dedicated signs for 1, 5, 10, 50, 100, and 500
+      (no M; maximum is 899 = DCCCXCIX)
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (899), limited by Roman numeral notation.
-        maximum_is_many: False, as 899 is a precise limit.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (899)
+        maximum_is_many: False - integers greater than 899 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -74,8 +73,8 @@ class Early(System[str, int]):
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 899
-
     maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
@@ -143,22 +142,19 @@ class Early(System[str, int]):
 
 
 class Standard(System[str, int | Fraction]):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers or fractions and Standard
+    Roman numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
-
-    Type Parameter:
-        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, Ⅽ, Ⅾ, Ⅿ, etc.).
+    - Uses Unicode block U+2160-U+216F (Roman numeral characters); ASCII I, V, X, L, C,
+      D, M are also accepted as input
+    - The system is subtractive for integers (e.g. ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40)
+    - Base-12 fractions (1/12-11/12) are expressed with dot (·) and S notation
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (3999), limited by Roman numeral notation.
-        maximum_is_many: False, as 3999 is a precise limit.
+        minimum: Minimum valid value (1/12)
+        maximum: Maximum valid value (3,999)
+        maximum_is_many: False - integers greater than 3,999 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int | Fraction, str] = {
@@ -225,6 +221,8 @@ class Standard(System[str, int | Fraction]):
 
     minimum: ClassVar[int | float | Fraction] = Fraction(1, 12)
     maximum: ClassVar[int | float | Fraction] = 3_999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
     def _to_numeral(cls, denotation: int | Fraction) -> str:
@@ -334,22 +332,21 @@ class Standard(System[str, int | Fraction]):
 
 
 class Apostrophus(Early):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers and Apostrophus Roman
+    numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
-
-    Type Parameter:
-        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, C, Ⅾ, CⅠↃ, etc.).
+    - Uses Unicode block U+2160-U+2169 plus multi-character Apostrophus forms (CⅠↃ,
+      CCⅠↃↃ, ⅠↃↃ, ⅠↃↃↃ, CCCⅠↃↃↃ); ASCII I, V, X, L are also accepted as input
+    - The system is subtractive with dedicated signs for 1, 5, 10, 50, and 100,
+      extended by Apostrophus forms for 500, 1,000, 5,000, 10,000, 50,000, and 100,000
+    - Longest-match decoding resolves multi-character tokens before constituent
+      characters; descending order is enforced
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (3999), limited by Roman numeral notation.
-        maximum_is_many: False, as 3999 is a precise limit.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (100,000)
+        maximum_is_many: False - integers greater than 100,000 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -384,7 +381,8 @@ class Apostrophus(Early):
     }
 
     maximum: ClassVar[int | float | Fraction] = 100_000
-    encodings: ClassVar[Encodings] = {"utf8"}
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

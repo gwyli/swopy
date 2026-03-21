@@ -13,13 +13,11 @@ denomination on the right).  Encoding uses greedy decomposition followed by
 reversal; decoding reverses the input before summing.
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -27,20 +25,23 @@ from ._algorithms import (
 
 
 class Manichaean(System[str, int]):
-    """Manichaean numeral system converter.
+    """Implements bidirectional conversion between integers and Manichaean numerals.
 
-    Implements bidirectional conversion between integers and Manichaean numeral
-    strings using Unicode block U+10AC0–U+10AFF. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 5, 10, 20, and 100. The valid range is 1–999.
+    - Uses Unicode block U+10AC0-U+10AFF (five glyphs: 1, 5, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010aef",  # 𐫯 MANICHAEAN NUMBER ONE HUNDRED
@@ -128,21 +129,24 @@ class Manichaean(System[str, int]):
 
 
 class OldSogdian(System[str, int]):
-    """Old Sogdian numeral system converter.
+    """Implements bidirectional conversion between integers and Old Sogdian numerals.
 
-    Implements bidirectional conversion between integers and Old Sogdian numeral
-    strings using Unicode block U+10F00–U+10F2F. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 2, 3, 4, 5, 10, 20, 30, and 100. The valid range
-    is 1–999. (U+10F26 NUMBER ONE HALF is excluded.)
+    - Uses Unicode block U+10F00-U+10F2F (nine glyphs: 1, 2, 3, 4, 5, 10, 20, 30, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
+    - U+10F26 NUMBER ONE HALF is excluded
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010f25",  # 𐼥 OLD SOGDIAN NUMBER ONE HUNDRED
@@ -230,20 +234,23 @@ class OldSogdian(System[str, int]):
 
 
 class Sogdian(System[str, int]):
-    """Sogdian numeral system converter.
+    """Implements bidirectional conversion between integers and Sogdian numerals.
 
-    Implements bidirectional conversion between integers and Sogdian numeral
-    strings using Unicode block U+10F30–U+10F6F. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 10, 20, and 100. The valid range is 1–999.
+    - Uses Unicode block U+10F30-U+10F6F (four glyphs: 1, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010f54",  # 𐽔 SOGDIAN NUMBER ONE HUNDRED

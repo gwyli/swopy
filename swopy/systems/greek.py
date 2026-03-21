@@ -8,7 +8,7 @@ Currently supports:
                                 thousands)
     Alphabetic  U+0370-U+03FF  (uppercase Greek alphabetic numerals; U+0374
                                 keraia suffix as number mark)
-    Aegean      U+10107-U+10133  (45 glyphs for 1–90,000)
+    Aegean      U+10107-U+10133  (45 glyphs for 1-90,000)
     Attic       U+0394-U+039C (Greek letters) + U+10140-U+10147 (acrophonic)
     Etruscan    U+10320-U+10323  (four glyphs: 1, 5, 10, 50)
 
@@ -34,7 +34,6 @@ greedy result so the highest-denomination glyphs appear on the right, and
 decoding reverses the input before summing.
 """
 
-# Ignore ambiguous unicode character strings in Greek and Etruscan numerals
 # ruff: noqa: RUF002 RUF003
 
 from collections.abc import Mapping
@@ -52,30 +51,27 @@ from ._algorithms import (
 
 
 class Milesian(System[str, int]):
-    """Greek Milesian (alphabetic) numeral system converter.
+    """Implements bidirectional conversion between integers and Milesian numerals.
 
-    Implements bidirectional conversion between integers and Greek Milesian
-    numeral strings. The Milesian system is purely additive: each letter
-    contributes its face value, and numerals are written largest-to-smallest.
-
-    Thousands are denoted by the Greek numeral sign ͵ (U+0375) placed before
-    the corresponding unit letter (e.g. ͵α = 1000, ͵θ = 9000).
+    - Uses Unicode block U+0370-U+03FF (lowercase Greek alphabetic letters as numerals;
+      both upper- and lowercase accepted as input, lowercase emitted)
+    - The system is purely additive, written largest-to-smallest; each letter
+      contributes its face value (α=1, β=2, … ϡ=900)
+    - Thousands (1,000-9,000) are expressed as the Greek numeral sign ͵ (U+0375)
+      prefixed before the corresponding unit letter (e.g. ͵α = 1,000, ͵θ = 9,000);
+      two-character thousands tokens are resolved before single-character tokens in
+      decoding
 
     Attributes:
-        _to_numeral_map: Ordered mapping of integer values to their Greek letter
-            representations, from 9000 down to 1.
-        _from_numeral_map: Mapping of Greek letter strings to their integer
-            values. Thousands entries (two-character) are listed first so that
-            longest-match iteration resolves ͵α before α.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        maximum_is_many: False; 9999 is a precise upper bound.
-        encodings: UTF-8 only; Greek letters have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9,999)
+        maximum_is_many: False - integers greater than 9,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -265,49 +261,23 @@ class Milesian(System[str, int]):
 
 
 class Aegean(System[str, int]):
-    """Aegean numeral system converter.
+    """Implements bidirectional conversion between integers and Aegean numerals.
 
-    Implements bidirectional conversion between integers and Aegean (Linear A/B)
-    numeral strings. Aegean is a purely additive, base-10 system: each
-    denomination from 1 through 90,000 has its own unique Unicode symbol, and
-    numerals are formed by concatenating symbols in descending order. Each symbol
-    appears at most once.
-
-    Forty-five distinct Unicode symbols are used (U+10107–U+10133):
-
-        𐄇–𐄏  U+10107–U+1010F  AEGEAN NUMBER ONE through NINE         ->  1–9
-        𐄐–𐄘  U+10110–U+10118  AEGEAN NUMBER TEN through NINETY       ->  10–90
-        𐄙–𐄡  U+10119–U+10121  AEGEAN NUMBER ONE HUNDRED through      ->  100–900
-                                NINE HUNDRED
-        𐄢–𐄪  U+10122–U+1012A  AEGEAN NUMBER ONE THOUSAND through     ->  1000–9000
-                                NINE THOUSAND
-        𐄫–𐄳  U+1012B–U+10133  AEGEAN NUMBER TEN THOUSAND through     ->  10000–90000
-                                NINETY THOUSAND
-
-    The structure of a numeral is (each symbol optional, at most one per row):
-
-        [ten-thousand symbol]  — one of 𐄫–𐄳 (10000, 20000, …, 90000)
-        [thousand symbol]      — one of 𐄢–𐄪 (1000, 2000, …, 9000)
-        [hundred symbol]       — one of 𐄙–𐄡 (100, 200, …, 900)
-        [ten symbol]           — one of 𐄐–𐄘 (10, 20, …, 90)
-        [unit symbol]          — one of 𐄇–𐄏 (1, 2, …, 9)
-
-    Examples:
-        1996  ->  𐄢𐄡𐄘𐄌  (1000 + 900 + 90 + 6)
-        99999 ->  𐄳𐄪𐄡𐄘𐄏  (90000 + 9000 + 900 + 90 + 9)
+    - Uses Unicode block U+10107-U+10133 (forty-five dedicated glyphs for 1-9, 10-90,
+      100-900, 1,000-9,000, and 10,000-90,000)
+    - The system is purely additive; each denomination has exactly one unique glyph and
+      appears at most once, written largest-to-smallest
 
     Attributes:
-        _to_numeral_map: Mapping of the 45 denominations to their glyphs.
-        _from_numeral_map: Mapping of glyphs to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99999).
-        maximum_is_many: False; 99999 is a precise upper bound.
-        encodings: UTF-8 only; Aegean glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -423,58 +393,28 @@ class Aegean(System[str, int]):
 
 
 class Attic(System[str, int | Fraction]):
-    """Greek Attic (acrophonic) numeral system converter.
+    """Implements bidirectional conversion between integers or fractions and Attic
+    numerals.
 
-    Implements bidirectional conversion between integers or fractions and Greek
-    Attic numeral strings. Attic is a purely additive system written
-    largest-to-smallest. Five composite acrophonic symbols represent 5, 50, 500,
-    5000, and 50,000; the base denominations 1, 10, 100, 1000, and 10,000 are
-    represented by the Greek letters Ι, Δ, Η, Χ, and Μ respectively. Two
-    fraction symbols represent 1/2 and 1/4; the maximum representable fraction
-    component is 3/4 (= 𐅁𐅀).
-
-    Twelve distinct symbols are used:
-
-        𐅀  U+10140  GREEK ACROPHONIC ATTIC ONE QUARTER  ->  1/4
-        𐅁  U+10141  GREEK ACROPHONIC ATTIC ONE HALF     ->  1/2
-        Ι   U+0399   GREEK CAPITAL LETTER IOTA           ->  1
-        𐅃  U+10143  GREEK ACROPHONIC ATTIC FIVE         ->  5
-        Δ   U+0394   GREEK CAPITAL LETTER DELTA          ->  10
-        𐅄  U+10144  GREEK ACROPHONIC ATTIC FIFTY        ->  50
-        Η   U+0397   GREEK CAPITAL LETTER ETA            ->  100
-        𐅅  U+10145  GREEK ACROPHONIC ATTIC FIVE HUNDRED ->  500
-        Χ   U+03A7   GREEK CAPITAL LETTER CHI            ->  1000
-        𐅆  U+10146  GREEK ACROPHONIC ATTIC FIVE THOUSAND->  5000
-        Μ   U+039C   GREEK CAPITAL LETTER MU             ->  10000
-        𐅇  U+10147  GREEK ACROPHONIC ATTIC FIFTY THOUSAND->  50000
-
-    The structure of a numeral is (each group optional):
-
-        𐅇? Μ{0–4}  — fifty-thousands then ten-thousands
-        𐅆? Χ{0–4}  — five-thousands then thousands
-        𐅅? Η{0–4}  — five-hundreds then hundreds
-        𐅄? Δ{0–4}  — fifties then tens
-        𐅃? Ι{0–4}  — fives then ones
-        𐅁? 𐅀?      — one-half then one-quarter (fractional part only)
-
-    Examples:
-        1996  ->  Χ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃Ι
-        99999 ->  𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ
+    - Uses Greek letters Ι, Δ, Η, Χ, Μ (U+0399, U+0394, U+0397, U+03A7, U+039C) for
+      1, 10, 100, 1,000, and 10,000; composite acrophonic signs (U+10143-U+10147) for
+      5, 50, 500, 5,000, and 50,000; fraction signs 𐅁 (1/2) and 𐅀 (1/4) at
+      U+10141-U+10140
+    - The system is purely additive, written largest-to-smallest; fractions are
+      expressed by appending 𐅁 (1/2) and/or 𐅀 (1/4) — only multiples of 1/4 are
+      representable
+    - Both upper- and lowercase Greek letters are accepted as input
 
     Attributes:
-        _to_numeral_map: Mapping of the twelve base values (int and Fraction) to
-            their glyphs, ordered largest-to-smallest.
-        _from_numeral_map: Mapping of glyphs (both upper- and lowercase for the
-            Greek letters) to their integer or Fraction values.
-        minimum: Minimum valid value (1/4).
-        maximum: Maximum valid value (99999).
-        maximum_is_many: False; 99999 is a precise upper bound.
-        encodings: UTF-8 only; Attic acrophonic glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1/4)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = Fraction(1, 4)
     maximum: ClassVar[int | float | Fraction] = 99999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int | Fraction, str] = {
@@ -625,29 +565,25 @@ class Attic(System[str, int | Fraction]):
 
 
 class Etruscan(System[str, int]):
-    """Etruscan numeral system converter.
+    """Implements bidirectional conversion between integers and Etruscan numerals.
 
-    Implements bidirectional conversion between integers and Etruscan numeral strings.
-
-    Etruscan numerals are a purely additive system written right-to-left (largest
-    denomination on the right).  ``_to_numeral`` builds numerals using a greedy
-    decomposition (largest denomination first) and reverses the result so that
-    the highest-denomination glyphs appear on the right.  ``_from_numeral``
-    reverses the input string before summing, so both paths share the same
-    left-to-right internal iteration.
+    - Uses Unicode block U+10320-U+10323 (four glyphs: 1, 5, 10, 50); ASCII equivalents
+      I, Λ, X, ↑ are also accepted as input
+    - The system is purely additive and written right-to-left: encoding reverses the
+      greedy result so the highest-denomination glyphs appear on the right; decoding
+      reverses the input before summing
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Etruscan numeral components,
-            ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Etruscan numeral characters to their integer
-            values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (399), limited by Etruscan numeral notation.
-        maximum_is_many: False, as 399 is a precise limit.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (399)
+        maximum_is_many: False - integers greater than 399 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 399
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         50: "\U00010323",  # 𐌣 - OLD ITALIC NUMERAL FIFTY
@@ -747,27 +683,27 @@ _KERAIA = "\u0374"  # ʹ  GREEK NUMERAL SIGN (keraia suffix)
 
 
 class Alphabetic(System[str, int]):
-    """Greek Alphabetic numeral system converter.
+    """Implements bidirectional conversion between integers and Alphabetic Greek
+    numerals.
 
-    Implements bidirectional conversion between integers and Greek alphabetic
-    numeral strings.  The system is the uppercase variant of the Milesian
-    system: each uppercase letter contributes its face value and numerals are
-    written largest-to-smallest.  Thousands are denoted by the Greek numeral
-    sign ͵ (U+0375) placed before the corresponding unit letter.  The keraia
-    ʹ (U+0374) is appended as a number mark in encoding and stripped (if
-    present) before decoding.
-
-    Both upper- and lower-case letters are accepted in ``from_numeral``.
+    - Uses Unicode block U+0370-U+03FF (uppercase Greek alphabetic letters as numerals;
+      both upper- and lowercase accepted as input, uppercase emitted)
+    - The system is purely additive, written largest-to-smallest; each letter
+      contributes its face value (Α=1, Β=2, … Ϡ=900)
+    - Thousands (1,000-9,000) are expressed as the Greek numeral sign ͵ (U+0375)
+      prefixed before the corresponding unit letter; a keraia ʹ (U+0374) is appended
+      as a number mark in encoding and stripped (if present) before decoding
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only; Greek letters have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9,999)
+        maximum_is_many: False - integers greater than 9,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

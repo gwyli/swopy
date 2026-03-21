@@ -1,12 +1,12 @@
 """Aramaic numeral system converters.
 
 This module implements numeral systems from the Aramaic script family.
+
 Currently supports:
 
-    Palmyrene        U+10860-U+1087F  (seven glyphs: 1, 2, 3, 4, 5, 10, 20)
-    Hatran           U+108E0-U+108FF  (five glyphs: 1, 5, 10, 20, 100)
-    Imperial Aramaic U+10840-U+1085F  (eight glyphs: 1, 2, 3, 10, 20, 100,
-                                       1000, 10000)
+    Palmyrene        U+10860-U+1087F
+    Hatran           U+108E0-U+108FF
+    Imperial Aramaic U+10840-U+1085F
 
 Palmyrene and Hatran are purely additive left-to-right systems using greedy
 decomposition for encoding and character-sum for decoding.
@@ -16,13 +16,11 @@ denomination on the right): encoding reverses the greedy result, and
 decoding reverses the input before summing.
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     char_sum_from_numeral,
     greedy_additive_to_numeral,
@@ -32,20 +30,21 @@ from ._algorithms import (
 
 
 class Palmyrene(System[str, int]):
-    """Palmyrene numeral system converter.
+    """Implements bidirectional conversion between integers and Palmyrene numerals.
 
-    Implements bidirectional conversion between integers and Palmyrene numeral
-    strings using Unicode block U+10860–U+1087F. The system is purely additive
-    with dedicated signs for 1, 2, 3, 4, 5, 10, and 20. No sign for 100 exists
-    in the Unicode block, so the valid range is 1–99.
+    - Uses Unicode block U+10860-U+1087F
+    - The system is purely additive with dedicated signs for 1, 2, 3, 4, 5, 10, and 20
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99)
+        maximum_is_many: False - Integers greater than 99 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         20: "\U0001087f",  # 𐡿 PALMYRENE NUMBER TWENTY
@@ -61,18 +60,9 @@ class Palmyrene(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Palmyrene numeral representation.
+        """Convert an integer to Palmyrene numerals.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Palmyrene._to_numeral(1)
@@ -90,20 +80,9 @@ class Palmyrene(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Palmyrene numeral string to its Arabic integer value.
+        """Convert a Palmyrene numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Palmyrene._from_numeral('𐡹')
@@ -123,19 +102,22 @@ class Palmyrene(System[str, int]):
 
 
 class Hatran(System[str, int]):
-    """Hatran numeral system converter.
+    """Implements bidirectional conversion between integers and Hatran numerals.
 
-    Implements bidirectional conversion between integers and Hatran numeral
-    strings using Unicode block U+108E0–U+108FF. The system is purely additive
-    with dedicated signs for 1, 5, 10, 20, and 100. The valid range is 1–999.
+    - Uses Unicode block U+108E0-U+108FF
+    - The system is purely additive with dedicated signs for 1, 5, 10, 20, and 100
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - Integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U000108ff",  # 𐣿 HATRAN NUMBER ONE HUNDRED
@@ -149,18 +131,9 @@ class Hatran(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Hatran numeral representation.
+        """Convert an integer to Hatran numerals.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Hatran._to_numeral(1)
@@ -178,20 +151,9 @@ class Hatran(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Hatran numeral string to its Arabic integer value.
+        """Convert a Hatran numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Hatran._from_numeral('𐣻')
@@ -211,21 +173,24 @@ class Hatran(System[str, int]):
 
 
 class ImperialAramaic(System[str, int]):
-    """Imperial Aramaic numeral system converter.
+    """Implements bidirectional conversion between integers and Imperial Aramaic
+    numerals.
 
-    Implements bidirectional conversion between integers and Imperial Aramaic
-    numeral strings using Unicode block U+10840–U+1085F. The system is purely
-    additive and written right-to-left (largest denomination on the right),
-    with dedicated signs for 1, 2, 3, 10, 20, 100, 1000, and 10000.
-    The valid range is 1–99,999.
+    - Uses Unicode block U+10840-U+1085F
+    - The system is purely additive and written right-to-left (largest denomination on
+        the right), with dedicated signs for 1, 2, 3, 10, 20, 100, 1000, and 10000.
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - Integers greater than 99 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         10000: "\U0001085f",  # 𐡟 IMPERIAL ARAMAIC NUMBER TEN THOUSAND
@@ -242,18 +207,9 @@ class ImperialAramaic(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Imperial Aramaic numeral representation.
+        """Convert an integer to Imperial Aramaic numerals
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> ImperialAramaic._to_numeral(1)
@@ -277,20 +233,9 @@ class ImperialAramaic(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Imperial Aramaic numeral string to its Arabic integer value.
+        """Convert an Imperial Aramaic numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> ImperialAramaic._from_numeral('𐡘')

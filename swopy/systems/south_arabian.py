@@ -17,8 +17,6 @@ Old North Arabian has three dedicated numeral characters covering values
 1, 10, and 20.
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
@@ -28,30 +26,24 @@ from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class AncientSouthArabian(System[str, int]):
-    """Ancient South Arabian numeral system converter.
+    """Implements bidirectional conversion between integers and Ancient South Arabian
+    numerals.
 
-    Implements bidirectional conversion between integers and Old South Arabian
-    numeral strings using Unicode block U+10A60–U+10A7F. The system is purely
-    additive with five signs:
-
-    - 𐩲  U+10A72  LETTER AYN      (acrophonic)  ->  10,000
-    - 𐩱  U+10A71  LETTER ALEF     (acrophonic)  ->   1,000
-    - 𐩣  U+10A63  LETTER MEM      (acrophonic)  ->     100
-    - 𐩾  U+10A7E  NUMBER FIFTY                  ->      50
-    - 𐩽  U+10A7D  NUMBER ONE                    ->       1
-
-    Values between signs are expressed by repetition (e.g. 3 = 𐩽𐩽𐩽,
-    200 = 𐩣𐩣). The valid range is 1–99,999.
+    - Uses Unicode block U+10A60-U+10A7F (five glyphs: 1, 50, 100, 1000, 10000)
+    - The system is purely additive with acrophonic signs: LETTER AYN (𐩲) for 10,000,
+      LETTER ALEF (𐩱) for 1,000, LETTER MEM (𐩣) for 100, plus dedicated NUMBER FIFTY
+      and NUMBER ONE glyphs
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -141,28 +133,23 @@ class AncientSouthArabian(System[str, int]):
 
 
 class AncientNorthArabian(System[str, int]):
-    """Ancient North Arabian numeral system converter.
+    """Implements bidirectional conversion between integers and Ancient North Arabian
+    numerals.
 
-    Implements bidirectional conversion between integers and Old North Arabian
-    numeral strings using Unicode block U+10A80–U+10A9F. The system is purely
-    additive with three dedicated numeral signs:
-
-    - 𐪟  U+10A9F  NUMBER TWENTY  ->  20
-    - 𐪞  U+10A9E  NUMBER TEN     ->  10
-    - 𐪝  U+10A9D  NUMBER ONE     ->   1
-
-    Values between signs are expressed by repetition (e.g. 3 = 𐪝𐪝𐪝,
-    30 = 𐪟𐪞). The valid range is 1–99.
+    - Uses Unicode block U+10A80-U+10A9F (three glyphs: NUMBER ONE, NUMBER TEN,
+      NUMBER TWENTY)
+    - The system is purely additive with dedicated signs for 1, 10, and 20
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99)
+        maximum_is_many: False - integers greater than 99 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

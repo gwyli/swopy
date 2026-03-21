@@ -21,7 +21,7 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -29,21 +29,24 @@ from ._algorithms import (
 
 
 class InscriptionalParthian(System[str, int]):
-    """Inscriptional Parthian numeral system converter.
+    """Implements bidirectional conversion between integers and Inscriptional Parthian
+    numerals.
 
-    Implements bidirectional conversion between integers and Inscriptional
-    Parthian numeral strings using Unicode block U+10B40-U+10B5F. The system
-    is purely additive and written right-to-left (largest denomination on the
-    right), with dedicated signs for 1, 2, 3, 4, 10, 20, 100, and 1000.
-    The valid range is 1-9999.
+    - Uses Unicode block U+10B40-U+10B5F (eight glyphs: 1, 2, 3, 4, 10, 20, 100, 1000)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         1000: "\U00010b5f",  # 𐭟 INSCRIPTIONAL PARTHIAN NUMBER ONE THOUSAND
@@ -134,21 +137,24 @@ class InscriptionalParthian(System[str, int]):
 
 
 class InscriptionalPahlavi(System[str, int]):
-    """Inscriptional Pahlavi numeral system converter.
+    """Implements bidirectional conversion between integers and Inscriptional Pahlavi
+    numerals.
 
-    Implements bidirectional conversion between integers and Inscriptional
-    Pahlavi numeral strings using Unicode block U+10B60-U+10B7F. The system
-    is purely additive and written right-to-left (largest denomination on the
-    right), with dedicated signs for 1, 2, 3, 4, 10, 20, 100, and 1000.
-    The valid range is 1-9999.
+    - Uses Unicode block U+10B60-U+10B7F (eight glyphs: 1, 2, 3, 4, 10, 20, 100, 1000)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         1000: "\U00010b7f",  # 𐭿 INSCRIPTIONAL PAHLAVI NUMBER ONE THOUSAND
@@ -239,21 +245,24 @@ class InscriptionalPahlavi(System[str, int]):
 
 
 class PsalterPahlavi(System[str, int]):
-    """Psalter Pahlavi numeral system converter.
+    """Implements bidirectional conversion between integers and Psalter Pahlavi
+    numerals.
 
-    Implements bidirectional conversion between integers and Psalter Pahlavi
-    numeral strings using Unicode block U+10B80-U+10BAF. The system is purely
-    additive and written right-to-left (largest denomination on the right),
-    with dedicated signs for 1, 2, 3, 4, 10, 20, and 100. The valid range is
-    1-999.
+    - Uses Unicode block U+10B80-U+10BAF (seven glyphs: 1, 2, 3, 4, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010baf",  # 𐮯 PSALTER PAHLAVI NUMBER ONE HUNDRED

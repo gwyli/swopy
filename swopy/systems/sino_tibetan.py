@@ -48,27 +48,30 @@ from ._algorithms import (
 
 
 class Tangut(System[str, int]):
-    """Tangut numeral system converter.
+    """Implements bidirectional conversion between integers and Tangut numerals.
 
-    Implements bidirectional conversion between integers and Tangut numeral
-    strings. The system is multiplicative-additive with a myriad base:
-
-    - Digits 1-9 are represented by unique glyphs.
-    - Multipliers x10, x100, x1000, x10000 are separate characters.
-    - The tens place always carries an explicit digit (including 1).
-    - Hundreds, thousands and myriad coefficients omit the digit when it is 1.
-    - Zero places are skipped entirely (no zero glyph in normal use).
-    - The myriad (x10000) coefficient can itself be a sub-myriad denotation (1-9999).
+    - Uses Unicode block U+17000-U+187FF (nine digit glyphs and four multiplier
+      glyphs scattered across the Tangut ideograph block)
+    - The system is multiplicative-additive with myriad (×10,000) grouping; digits
+      1-9 each have a unique glyph and multipliers for ×10, ×100, ×1,000, and ×10,000
+      are separate characters
+    - Zero places are skipped entirely — no zero glyph is emitted; omitted place
+      values are implicit
+    - The tens coefficient is always written explicitly, including when it is 1;
+      hundreds, thousands, and myriad coefficients omit the digit when it is 1
+    - The myriad coefficient can itself be a sub-myriad denotation (1-9,999),
+      recursively encoded
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     # Individual digit glyphs (1-9)
@@ -214,28 +217,31 @@ class Tangut(System[str, int]):
 
 
 class Khitan(System[str, int]):
-    """Khitan numeral system converter.
+    """Implements bidirectional conversion between integers and Khitan Small Script
+    numerals.
 
-    Implements bidirectional conversion between integers and Khitan Small
-    Script numeral strings. The system is multiplicative-additive with a
-    myriad base:
-
-    - Digits 1-9 are represented by unique glyphs (U+18B00-U+18B08).
-    - Multipliers x10, x100, x1000, x10000 are separate characters.
-    - The digit 1 is always omitted before every multiplier (including tens).
-    - Zero places are skipped entirely (no zero glyph in normal use).
-    - The myriad (x10000) coefficient can itself be a sub-myriad denotation
-      (2-9999); a coefficient of 1 is omitted entirely.
+    - Uses Unicode block U+18B00-U+18CFF (digits 1-9 at U+18B00-U+18B08; multipliers
+      at U+18B09-U+18B0C)
+    - The system is multiplicative-additive with myriad (×10,000) grouping; digits
+      1-9 each have a unique glyph and multipliers for ×10, ×100, ×1,000, and ×10,000
+      are separate characters
+    - Zero places are skipped entirely — no zero glyph is emitted; omitted place
+      values are implicit
+    - The digit 1 is omitted before every multiplier (including ×10); a myriad
+      coefficient of 1 is omitted entirely (bare myriad glyph = 10,000)
+    - The myriad coefficient can itself be a sub-myriad denotation (2-9,999),
+      recursively encoded
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     # Individual digit glyphs (1-9): U+18B00-U+18B08
@@ -362,24 +368,25 @@ class Khitan(System[str, int]):
 
 
 class Suzhou(System[str, int]):
-    """Suzhou (Huāmǎ / 花碼) numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and Suzhou
+    numerals.
 
-    Implements bidirectional conversion between non-negative integers and
-    Suzhou numeral strings using Unicode block U+3000-U+303F.  The system is
-    positional base-10: digit glyphs U+3021-U+3029 represent 1-9 and U+3007
-    represents 0.  The shorthand glyphs U+3038 (ten), U+3039 (twenty), and
-    U+303A (thirty) are accepted as standalone numerals in decoding but are
-    never produced by encoding.
+    - Uses Unicode block U+3000-U+303F (digit glyphs 1-9 at U+3021-U+3029, zero at
+      U+3007)
+    - The system is positional in base 10, written most-significant digit first
+    - Shorthand glyphs U+3038-U+303A (10, 20, 30) are accepted as standalone input but
+      not emitted
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -475,25 +482,24 @@ class Suzhou(System[str, int]):
 
 
 class Chinese(System[str, int]):
-    """Chinese (CJK) numeral system converter.
+    """Implements bidirectional conversion between integers and Chinese CJK numerals.
 
-    Implements bidirectional conversion between integers and Chinese numeral
-    strings using CJK Unified Ideographs (U+4E00-U+9FFF).  The system is
-    multiplicative-additive with myriad (10,000) grouping: digit ideographs
-    一-九 combine with multiplier ideographs 十/百/千/万.  The digit 一 is
-    omitted before every multiplier (including 十).  The zero character 零
-    is accepted as a placeholder in decoding but contributes no value and
-    is not produced by encoding.  The valid range is 1-99,999,999.
+    - Uses CJK Unified Ideographs (U+4E00-U+9FFF): digit ideographs 一-九 and
+      multiplier ideographs 十/百/千/万
+    - The system is multiplicative-additive with myriad (10,000) grouping
+    - The digit 一 is omitted before every multiplier (including 十); 零 is accepted
+      in decoding as a placeholder but carries no value and is not emitted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {

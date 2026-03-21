@@ -25,27 +25,25 @@ from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Medefaidrin(System[str, int]):
-    """Medefaidrin vigesimal (base-20) numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and
+    Medefaidrin numerals.
 
-    Implements bidirectional conversion between non-negative integers and
-    Medefaidrin numeral strings using Unicode block U+16E40-U+16E9F. The
-    system is positional in base 20, with twenty unique digit glyphs encoding
-    values 0-19 at U+16E80-U+16E93. Numbers are written most-significant
-    digit first (left-to-right). Zero is represented by the single glyph
-    at U+16E80.
-
-    Alternate glyph forms for 1, 2, and 3 (U+16E94-U+16E96) are accepted
-    as input but are never emitted on output.
+    - Uses Unicode block U+16E80-U+16E93 (digits 0-19) within block U+16E40-U+16E9F
+    - The system is positional in base 20, using twenty unique digit glyphs (0-19)
+    - Numbers are written most-significant digit first (left-to-right)
+    - Alternate forms for 1, 2, and 3 (U+16E94-U+16E96) are accepted as input
+      but not emitted
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x16E80 + i) for i in range(20)}
