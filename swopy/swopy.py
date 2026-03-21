@@ -1,11 +1,11 @@
 """Main module for numeral system conversions.
 
-This module provides the swopy() method which serves as the primary interface
+This module provides the ``swopy()`` method which serves as the primary interface
 for converting numbers between different numeral systems (Roman, Egyptian, Arabic, etc.)
 It handles bidirectional conversions by delegating to the appropriate system
 implementations.
 """
-# Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
+# Ignore ambiguous unicode character strings in numerals (e.g., 'I' vs 'Ⅰ').
 # ruff: noqa: RUF002 RUF003
 
 from inspect import getmembers, isclass
@@ -30,26 +30,36 @@ def swop[
 
     Provides a simple interface to convert numbers between different numeral
     systems. Validates input against both source and target system constraints,
-    then performs the conversion via Arabic numerals.
+    then performs the conversion via python-native numbers.
+
+
+    Type Parameters:
+        TFromNumeral: The representation of the numeral in the system being converted
+            from
+        TFromDenotation: The denotation being represented in the system being converted
+            from
+        TToNumeral: The representation of the numeral in the system being converted to
+        TToDenotation: The denotation being represented in the system being converted to
 
     Args:
-        numeral: The number to convert, in whatever format the source system accepts.
-        from_system: The source numeral system.
-        to_system: The target numeral system.
+        numeral: The numeral to convert, in whatever format the source system accepts
+        from_system: The source numeral system
+        to_system: The target numeral system
 
     Returns:
-        The number in the target numeral system in an appropriate type based on the
-        system's implementation.
+        The numeral in the target system in an appropriate type based on the system's
+            implementation
 
     Raises:
-        ValueError: If the number is outside the valid range for either system.
-        TypeError: If the number cannot be represented in the target system.
+        ValueError: If the denotation is outside the valid range for either system
+        ValueError: If the numeral representation is invalid in either system
+        TypeError: If there are no overlapping numeral and/or denotation types between
+            the systems
 
     Examples:
         >>> swop(10, systems.hindu_arabic.Arabic, systems.egyptian.Egyptian)
         '\U00013386'
-        >>> swop('Ⅹ', systems.roman.Standard, \
-            systems.egyptian.Egyptian)
+        >>> swop('Ⅹ', systems.roman.Standard, systems.egyptian.Egyptian)
         '\U00013386'
         >>> swop('Ⅹ', systems.roman.Standard, systems.roman.Standard)
         'Ⅹ'
@@ -66,16 +76,19 @@ def swop[
 
 
 def get_all_systems() -> dict[str, type[System[Any, Any]]]:
-    """Discovers and returns all available numeral system classes.
+    """Discovers and returns all available numeral systems
 
     Provides easy discovery of all supported numeral systems without
     requiring knowledge of the systems module structure.
 
     Returns:
         A dictionary mapping system names to their corresponding System classes.
-        Keys are the class names (e.g., 'Roman', 'Egyptian'), values are the
-        System subclasses.
+            Keys are of the form ``module.class`` and values are the System subclass
+            objects, e.g.
 
+            {'roman.Standard': <class 'swopy.systems.roman.Standard',
+             'aramaic.Hatran': <class 'swopy.systems.aramaic.Hatran',
+             }
     Examples:
         >>> all_systems = get_all_systems()
         >>> 'roman.Standard' in all_systems
