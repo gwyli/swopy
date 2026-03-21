@@ -85,20 +85,11 @@ class SinhalaArchaic(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Sinhala Archaic numeral representation.
+        """Convert an integer to Sinhala Archaic numerals
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
         (omitted when 1) followed by the group symbol. Tens use a dedicated
         decade symbol (10-90). Ones use a dedicated unit symbol (1-9).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Sinhala Archaic string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> SinhalaArchaic._to_numeral(1)
@@ -122,22 +113,13 @@ class SinhalaArchaic(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Sinhala Archaic numeral string to its Arabic integer value.
+        """Convert a Sinhala Archaic numeral to an integer.
 
         Scans left-to-right. Unit symbols (𑇡-𑇩) accumulate in a buffer.
         When a hundreds (𑇳) or thousands (𑇴) symbol is encountered the buffer
         is treated as a multiplier (defaulting to 1 when empty) and is reset.
         Decade symbols (𑇪-𑇲) flush the unit buffer as additive ones then add
         their face value. Any remaining buffer is added as ones at the end.
-
-        Args:
-            numeral: The Sinhala Archaic numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> SinhalaArchaic._from_numeral('𑇩')
@@ -211,20 +193,11 @@ class Bhaiksuki(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Bhaiksuki numeral representation.
+        """Convert an integer to Bhaiksuki numerals
 
         Uses greedy additive decomposition, largest denomination first.
         Hundreds are encoded as a two-character sequence (unit sign + hundreds
         mark); decades and ones use single-character signs.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Bhaiksuki string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Bhaiksuki._to_numeral(1)
@@ -246,21 +219,11 @@ class Bhaiksuki(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Bhaiksuki numeral string to its Arabic integer value.
+        """Convert a Bhaiksuki numeral to an integer.
 
         Uses longest-match scanning so that two-character hundred tokens
         (unit sign + hundreds mark) are resolved before their constituent
         single-character unit signs.
-
-        Args:
-            numeral: The Bhaiksuki numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character or
-                token.
 
         Examples:
             >>> Bhaiksuki._from_numeral('𑱚')

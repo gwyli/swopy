@@ -73,15 +73,6 @@ class Egyptian(System[str, int]):
         Takes an integer and converts it to its Egyptian hieroglyph representation
         using the base-10 system of hieroglyphic symbols.
 
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
-
         Examples:
             >>> Egyptian.to_numeral(1)
             '\U000133fa'
@@ -98,17 +89,6 @@ class Egyptian(System[str, int]):
 
         Takes an Egyptian numeral and converts it to its integer equivalent
         by summing the values of each hieroglyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
@@ -221,20 +201,11 @@ class CopticEpact(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Coptic Epact numeral representation.
+        """Convert an integer to Coptic Epact numerals.
 
         Uses greedy additive decomposition. Thousands are encoded as a 2-character
         sequence: the COPTIC EPACT THOUSANDS MARK (𐋠) followed by the unit glyph
         for the thousands digit.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> CopticEpact._to_numeral(1)
@@ -258,22 +229,11 @@ class CopticEpact(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Coptic Epact numeral string to its Arabic integer value.
+        """Convert a Coptic Epact numeral to an integer.
 
         Uses longest-match scanning so that the 2-character thousands sequences
         (𐋠 + digit) are consumed before the bare digit glyphs. Values must appear
         in non-increasing order (thousands before hundreds before tens before units).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid or out of order.
 
         Examples:
             >>> CopticEpact._from_numeral('𐋡')

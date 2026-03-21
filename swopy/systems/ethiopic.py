@@ -135,21 +135,12 @@ class Ethiopic(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Ethiopic numeral representation.
+        """Convert an integer to Ethiopic numerals.
 
         Denotations >= 10,000 are expressed as ``encode_sub9999(coefficient) + ፼``
         followed by ``encode_sub9999(remainder)``.  Within each sub-10,000
         segment, hundreds use ``encode_sub100(coefficient) + ፻`` with the
         coefficient omitted when equal to 1.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Ethiopic._to_numeral(1)
@@ -185,23 +176,12 @@ class Ethiopic(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ethiopic numeral string to its Arabic integer value.
+        """Convert an Ethiopic numeral to an integer.
 
         Splits at ፼ (if present): the portion before is decoded as a
         sub-9999 coefficient multiplied by 10,000; the portion after is
         decoded as the remainder.  Each sub-9999 segment is further split
         at ፻ to extract the hundreds coefficient.
-
-        Args:
-            numeral: The Ethiopic numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Ethiopic._from_numeral('፩')

@@ -54,20 +54,11 @@ class Ahom(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert a non-negative integer to its Ahom decimal representation.
+        """Convert a non-negative integer to Ahom numerals.
 
         Encodes ``denotation`` as a sequence of Ahom digit glyphs representing its
         decimal expansion, most-significant digit first. Zero is represented
         by the single zero glyph.
-
-        Args:
-            denotation: The non-negative integer to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Ahom._to_numeral(0)
@@ -87,21 +78,12 @@ class Ahom(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ahom numeral string to its integer value.
+        """Convert an Ahom numeral to an integer.
 
         Scans each character left-to-right. Positional digit glyphs (U+11730-
         U+11739) accumulate using ``total = total * 10 + digit``. The dedicated
         ten (U+1173A) and twenty (U+1173B) signs are treated as additive
         contributions of 10 and 20.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Ahom._from_numeral('\U00011730')

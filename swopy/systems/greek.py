@@ -194,20 +194,11 @@ class Milesian(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Greek Milesian representation.
+        """Convert an integer to Greek Milesian numerals.
 
         Uses greedy decomposition: at each step the largest denomination not
         exceeding the remainder is consumed, producing numerals in
         largest-to-smallest order.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Greek Milesian string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Milesian._to_numeral(1)
@@ -229,21 +220,11 @@ class Milesian(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Greek Milesian numeral string to its Arabic integer value.
+        """Convert a Greek Milesian numeral to an integer.
 
         Scans left-to-right using longest-match: two-character thousands tokens
         (e.g. ``͵α``) are tested before single-character tokens so that the
         Greek numeral sign ͵ is never left unmatched.
-
-        Args:
-            numeral: The Greek Milesian numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character or
-                sequence.
 
         Examples:
             >>> Milesian._from_numeral('α')
@@ -332,20 +313,11 @@ class Aegean(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Aegean numeral representation.
+        """Convert an integer to Aegean numerals.
 
         Uses greedy decomposition: at each step the largest denomination not
         exceeding the remainder is consumed, producing numerals in
         largest-to-smallest order. Each symbol appears at most once.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Aegean string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Aegean._to_numeral(1)
@@ -367,19 +339,10 @@ class Aegean(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Aegean numeral string to its Arabic integer value.
+        """Convert an Aegean numeral to an integer.
 
         Scans left-to-right, looking each character up in the value map and
         summing the results.
-
-        Args:
-            numeral: The Aegean numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> Aegean._from_numeral('𐄇')
@@ -477,23 +440,13 @@ class Attic(System[str, int | Fraction]):
 
     @classmethod
     def _to_numeral(cls, denotation: int | Fraction) -> str:
-        """Convert an Arabic integer or Fraction to its Attic numeral representation.
+        """Convert an integer or base-4 Fraction to Attic numerals.
 
         Separates the integer and fractional parts. The integer part is
         decomposed greedily from largest denomination to smallest. The fractional
         part (if any) is expressed using the half (𐅁) and/or quarter (𐅀) symbols
         appended after the integer symbols. Only fractions whose component is
         exactly 0, 1/4, 1/2, or 3/4 are representable.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Attic string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range or its
-                fractional part is not a multiple of 1/4.
 
         Examples:
             >>> Attic._to_numeral(1)
@@ -534,21 +487,12 @@ class Attic(System[str, int | Fraction]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
-        """Convert an Attic numeral string to its Arabic integer or Fraction value.
+        """Convert an Attic numeral to an integer or base-4 fraction.
 
         Scans left-to-right, looking each character up in the value map and
         summing the results. Both uppercase and lowercase Greek letters are
         accepted. Returns an ``int`` when the result is a whole denotation and a
         ``Fraction`` when the result has a fractional component.
-
-        Args:
-            numeral: The Attic numeral string to convert.
-
-        Returns:
-            The integer or Fraction value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> Attic._from_numeral('Ι')

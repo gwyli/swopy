@@ -71,20 +71,11 @@ class Brahmi(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Brahmi numeral representation.
+        """Convert an integer to Brahmi numerals.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
         (omitted when 1) followed by the group symbol. Tens use a dedicated
         decade symbol (10-90). Ones use a dedicated unit symbol (1-9).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Brahmi string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Brahmi._to_numeral(1)
@@ -114,22 +105,13 @@ class Brahmi(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Brahmi numeral string to its Arabic integer value.
+        """Convert a Brahmi numeral to an integer.
 
         Scans left-to-right. Unit symbols (𑁒-𑁚) accumulate in a buffer.
         When a hundreds (𑁤) or thousands (𑁥) symbol is encountered the buffer
         is treated as a multiplier (defaulting to 1 when empty) and is reset.
         Decade symbols (𑁛-𑁣) flush the unit buffer as additive ones then add
         their face value. Any remaining buffer is added as ones at the end.
-
-        Args:
-            numeral: The Brahmi numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> Brahmi._from_numeral('𑁚')
