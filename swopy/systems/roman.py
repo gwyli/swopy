@@ -78,20 +78,20 @@ class Early(System[str, int]):
     maximum_is_many: ClassVar[bool] = False
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Early.to_numeral(1)
@@ -107,7 +107,7 @@ class Early(System[str, int]):
                 ...
             ValueError: Number must be less than or equal to 899.
         """
-        return subtractive_to_numeral(number, cls._to_numeral_map)
+        return subtractive_to_numeral(denotation, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -227,20 +227,20 @@ class Standard(System[str, int | Fraction]):
     maximum: ClassVar[int | float | Fraction] = 3_999
 
     @classmethod
-    def _to_numeral(cls, number: int | Fraction) -> str:
+    def _to_numeral(cls, denotation: int | Fraction) -> str:
         """Converts an integer to a Roman numeral string.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Standard.to_numeral(1)
@@ -250,18 +250,16 @@ class Standard(System[str, int | Fraction]):
             >>> Standard.to_numeral(0)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be greater or equal to 1.
+            ValueError: Denotation must be greater or equal to 1.
             >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 899.
+            ValueError: Denotation must be less than or equal to 899.
         """
         result: str = ""
 
-        # Non-integer/fraction numbers and negative numbers are gated
-        # in System.to_numeral()
-        integer = int(number)
-        proper_fraction = number - integer
+        integer = int(denotation)
+        proper_fraction = denotation - integer
 
         for arabic, roman in cls._to_numeral_items:
             while integer >= arabic:
@@ -275,7 +273,7 @@ class Standard(System[str, int | Fraction]):
 
         fraction_glyph = cls._to_numeral_map.get(proper_fraction)
         if fraction_glyph is None:
-            raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
+            raise ValueError(f"{denotation} cannot be represented in {cls.__name__}.")
 
         return result + fraction_glyph
 

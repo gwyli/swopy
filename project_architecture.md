@@ -1,5 +1,9 @@
 # Code conventions
 
+`swopy` uses the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html), with the exceptions listed in the `tool.ruff` sections of `pyproject.toml`.
+
+## Adding a new system
+
  When adding a new system of numerals:
 
  1. If it doesn't exist, add a new file to `swopy/systems/` with the name of the script family from which the numeral system comes from
@@ -62,9 +66,24 @@ Key ClassVars set by `__init_subclass__`:
 - `_to_numeral_items: tuple[tuple[Any, Any], ...]` — pre-computed `_to_numeral_map.items()` for hot paths
 - `_bounded: bool` — False when min==-inf and max==inf (skips `_limits()`)
 
-Type checks use `type(val) in frozenset` (O(1), no isinstance MRO traversal). `bool` is intentionally excluded — `is_valid_denotation(True)` returns False.
-
 Public entry points: `to_numeral()`, `from_numeral()`, and the trusted variants `to_numeral_trusted()` / `from_numeral_trusted()` (skip type guard, called from `swop()` after narrowing).
+
+## Decisions
+
+### Numbers
+
+`bool` is intentionally excluded — `is_valid_denotation(True)` returns False as `bool` is not a number.
+
+### Type checks
+
+Type checks use `type(val) in frozenset` (O(1), no isinstance MRO traversal).
+
+### ClassVars
+
+PEP 526 prohibits `ClassVar` from containing type variables, and PEP 484's invariance rule for mutable bindings means a subclass cannot narrow `Mapping[str, object]` to `Mapping[str, int]` without a type error. As a result
+
+- `System.from_numeral_map` and `System.to_numeral_map` exist as typed accessors for the `from_numeral_map` and `_to_numeral_map` class variables rather than exposing the class variables directly.  Returning the type (`TDenotation`/`TNumeral`) from a classmethod is valid because PEP 695 type parameters on a generic class are resolved through the instance-typed generic machinery introduced in PEP 484.
+- When returning a narrowed type in a public method type errors are ignored via `pyright: ignore[reportReturnType]` to avoid unnecessary calls to `System.is_valid_numeral` and `System.is_valid_denotation`.
 
 ## Algorithms (`swopy/systems/_algorithms.py`)
 

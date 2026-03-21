@@ -118,7 +118,7 @@ class Kharosthi(System[str, int]):
         return cls._units_table[n]
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Kharosthi numeral representation.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
@@ -127,13 +127,13 @@ class Kharosthi(System[str, int]):
         symbols using greedy decomposition with 4, 3, 2, 1.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Kharosthi string representation of ``number``.
+            The Kharosthi string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Kharosthi._to_numeral(1)
@@ -158,31 +158,31 @@ class Kharosthi(System[str, int]):
         result = ""
 
         # Thousands group: unit multiplier (omitted if 1) + 𐩇
-        thousands = number // 1000
-        number = number % 1000
+        thousands = denotation // 1000
+        denotation = denotation % 1000
         if thousands:
             if thousands > 1:
                 result += cls._units_str(thousands)
             result += cls._to_numeral_map[1000]
 
         # Hundreds group: unit multiplier (omitted if 1) + 𐩆
-        hundreds = number // 100
-        number = number % 100
+        hundreds = denotation // 100
+        denotation = denotation % 100
         if hundreds:
             if hundreds > 1:
                 result += cls._units_str(hundreds)
             result += cls._to_numeral_map[100]
 
         # Tens: additive 20s then optional 10
-        twenties = number // 20
-        number = number % 20
+        twenties = denotation // 20
+        denotation = denotation % 20
         result += cls._to_numeral_map[20] * twenties
-        tens = number // 10
-        number = number % 10
+        tens = denotation // 10
+        denotation = denotation % 10
         result += cls._to_numeral_map[10] * tens
 
         # Ones: additive 4, 3, 2, 1
-        result += cls._units_str(number)
+        result += cls._units_str(denotation)
 
         return result
 

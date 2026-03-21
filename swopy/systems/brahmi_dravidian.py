@@ -68,20 +68,20 @@ class Grantha(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {chr(0x11366 + i): i for i in range(7)}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Grantha base-7 representation.
 
-        Encodes ``number`` in base 7, emitting the most-significant digit
+        Encodes ``denotation`` in base 7, emitting the most-significant digit
         first. Zero is represented by the single combining digit zero glyph.
 
         Args:
-            number: The non-negative integer to convert.
+            denotation: The non-negative integer to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Grantha._to_numeral(0)
@@ -95,7 +95,7 @@ class Grantha(System[str, int]):
             >>> Grantha._to_numeral(49)
             '𑍧𑍦𑍦'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 7)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 7)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -157,21 +157,21 @@ class Saurashtra(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {chr(0xA8D0 + i): i for i in range(10)}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Saurashtra decimal representation.
 
-        Encodes ``number`` as a sequence of Saurashtra digit glyphs representing
+        Encodes ``denotation`` as a sequence of Saurashtra digit glyphs representing
         its decimal expansion, most-significant digit first. Zero is represented
         by the single zero glyph.
 
         Args:
-            number: The non-negative integer to convert.
+            denotation: The non-negative integer to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Saurashtra._to_numeral(0)
@@ -187,7 +187,7 @@ class Saurashtra(System[str, int]):
             >>> Saurashtra._to_numeral(100)
             '\ua8d1\ua8d0\ua8d0'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 10)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -280,20 +280,20 @@ class Tamil(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Tamil traditional numeral.
 
         The digit coefficient is omitted when equal to 1; ones use the digit
         glyphs directly; no dedicated decade signs exist.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Tamil._to_numeral(1)
@@ -313,14 +313,14 @@ class Tamil(System[str, int]):
         """
         result = ""
         for mult in [1000, 100, 10]:
-            coeff = number // mult
-            number = number % mult
+            coeff = denotation // mult
+            denotation = denotation % mult
             if coeff:
                 if coeff > 1:
                     result += cls._digit_map[coeff]
                 result += cls._multiplier_map[mult]
-        if number:
-            result += cls._digit_map[number]
+        if denotation:
+            result += cls._digit_map[denotation]
         return result
 
     @classmethod

@@ -51,7 +51,7 @@ class Phoenician(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Phoenician numeral representation.
 
         Uses greedy additive decomposition, largest denomination first. Values
@@ -59,13 +59,13 @@ class Phoenician(System[str, int]):
         largest available signs (e.g. 9 = 3+3+3 = 𐤛𐤛𐤛).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Phoenician._to_numeral(1)
@@ -83,7 +83,7 @@ class Phoenician(System[str, int]):
             >>> Phoenician._to_numeral(999)
             '𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤙𐤘𐤘𐤘𐤘𐤗𐤛𐤛𐤛'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

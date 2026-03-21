@@ -60,19 +60,19 @@ class Palmyrene(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Palmyrene numeral representation.
 
         Uses greedy additive decomposition, largest denomination first.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Palmyrene._to_numeral(1)
@@ -86,7 +86,7 @@ class Palmyrene(System[str, int]):
             >>> Palmyrene._to_numeral(99)
             '𐡿𐡿𐡿𐡿𐡾𐡽𐡼'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -148,19 +148,19 @@ class Hatran(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Hatran numeral representation.
 
         Uses greedy additive decomposition, largest denomination first.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Hatran._to_numeral(1)
@@ -174,7 +174,7 @@ class Hatran(System[str, int]):
             >>> Hatran._to_numeral(999)
             '𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣿𐣾𐣾𐣾𐣾𐣽𐣼𐣻𐣻𐣻𐣻'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -241,19 +241,19 @@ class ImperialAramaic(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Imperial Aramaic numeral representation.
 
         Uses greedy additive decomposition, largest denomination first.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> ImperialAramaic._to_numeral(1)
@@ -273,7 +273,7 @@ class ImperialAramaic(System[str, int]):
             >>> ImperialAramaic._to_numeral(99999)
             '𐡚𐡚𐡚𐡛𐡜𐡜𐡜𐡜𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡝𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡞𐡟𐡟𐡟𐡟𐡟𐡟𐡟𐡟𐡟'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

@@ -139,7 +139,7 @@ class Hebrew(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Hebrew numeral representation.
 
         Uses greedy additive decomposition, then applies the traditional
@@ -147,13 +147,13 @@ class Hebrew(System[str, int]):
         abbreviated divine names.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Hebrew._to_numeral(1)
@@ -173,7 +173,7 @@ class Hebrew(System[str, int]):
             >>> Hebrew._to_numeral(5784)
             '׳התשפד'
         """
-        result = greedy_additive_to_numeral(number, cls._to_numeral_items)
+        result = greedy_additive_to_numeral(denotation, cls._to_numeral_items)
         # Traditional substitutions to avoid abbreviated divine names
         result = result.replace(
             "\u05d9\u05d4",

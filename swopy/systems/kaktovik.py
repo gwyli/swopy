@@ -66,21 +66,21 @@ class Kaktovik(System[str, int]):
         return {**cls._from_numeral_map, "-": 0}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an integer to its Kaktovik numeral representation.
 
-        Encodes ``number`` in base 20, emitting the most-significant vigesimal
-        digit first.  Negative numbers are prefixed with a hyphen-minus.
+        Encodes ``denotation`` in base 20, emitting the most-significant vigesimal
+        digit first.  Negative denotations are prefixed with a hyphen-minus.
         Zero is represented by the single glyph 𝋀.
 
         Args:
-            number: The integer to convert.
+            denotation: The integer to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Kaktovik._to_numeral(0)
@@ -100,9 +100,9 @@ class Kaktovik(System[str, int]):
             >>> Kaktovik._to_numeral(-42)
             '-𝋂𝋂'
         """
-        if number < 0:
-            return "-" + positional_to_numeral(-number, cls._to_numeral_map, 20)
-        return positional_to_numeral(number, cls._to_numeral_map, 20)
+        if denotation < 0:
+            return "-" + positional_to_numeral(-denotation, cls._to_numeral_map, 20)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

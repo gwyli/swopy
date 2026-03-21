@@ -138,22 +138,22 @@ class Ethiopic(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Ethiopic numeral representation.
 
-        Numbers >= 10,000 are expressed as ``encode_sub9999(coefficient) + ፼``
+        Denotations >= 10,000 are expressed as ``encode_sub9999(coefficient) + ፼``
         followed by ``encode_sub9999(remainder)``.  Within each sub-10,000
         segment, hundreds use ``encode_sub100(coefficient) + ፻`` with the
         coefficient omitted when equal to 1.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Ethiopic._to_numeral(1)
@@ -177,8 +177,8 @@ class Ethiopic(System[str, int]):
             >>> Ethiopic._to_numeral(99999999)
             '፺፱፻፺፱፼፺፱፻፺፱'
         """
-        myriads = number // 10000
-        remainder = number % 10000
+        myriads = denotation // 10000
+        remainder = denotation % 10000
         result = ""
         if myriads:
             if myriads != 1:

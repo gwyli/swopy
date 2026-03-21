@@ -114,20 +114,20 @@ class OttomanSiyaq(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Ottoman Siyaq numeral representation.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> OttomanSiyaq._to_numeral(1)
@@ -143,7 +143,7 @@ class OttomanSiyaq(System[str, int]):
             >>> OttomanSiyaq._to_numeral(99999)
             '𞴉𞴒𞴛𞴤𞴭'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -273,20 +273,20 @@ class IndicSiyaq(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Indic Siyaq numeral representation.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> IndicSiyaq._to_numeral(1)
@@ -302,7 +302,7 @@ class IndicSiyaq(System[str, int]):
             >>> IndicSiyaq._to_numeral(99999)
             '𞱹𞲂𞲋𞲔𞲝'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

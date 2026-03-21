@@ -45,17 +45,17 @@ class Arabic(System[float | Fraction | int, float | Fraction | int]):
     """
 
     @classmethod
-    def _to_numeral(cls, number: float | Fraction | int) -> float | Fraction | int:
-        """Placeholder function for converting a number to a Arabic numeral.
+    def _to_numeral(cls, denotation: float | Fraction | int) -> float | Fraction | int:
+        """Placeholder function for converting a denotation to a Arabic numeral.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Arabic.to_numeral(1)
@@ -63,11 +63,11 @@ class Arabic(System[float | Fraction | int, float | Fraction | int]):
             >>> Arabic.to_numeral(42)
             42
         """
-        return number
+        return denotation
 
     @classmethod
     def _from_numeral(cls, numeral: float | Fraction | int) -> float | Fraction | int:
-        """Placeholder function for converting an Arabic numeral to an number.
+        """Placeholder function for converting an Arabic numeral to an denotation.
 
         Args:
             numeral: The numeral to convert.
@@ -173,7 +173,7 @@ class Bakhshali(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Bakhshali numeral representation.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
@@ -181,13 +181,13 @@ class Bakhshali(System[str, int]):
         decade symbol (10–90). Ones use a dedicated unit symbol (1–9).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Bakhshali string representation of ``number``.
+            The Bakhshali string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Bakhshali._to_numeral(1)
@@ -213,7 +213,7 @@ class Bakhshali(System[str, int]):
             >>> Bakhshali._to_numeral(9999)
             '𑇩𑇴𑇩𑇳𑇲𑇩'
         """
-        return multiplicative_additive_to_numeral(number, cls._to_numeral_map)
+        return multiplicative_additive_to_numeral(denotation, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

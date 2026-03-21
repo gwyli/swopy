@@ -197,7 +197,7 @@ class Milesian(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Greek Milesian representation.
 
         Uses greedy decomposition: at each step the largest denomination not
@@ -205,13 +205,13 @@ class Milesian(System[str, int]):
         largest-to-smallest order.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Greek Milesian string representation of ``number``.
+            The Greek Milesian string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Milesian._to_numeral(1)
@@ -229,7 +229,7 @@ class Milesian(System[str, int]):
             >>> Milesian._to_numeral(9999)
             '͵θϡϙθ'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -361,7 +361,7 @@ class Aegean(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Aegean numeral representation.
 
         Uses greedy decomposition: at each step the largest denomination not
@@ -369,13 +369,13 @@ class Aegean(System[str, int]):
         largest-to-smallest order. Each symbol appears at most once.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Aegean string representation of ``number``.
+            The Aegean string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Aegean._to_numeral(1)
@@ -393,7 +393,7 @@ class Aegean(System[str, int]):
             >>> Aegean._to_numeral(99999)
             '𐄳𐄪𐄡𐄘𐄏'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -536,7 +536,7 @@ class Attic(System[str, int | Fraction]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int | Fraction) -> str:
+    def _to_numeral(cls, denotation: int | Fraction) -> str:
         """Convert an Arabic integer or Fraction to its Attic numeral representation.
 
         Separates the integer and fractional parts. The integer part is
@@ -546,13 +546,13 @@ class Attic(System[str, int | Fraction]):
         exactly 0, 1/4, 1/2, or 3/4 are representable.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Attic string representation of ``number``.
+            The Attic string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range or its
+            ValueError: If ``denotation`` is outside the valid range or its
                 fractional part is not a multiple of 1/4.
 
         Examples:
@@ -572,10 +572,10 @@ class Attic(System[str, int | Fraction]):
             >>> Attic._to_numeral(99999)
             '𐅇ΜΜΜΜ𐅆ΧΧΧΧ𐅅ΗΗΗΗ𐅄ΔΔΔΔ𐅃ΙΙΙΙ'
         """
-        if isinstance(number, int):
-            return greedy_additive_to_numeral(number, cls._int_to_numeral_items)
+        if isinstance(denotation, int):
+            return greedy_additive_to_numeral(denotation, cls._int_to_numeral_items)
 
-        frac = Fraction(number)
+        frac = Fraction(denotation)
         integer_part = int(frac)
         frac_part = frac - integer_part
 
@@ -588,7 +588,7 @@ class Attic(System[str, int | Fraction]):
             result += cls._to_numeral_map[cls._QUARTER]
             frac_part -= cls._QUARTER
         if frac_part:
-            raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
+            raise ValueError(f"{denotation} cannot be represented in {cls.__name__}.")
 
         return result
 
@@ -598,7 +598,7 @@ class Attic(System[str, int | Fraction]):
 
         Scans left-to-right, looking each character up in the value map and
         summing the results. Both uppercase and lowercase Greek letters are
-        accepted. Returns an ``int`` when the result is a whole number and a
+        accepted. Returns an ``int`` when the result is a whole denotation and a
         ``Fraction`` when the result has a fractional component.
 
         Args:
@@ -668,7 +668,7 @@ class Etruscan(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Etruscan numeral representation.
 
         Uses a greedy decomposition (largest denomination first), then reverses
@@ -676,13 +676,13 @@ class Etruscan(System[str, int]):
         keeping with the Etruscan right-to-left writing convention.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Etruscan._to_numeral(1)
@@ -702,7 +702,7 @@ class Etruscan(System[str, int]):
             >>> Etruscan._to_numeral(399)
             '𐌠𐌠𐌠𐌠𐌡𐌢𐌢𐌢𐌢𐌣𐌣𐌣𐌣𐌣𐌣𐌣'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -887,21 +887,21 @@ class Alphabetic(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Greek Alphabetic numeral.
 
         Uses greedy additive decomposition with uppercase letters, largest
-        denomination first, then appends the keraia ʹ (U+0374) as a number
+        denomination first, then appends the keraia ʹ (U+0374) as a denotation
         mark.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Alphabetic._to_numeral(1)
@@ -917,7 +917,7 @@ class Alphabetic(System[str, int]):
             >>> Alphabetic._to_numeral(9999)
             '͵ΘϠϘΘʹ'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items) + _KERAIA
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items) + _KERAIA
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

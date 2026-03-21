@@ -68,20 +68,20 @@ class Egyptian(System[str, int]):
     encodings: ClassVar[Encodings] = {"utf8"}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
         using the base-10 system of hieroglyphic symbols.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Egyptian.to_numeral(1)
@@ -91,7 +91,7 @@ class Egyptian(System[str, int]):
             >>> Egyptian.to_numeral(1000001)
             '\U00013069'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -222,7 +222,7 @@ class CopticEpact(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Coptic Epact numeral representation.
 
         Uses greedy additive decomposition. Thousands are encoded as a 2-character
@@ -230,13 +230,13 @@ class CopticEpact(System[str, int]):
         for the thousands digit.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> CopticEpact._to_numeral(1)
@@ -256,7 +256,7 @@ class CopticEpact(System[str, int]):
             >>> CopticEpact._to_numeral(9999)
             '𐋠𐋩𐋻𐋲𐋩'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

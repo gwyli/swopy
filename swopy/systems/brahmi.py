@@ -109,7 +109,7 @@ class Brahmi(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Brahmi numeral representation.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
@@ -117,13 +117,13 @@ class Brahmi(System[str, int]):
         decade symbol (10–90). Ones use a dedicated unit symbol (1–9).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Brahmi string representation of ``number``.
+            The Brahmi string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Brahmi._to_numeral(1)
@@ -149,7 +149,7 @@ class Brahmi(System[str, int]):
             >>> Brahmi._to_numeral(9999)
             '𑁚𑁥𑁚𑁤𑁣𑁚'
         """
-        return multiplicative_additive_to_numeral(number, cls._to_numeral_map)
+        return multiplicative_additive_to_numeral(denotation, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

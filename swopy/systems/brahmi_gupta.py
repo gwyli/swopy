@@ -107,7 +107,7 @@ class SinhalaArchaic(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Sinhala Archaic numeral representation.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
@@ -115,13 +115,13 @@ class SinhalaArchaic(System[str, int]):
         decade symbol (10-90). Ones use a dedicated unit symbol (1-9).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Sinhala Archaic string representation of ``number``.
+            The Sinhala Archaic string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> SinhalaArchaic._to_numeral(1)
@@ -141,7 +141,7 @@ class SinhalaArchaic(System[str, int]):
             >>> SinhalaArchaic._to_numeral(1996)
             '𑇴𑇩𑇳𑇲𑇦'
         """
-        return multiplicative_additive_to_numeral(number, cls._to_numeral_map)
+        return multiplicative_additive_to_numeral(denotation, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -239,7 +239,7 @@ class Bhaiksuki(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Bhaiksuki numeral representation.
 
         Uses greedy additive decomposition, largest denomination first.
@@ -247,13 +247,13 @@ class Bhaiksuki(System[str, int]):
         mark); decades and ones use single-character signs.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The Bhaiksuki string representation of ``number``.
+            The Bhaiksuki string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``number`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Bhaiksuki._to_numeral(1)
@@ -271,7 +271,7 @@ class Bhaiksuki(System[str, int]):
             >>> Bhaiksuki._to_numeral(999)
             '𑱢𑱬𑱫𑱢'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

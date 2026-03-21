@@ -59,20 +59,20 @@ class Mayan(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {chr(0x1D2E0 + i): i for i in range(20)}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Mayan numeral representation.
 
-        Encodes ``number`` in base 20, emitting the most-significant vigesimal
+        Encodes ``denotation`` in base 20, emitting the most-significant vigesimal
         digit first. Zero is represented by the single glyph 𝋠.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Mayan._to_numeral(0)
@@ -90,7 +90,7 @@ class Mayan(System[str, int]):
             >>> Mayan._to_numeral(8000)
             '𝋡𝋠𝋠𝋠'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 20)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

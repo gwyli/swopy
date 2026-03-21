@@ -58,20 +58,20 @@ class Medefaidrin(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Medefaidrin base-20 representation.
 
-        Encodes ``number`` in base 20, emitting the most-significant vigesimal
+        Encodes ``denotation`` in base 20, emitting the most-significant vigesimal
         digit first. Zero is represented by the single glyph 𛺀.
 
         Args:
-            number: The non-negative integer to convert.
+            denotation: The non-negative integer to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Medefaidrin._to_numeral(0)
@@ -87,7 +87,7 @@ class Medefaidrin(System[str, int]):
             >>> Medefaidrin._to_numeral(400)
             '\U00016e81\U00016e80\U00016e80'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 20)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 20)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

@@ -69,20 +69,20 @@ class CountingRod(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Counting Rod numeral representation.
 
         Encodes the tens place with a tens-digit glyph (if non-zero) followed by
         the units place with a unit-digit glyph (if non-zero).
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> CountingRod._to_numeral(1)
@@ -98,7 +98,7 @@ class CountingRod(System[str, int]):
             >>> CountingRod._to_numeral(99)
             '𝍱𝍨'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:

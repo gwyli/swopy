@@ -59,20 +59,20 @@ class InscriptionalParthian(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Inscriptional Parthian numeral.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> InscriptionalParthian._to_numeral(1)
@@ -90,7 +90,7 @@ class InscriptionalParthian(System[str, int]):
             >>> InscriptionalParthian._to_numeral(1001)
             '𐭘𐭟'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -164,20 +164,20 @@ class InscriptionalPahlavi(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Inscriptional Pahlavi numeral.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> InscriptionalPahlavi._to_numeral(1)
@@ -195,7 +195,7 @@ class InscriptionalPahlavi(System[str, int]):
             >>> InscriptionalPahlavi._to_numeral(1001)
             '𐭸𐭿'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -268,20 +268,20 @@ class PsalterPahlavi(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert an Arabic integer to its Psalter Pahlavi numeral representation.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
 
         Args:
-            number: The Arabic number to convert.
+            denotation: The Arabic denotation to convert.
 
         Returns:
-            The representation of the number in this numeral system.
+            The representation of the denotation in this numeral system.
 
         Raises:
-            ValueError: If the number is outside the valid range.
+            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> PsalterPahlavi._to_numeral(1)
@@ -297,7 +297,7 @@ class PsalterPahlavi(System[str, int]):
             >>> PsalterPahlavi._to_numeral(999)
             '𐮩𐮬𐮬𐮭𐮮𐮮𐮮𐮮𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
