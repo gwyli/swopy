@@ -1170,7 +1170,7 @@ class TestIsValidDenotation:
 
     def test_str_rejected_for_int_system(self) -> None:
         """str is not a valid denotation for Arabic."""
-        assert not systems.hindu_arabic.Arabic.is_valid_denotation("42")
+        assert not systems.hindu_arabic.Arabic.is_valid_denotation("42")  # pyright: ignore[reportArgumentType]
 
     def test_fraction_rejected_for_int_only_system(self) -> None:
         """Fraction is not valid for systems that only accept int."""

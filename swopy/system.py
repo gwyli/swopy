@@ -78,7 +78,8 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     @classmethod
     def to_numeral_map(cls) -> Mapping[TDenotation, TNumeral]:
-        """Convenience method for accessing ``cls._to_numeral_map`` without type errors.
+        """Convenience method for accessing ``cls._to_numeral_map`` without type
+        errors.
 
         Returns:
             The mapping from denotation to the numeral representations in the system
@@ -89,10 +90,12 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
     @classmethod
     def from_numeral_map(cls) -> Mapping[TNumeral, TDenotation]:
-        """Convenience method for accessing ``cls._from_numeral_map`` without type errors.
+        """Convenience method for accessing ``cls._from_numeral_map`` without type
+        errors.
 
         Returns:
-            The mapping from the numeral representation in the system to their denotation
+            The mapping from the numeral representation in the system to their
+                denotation
         """
 
         # See project_architecture.md#ClassVars for explanation
@@ -208,7 +211,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
 
         if not cls.is_valid_denotation(denotation):
             raise TypeError(
-                f"{denotation} of type {type(denotation).__name__} cannot be represented in {cls.__name__}."
+                f"{denotation} of type {type(denotation).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         return cls.to_numeral_trusted(denotation, encode=encode)
@@ -321,7 +324,7 @@ class System[TNumeral: (Numeral), TDenotation: (Denotation)](ABC):
         """
         if not cls.is_valid_numeral(numeral):
             raise TypeError(
-                f"{numeral} of type {type(numeral).__name__} cannot be represented in {cls.__name__}."
+                f"{numeral} of type {type(numeral).__name__} cannot be represented in {cls.__name__}."  # noqa: E501
             )
 
         denotation: TDenotation = cls._from_numeral(numeral)
