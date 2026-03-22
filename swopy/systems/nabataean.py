@@ -3,8 +3,7 @@
 This module implements numeral systems from the Nabataean script family.
 Currently supports:
 
-    Nabataean  U+10880-U+108AF  (nine glyphs: 1, 2, 3, 4, 5, 10, 20, 100;
-                                  alternate cruciform form of 4 at U+108AB)
+    Nabataean  U+10880-U+108AF  (alternate cruciform form of 4 at U+108AB)
 
 Nabataean is a purely additive system using greedy decomposition for encoding
 and character-sum for decoding.  An alternative cruciform form of 4 (U+108AB)
@@ -64,18 +63,9 @@ class Nabataean(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Nabataean numeral representation.
+        """Convert an Arabic to a Nabataean numeral.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Nabataean._to_numeral(1)
@@ -93,21 +83,10 @@ class Nabataean(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Nabataean numeral string to its Arabic integer value.
+        """Convert a Nabataean numeral to an integer.
 
         Accepts both the standard form (U+108AA) and the cruciform form
         (U+108AB) for the value 4. Sums the values of each glyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Nabataean._from_numeral('𐢧')

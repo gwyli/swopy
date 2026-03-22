@@ -3,9 +3,9 @@
 This module implements numeral systems from the Roman script family.
 Currently supports:
 
-    Early        (Roman numerals up to 899; subtractive notation)
-    Standard     (Roman numerals 1/12 to 3,999; subtractive + base-12 fractions)
-    Apostrophus  (Roman numerals 1 to 100,000; extended forms CⅠↃ, CCⅠↃↃ, etc.)
+    Early
+    Standard
+    Apostrophus
 
 All three systems use subtractive notation (e.g. ⅠⅤ for 4, ⅠⅩ for 9) for
 encoding and longest-match or subtractive scanning for decoding.  Standard
@@ -78,19 +78,10 @@ class Early(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Converts an integer to a Roman numeral string.
+        """Converts an integer to a Early Roman numeral.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Early.to_numeral(1)
@@ -110,21 +101,10 @@ class Early(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Converts a Roman numeral to an integer.
+        """Converts an Early Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Early.from_numeral('Ⅹ')
@@ -226,19 +206,10 @@ class Standard(System[str, int | Fraction]):
 
     @classmethod
     def _to_numeral(cls, denotation: int | Fraction) -> str:
-        """Converts an integer to a Roman numeral string.
+        """Converts an integer or fraction to a Roman numeral.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Standard.to_numeral(1)
@@ -277,21 +248,10 @@ class Standard(System[str, int | Fraction]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
-        """Converts a Roman numeral to an integer.
+        """Converts a Roman numeral to an integer or fraction.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Standard.from_numeral('Ⅹ')
@@ -397,17 +357,6 @@ class Apostrophus(Early):
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Apostrophus.from_numeral('Ⅹ')

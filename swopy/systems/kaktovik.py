@@ -3,7 +3,7 @@
 This module implements numeral systems from the Inuit cultural sphere.
 Currently supports:
 
-    Kaktovik  U+1D2C0-U+1D2DF  (twenty digits: zero through nineteen)
+    Kaktovik  U+1D2C0-U+1D2DF
 
 Kaktovik is a positional base-20 (vigesimal) system, analogous to the
 Arabic base-10 system.  Each digit position is a power of 20; the twenty
@@ -60,20 +60,11 @@ class Kaktovik(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an integer to its Kaktovik numeral representation.
+        """Convert an integer to Kaktovik numerals.
 
         Encodes ``denotation`` in base 20, emitting the most-significant vigesimal
         digit first.  Negative denotations are prefixed with a hyphen-minus.
         Zero is represented by the single glyph 𝋀.
-
-        Args:
-            denotation: The integer to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Kaktovik._to_numeral(0)
@@ -99,19 +90,10 @@ class Kaktovik(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Kaktovik numeral string to its integer value.
+        """Convert a Kaktovik numeral to an integer.
 
         Scans each glyph left-to-right, accumulating ``total = total * 20 + digit``.
         A leading hyphen-minus negates the result.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Kaktovik._from_numeral('𝋀')

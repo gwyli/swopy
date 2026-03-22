@@ -4,8 +4,7 @@ This module implements generic numeric notation systems not tied to a single
 cultural script family.
 Currently supports:
 
-    Counting Rod Numerals  U+1D360-U+1D371  (eighteen glyphs: unit digits 1-9,
-                                              tens digits 10-90)
+    Counting Rod Numerals  U+1D360-U+1D371
 
 Counting Rod is a purely additive system that encodes each decimal place with a
 dedicated glyph: nine unit-digit glyphs (1-9) for the ones place and nine
@@ -67,19 +66,10 @@ class CountingRod(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Counting Rod numeral representation.
+        """Convert an integer to a Counting Rod numeral.
 
         Encodes the tens place with a tens-digit glyph (if non-zero) followed by
         the units place with a unit-digit glyph (if non-zero).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> CountingRod._to_numeral(1)
@@ -99,20 +89,9 @@ class CountingRod(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Counting Rod numeral string to its Arabic integer value.
+        """Convert a Counting Rod numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> CountingRod._from_numeral('𝍠')

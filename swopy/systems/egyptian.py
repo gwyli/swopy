@@ -3,10 +3,8 @@
 This module implements numeral systems from the Egyptian script family.
 Currently supports:
 
-    Egyptian Hieroglyphic  U+13000-U+1342F  (seven glyphs for powers of 10:
-                                              1 to 1,000,000)
-    Coptic Epact           U+102E0-U+102FF  (single-glyph units, decades, and
-                                              centuries; 2-char thousands)
+    Egyptian Hieroglyphic  U+13000-U+1342F
+    Coptic Epact           U+102E0-U+102FF
 
 Egyptian Hieroglyphic is a purely additive system using greedy decomposition
 for encoding and character-sum for decoding.  Values above 999,999 are treated

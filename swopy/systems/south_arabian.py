@@ -3,8 +3,8 @@
 This module implements numeral systems from ancient South Arabian cultures.
 Currently supports:
 
-    Old South Arabian  U+10A60-U+10A7F  (five glyphs: 1, 50, 100, 1000, 10000)
-    Old North Arabian  U+10A80-U+10A9F  (three glyphs: 1, 10, 20)
+    Old South Arabian  U+10A60-U+10A7F
+    Old North Arabian  U+10A80-U+10A9F
 
 Both systems are purely additive, using greedy decomposition for encoding
 and character-sum for decoding.
@@ -58,19 +58,9 @@ class AncientSouthArabian(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Ancient South Arabian numeral
-        representation.
+        """Convert an integer to a Ancient South Arabian numeral.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> AncientSouthArabian._to_numeral(1)
@@ -94,20 +84,9 @@ class AncientSouthArabian(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ancient South Arabian numeral string to its Arabic integer value.
+        """Convert an Ancient South Arabian numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> AncientSouthArabian._from_numeral('𐩽')
@@ -162,19 +141,9 @@ class AncientNorthArabian(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Ancient North Arabian numeral
-        representation.
+        """Convert an integer to a Ancient North Arabian numeral.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> AncientNorthArabian._to_numeral(1)
@@ -194,20 +163,9 @@ class AncientNorthArabian(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ancient North Arabian numeral string to its Arabic integer value.
+        """Convert an Ancient North Arabian numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> AncientNorthArabian._from_numeral('𐪝')

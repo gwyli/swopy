@@ -77,22 +77,11 @@ class Cuneiform(System[str, int | Fraction]):
 
     @classmethod
     def _to_numeral(cls, denotation: int | Fraction) -> str:
-        """Convert an Arabic integer or fraction to its Cuneiform numeral
-        representation.
+        """Convert an integer or fraction to Cuneiform numerals.
 
         The integer part uses greedy additive decomposition, largest denomination first.
         The fractional part (if any) is looked up directly in the map; only the
         discrete fraction values with dedicated glyphs are representable.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range or has a
-                fractional part with no dedicated glyph.
 
         Examples:
             >>> Cuneiform._to_numeral(1)
@@ -138,15 +127,9 @@ class Cuneiform(System[str, int | Fraction]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
-        """Convert a Cuneiform numeral string to its Arabic integer value.
+        """Convert a Cuneiform numeral to an integer or fraction.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
 
         Raises:
             ValueError: If the Arabic representation of the numeral is outside the valid

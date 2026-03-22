@@ -4,9 +4,7 @@ This module implements numeral systems from the Medefaidrin script family,
 used in Nigeria.
 Currently supports:
 
-    Medefaidrin  U+16E40-U+16E9F  (twenty digit glyphs: 0-19,
-                                    U+16E80-U+16E93; alternate forms
-                                    for 1-3 at U+16E94-U+16E96)
+    Medefaidrin  U+16E40-U+16E9F
 
 Medefaidrin is a positional base-20 (vigesimal) system, analogous to the
 Arabic base-10 system. Each digit position represents a power of 20; the

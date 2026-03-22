@@ -4,7 +4,7 @@ This module implements numeral systems from scripts derived from Brahmi and
 used in Tai-language contexts.
 Currently supports:
 
-    Ahom  U+11700-U+1174F  (ten positional digit glyphs: 0-9, U+11730-U+11739)
+    Ahom  U+11700-U+1174F
 
 Ahom uses ten positional decimal digit glyphs (0-9) identical in structure to
 the Arabic base-10 system. Numbers are encoded as a sequence of digit glyphs

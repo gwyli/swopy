@@ -3,8 +3,8 @@
 This module implements numeral systems from the Sino-Tibetan script family.
 Currently supports:
 
-    Tangut        U+17000-U+187FF  (specific glyphs listed below)
-    Khitan Small  U+18B00-U+18CFF  (specific glyphs listed below)
+    Tangut        U+17000-U+187FF
+    Khitan Small  U+18B00-U+18CFF
     Suzhou        U+3000-U+303F    (Hangzhou numerals; digits U+3021-U+3029,
                                     zero U+3007; shorthand U+3038-U+303A)
     Chinese       U+4E00-U+9FFF    (CJK ideographic numerals; digits
@@ -121,20 +121,11 @@ class Tangut(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Tangut numeral representation.
+        """Convert an integer to a Tangut numeral.
 
         Denotations >= 10,000 are expressed as ``encode(coefficient) + myriad``,
         where the coefficient (1-9999) is itself encoded as a sub-myriad denotation.
         The remainder (0-9999) is appended directly.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Tangut._to_numeral(1)
@@ -168,23 +159,12 @@ class Tangut(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Tangut numeral string to its Arabic integer value.
+        """Convert a Tangut numeral to an integer.
 
         Splits at the myriad glyph (if present): the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder. If no myriad glyph is
         present, the whole string is parsed as a sub-myriad denotation.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Tangut._from_numeral('𗼑')
@@ -281,21 +261,12 @@ class Khitan(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Khitan numeral representation.
+        """Convert an integer to a Khitan numeral.
 
         Denotations >= 10,000 are expressed as ``encode(coefficient) + myriad``,
         where a coefficient of 1 is omitted and coefficients 2-9999 are
         encoded as sub-myriad denotations. The remainder (0-9999) is appended
         directly.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Khitan._to_numeral(1)
@@ -323,23 +294,12 @@ class Khitan(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Khitan numeral string to its Arabic integer value.
+        """Convert a Khitan numeral to a integer.
 
         Splits at the myriad glyph (if present): the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder. If no myriad glyph is
         present, the whole string is parsed as a sub-myriad denotation.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Khitan._from_numeral('\U00018b00')
@@ -410,15 +370,6 @@ class Suzhou(System[str, int]):
         representing its decimal expansion, most-significant digit first.
         Zero is represented by the single ideographic zero glyph U+3007.
 
-        Args:
-            denotation: The non-negative integer to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
-
         Examples:
             >>> Suzhou._to_numeral(0)
             '〇'
@@ -437,19 +388,10 @@ class Suzhou(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Suzhou numeral string to its Arabic integer value.
+        """Convert a Suzhou numeral to an integer.
 
         Standalone shorthand glyphs U+3038-U+303A decode to 10, 20, 30
         respectively.  All other strings are decoded positionally.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Suzhou._from_numeral('〇')
@@ -551,20 +493,11 @@ class Chinese(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Chinese numeral representation.
+        """Convert an integer to a Chinese numeral.
 
         Denotations >= 10,000 are expressed as ``encode(coefficient) + 万``,
         where the coefficient (1-9999) is itself encoded as a sub-myriad
         denotation.  The digit 一 is omitted before every multiplier.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Chinese._to_numeral(1)
@@ -594,23 +527,12 @@ class Chinese(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Chinese numeral string to its Arabic integer value.
+        """Convert a Chinese numeral to an integer.
 
         Splits at the myriad glyph 万 (if present); the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder.  The zero character 零
         is accepted as a placeholder but contributes no value.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Chinese._from_numeral('一')

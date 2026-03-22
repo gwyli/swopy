@@ -3,8 +3,7 @@
 This module implements numeral systems from the Kharosthi script family.
 Currently supports:
 
-    Kharosthi  U+10A40-U+10A47  (eight glyphs: units 1-4, ten, twenty,
-                                  hundred, thousand)
+    Kharosthi  U+10A40-U+10A47
 
 Kharosthi is a multiplicative-additive system: unit symbols (1-4) preceding a
 hundreds or thousands symbol act as a multiplier for that symbol (omitted when
@@ -98,24 +97,13 @@ class Kharosthi(System[str, int | Fraction]):
 
     @classmethod
     def _to_numeral(cls, denotation: int | Fraction) -> str:
-        """Convert an Arabic integer or fraction to its Kharosthi numeral
-        representation.
+        """Convert an Arabic integer or fraction to Kharosthi numerals.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
         (omitted if 1) followed by the group symbol. Tens are written as
         additive 20s then an optional 10. Ones are written as additive unit
         symbols using greedy decomposition with 4, 3, 2, 1. A trailing ½ glyph
         is appended when the fractional part equals 1/2.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Kharosthi string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range or has a
-                fractional part other than 1/2.
 
         Examples:
             >>> Kharosthi._to_numeral(1)
@@ -193,22 +181,13 @@ class Kharosthi(System[str, int | Fraction]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
-        """Convert a Kharosthi numeral string to its Arabic integer value.
+        """Convert a Kharosthi numeral to an integer or fraction.
 
         Scans left-to-right. Unit symbols (𐩀-𐩃) accumulate in a buffer.
         When a hundreds (𐩆) or thousands (𐩇) symbol is encountered the buffer
         is treated as a multiplier (defaulting to 1 when empty); 20 (𐩅) and 10
         (𐩄) symbols are added directly and flush the unit buffer as additive
         ones first. Any remaining buffer is added as ones at the end.
-
-        Args:
-            numeral: The Kharosthi numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> Kharosthi._from_numeral('𐩃𐩃𐩀')

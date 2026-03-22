@@ -3,9 +3,7 @@
 This module implements numeral systems from the Ethiopic script family.
 Currently supports:
 
-    Ethiopic  U+1369-U+137C  (digit glyphs 1-9 at U+1369-U+1371; decade
-                               signs 10-90 at U+1372-U+137A; hundreds sign
-                               U+137B; ten-thousands sign U+137C)
+    Ethiopic  U+1369-U+137C
 
 Ethiopic numerals are a two-tier multiplicative-additive system.  Dedicated
 digit glyphs cover 1-9; dedicated decade signs cover 10-90; a hundreds sign

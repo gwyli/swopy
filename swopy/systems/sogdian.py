@@ -4,9 +4,9 @@ This module implements numeral systems from the Sogdian script family and
 related Middle Iranian scripts.
 Currently supports:
 
-    Manichaean  U+10AC0-U+10AFF  (five glyphs: 1, 5, 10, 20, 100)
-    Old Sogdian U+10F00-U+10F2F  (nine glyphs: 1, 2, 3, 4, 5, 10, 20, 30, 100)
-    Sogdian     U+10F30-U+10F6F  (four glyphs: 1, 10, 20, 100)
+    Manichaean  U+10AC0-U+10AFF
+    Old Sogdian U+10F00-U+10F2F
+    Sogdian     U+10F30-U+10F6F
 
 All three systems are purely additive and written right-to-left (largest
 denomination on the right).  Encoding uses greedy decomposition followed by

@@ -3,8 +3,7 @@
 This module implements numeral systems from the Hindu-Arabic script family.
 Currently supports:
 
-    Bakhshali  U+111E1-U+111F4  (twenty glyphs: units 1-9, decades 10-90,
-                                  hundred, thousand)
+    Bakhshali  U+111E1-U+111F4
     Arabic     (Python-native; pass-through converter)
 
 Bakhshali (also called Sinhala Archaic) is a multiplicative-additive system

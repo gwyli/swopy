@@ -3,7 +3,7 @@
 This module implements numeral systems from the Phoenician script family.
 Currently supports:
 
-    Phoenician  U+10916-U+1091B  (six glyphs: 1, 2, 3, 10, 20, 100)
+    Phoenician  U+10916-U+1091B
 
 Phoenician is a purely additive system using greedy decomposition for encoding
 and character-sum for decoding.  No sign exists for 5, 50, or 1000, so values
@@ -52,20 +52,11 @@ class Phoenician(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Phoenician numeral representation.
+        """Convert an integer to a Phoenician numeral.
 
         Uses greedy additive decomposition, largest denomination first. Values
         without a dedicated sign (e.g. 4-9) are expressed by combining the
         largest available signs (e.g. 9 = 3+3+3 = 𐤛𐤛𐤛).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Phoenician._to_numeral(1)
@@ -87,20 +78,9 @@ class Phoenician(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Phoenician numeral string to its Arabic integer value.
+        """Convert a Phoenician numeral to an integer
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Phoenician._from_numeral('𐤖')

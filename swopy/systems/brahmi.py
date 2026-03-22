@@ -3,8 +3,7 @@
 This module implements numeral systems from the Brahmi script family.
 Currently supports:
 
-    Brahmi  U+11052-U+11065  (twenty glyphs: units 1-9, decades 10-90,
-                               hundred, thousand)
+    Brahmi  U+11052-U+11065
 
 Brahmi is a multiplicative-additive system: unit symbols (1-9) preceding a
 hundreds or thousands symbol act as a multiplier (omitted when 1); each

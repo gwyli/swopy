@@ -4,12 +4,10 @@ This module implements numeral systems from the Siyaq accounting tradition,
 used in Ottoman Turkish and Indo-Persian administrative contexts.
 Currently supports:
 
-    Ottoman Siyaq  U+1ED00-U+1ED4F  (forty-five standard glyphs covering 1-9,
-                                      10-90, 100-900, 1000-9000, 10000-90000;
-                                      plus alternate forms at U+1ED2F-U+1ED3B)
-    Indic Siyaq    U+1EC70-U+1ECBF  (forty-five standard glyphs covering 1-9,
-                                      10-90, 100-900, 1000-9000, 10000-90000;
-                                      plus alternate and prefixed forms)
+    Ottoman Siyaq  U+1ED00-U+1ED4F  (forty-five standard glyphs plus
+                                      alternate forms at U+1ED2F-U+1ED3B)
+    Indic Siyaq    U+1EC70-U+1ECBF  (forty-five standard plus
+                                      alternate and prefixed forms)
 
 Both systems assign a unique glyph to each representable value (no repetition
 of a single glyph). Both are written right-to-left (largest denomination on
@@ -117,19 +115,10 @@ class OttomanSiyaq(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Ottoman Siyaq numeral representation.
+        """Convert an integer to a Ottoman Siyaq numeral.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> OttomanSiyaq._to_numeral(1)
@@ -149,22 +138,11 @@ class OttomanSiyaq(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ottoman Siyaq numeral string to its Arabic integer value.
+        """Convert an Ottoman Siyaq numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph. Both standard and alternate glyph forms are
         accepted.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> OttomanSiyaq._from_numeral('𞴁')
@@ -277,19 +255,10 @@ class IndicSiyaq(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Indic Siyaq numeral representation.
+        """Convert an integer to a Indic Siyaq numeral.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> IndicSiyaq._to_numeral(1)
@@ -309,22 +278,11 @@ class IndicSiyaq(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Indic Siyaq numeral string to its Arabic integer value.
+        """Convert an Indic Siyaq numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph. Alternate, prefixed, and standard glyph forms
         are all accepted.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> IndicSiyaq._from_numeral('𞱱')

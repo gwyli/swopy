@@ -3,11 +3,8 @@
 This module implements numeral systems from the Brahmi-Gupta script family.
 Currently supports:
 
-    Sinhala Archaic  U+111E0-U+111FF  (twenty glyphs: units 1-9, decades 10-90,
-                                        hundred, thousand; U+111E1-U+111F4)
-    Bhaiksuki        U+11C00-U+11C6F  (twenty-eight glyphs: units 1-9,
-                                        decades 10-90, hundreds mark U+11C6C;
-                                        number signs U+11C5A-U+11C6C)
+    Sinhala Archaic  U+111E0-U+111FF
+    Bhaiksuki        U+11C00-U+11C6F
 
 Sinhala Archaic (also known as Bakhshali) is a multiplicative-additive system
 identical in structure to Brahmi: unit symbols (1-9) preceding a hundreds or

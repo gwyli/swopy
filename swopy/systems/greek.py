@@ -4,13 +4,12 @@ This module implements numeral systems from the Greek and Etruscan script
 families.
 Currently supports:
 
-    Milesian    U+0370-U+03FF  (Greek alphabetic numerals; U+0375 prefix for
-                                thousands)
+    Milesian    U+0370-U+03FF
     Alphabetic  U+0370-U+03FF  (uppercase Greek alphabetic numerals; U+0374
                                 keraia suffix as number mark)
-    Aegean      U+10107-U+10133  (45 glyphs for 1-90,000)
+    Aegean      U+10107-U+10133
     Attic       U+0394-U+039C (Greek letters) + U+10140-U+10147 (acrophonic)
-    Etruscan    U+10320-U+10323  (four glyphs: 1, 5, 10, 50)
+    Etruscan    U+10320-U+10323
 
 Milesian uses lowercase Greek alphabetic numerals; each letter contributes its
 face value and numerals are written largest-to-smallest.  Thousands are
@@ -748,20 +747,11 @@ class Alphabetic(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Greek Alphabetic numeral.
+        """Convert an Arabic integer to a Greek Alphabetic numeral.
 
         Uses greedy additive decomposition with uppercase letters, largest
         denomination first, then appends the keraia ʹ (U+0374) as a denotation
         mark.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Alphabetic._to_numeral(1)
@@ -781,23 +771,12 @@ class Alphabetic(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Greek Alphabetic numeral string to its Arabic integer value.
+        """Convert a Greek Alphabetic numeral to an integer.
 
         Strips an optional trailing keraia ʹ (U+0374) before parsing.
         Two-character thousands tokens (͵X) are resolved before their
         constituent single-character entries.  Both upper- and lower-case
         letters are accepted.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Alphabetic._from_numeral('Αʹ')

@@ -3,7 +3,7 @@
 This module implements numeral systems from the Mayan script family.
 Currently supports:
 
-    Mayan  U+1D2E0-U+1D2F3  (twenty glyphs: zero through nineteen)
+    Mayan  U+1D2E0-U+1D2F3
 
 Mayan is a positional base-20 (vigesimal) system; each of the 20 unique glyphs
 represents a digit (0-19).  Numbers are encoded most-significant digit first,
@@ -58,19 +58,10 @@ class Mayan(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert a non-negative integer to its Mayan numeral representation.
+        """Convert a non-negative integer to Mayan numerals.
 
         Encodes ``denotation`` in base 20, emitting the most-significant vigesimal
         digit first. Zero is represented by the single glyph 𝋠.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Mayan._to_numeral(0)
@@ -92,18 +83,9 @@ class Mayan(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Mayan numeral string to its integer value.
+        """Convert a Mayan numeral to an integer.
 
         Scans each glyph left-to-right, accumulating ``total = total * 20 + digit``.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Mayan._from_numeral('𝋠')
