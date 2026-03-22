@@ -1,16 +1,14 @@
-# ruff: noqa: RUF002
 """Numeric notation system converters.
 
 This module implements generic numeric notation systems not tied to a single
 cultural script family.
 Currently supports:
 
-    Counting Rod Numerals  U+1D360-U+1D371  (eighteen glyphs: unit digits 1–9,
-                                              tens digits 10–90)
+    Counting Rod Numerals  U+1D360-U+1D371
 
 Counting Rod is a purely additive system that encodes each decimal place with a
-dedicated glyph: nine unit-digit glyphs (1–9) for the ones place and nine
-tens-digit glyphs (10–90) for the tens place.  Numbers are encoded as
+dedicated glyph: nine unit-digit glyphs (1-9) for the ones place and nine
+tens-digit glyphs (10-90) for the tens place.  Numbers are encoded as
 (optional tens glyph)(optional unit glyph).  Greedy decomposition is used for
 encoding and character-sum for decoding.
 """
@@ -24,25 +22,23 @@ from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class CountingRod(System[str, int]):
-    """Counting Rod numeral system converter.
+    """Implements bidirectional conversion between integers and Counting Rod numerals.
 
-    Implements bidirectional conversion between integers and Counting Rod numeral
-    strings using Unicode block U+1D360-U+1D371. The system encodes each decimal
-    place with a dedicated glyph: nine unit-digit glyphs (1-9) for the ones place
-    and nine tens-digit glyphs (10-90) for the tens place.
-
-    Numbers are encoded as (optional tens glyph)(optional unit glyph), e.g.
-    11 = 𝍩𝍠 (tens-digit-1 + unit-digit-1). Multiples of 10 omit the unit glyph.
+    - Uses Unicode block U+1D360-U+1D371
+    - The system is purely additive with dedicated glyphs for units (1-9) and
+      tens (10-90)
+    - Numbers are encoded as (optional tens glyph)(optional unit glyph)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99)
+        maximum_is_many: False - integers greater than 99 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -69,20 +65,11 @@ class CountingRod(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Counting Rod numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Counting Rod numeral.
 
         Encodes the tens place with a tens-digit glyph (if non-zero) followed by
         the units place with a unit-digit glyph (if non-zero).
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> CountingRod._to_numeral(1)
@@ -98,24 +85,13 @@ class CountingRod(System[str, int]):
             >>> CountingRod._to_numeral(99)
             '𝍱𝍨'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Counting Rod numeral string to its Arabic integer value.
+        """Convert a Counting Rod numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> CountingRod._from_numeral('𝍠')

@@ -59,7 +59,7 @@ def positional_from_numeral(
 
 
 def greedy_additive_to_numeral(
-    number: int, numeral_items: Iterable[tuple[int, str]]
+    number: int | Fraction, numeral_items: Iterable[tuple[int | Fraction, str]]
 ) -> str:
     """Convert an integer to a numeral string using greedy additive decomposition.
 
@@ -90,7 +90,7 @@ def greedy_additive_to_numeral(
 
 
 def reversed_greedy_additive_to_numeral(
-    number: int, numeral_items: Iterable[tuple[int, str]]
+    number: int | Fraction, numeral_items: Iterable[tuple[int | Fraction, str]]
 ) -> str:
     """Convert an integer to a right-to-left numeral string.
 
@@ -155,11 +155,27 @@ def char_sum_from_numeral(
     return total
 
 
+@overload
 def reversed_char_sum_from_numeral(
     numeral: str,
     from_map: Mapping[str, int],
     system_name: str,
-) -> int:
+) -> int: ...
+
+
+@overload
+def reversed_char_sum_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int | Fraction],
+    system_name: str,
+) -> int | Fraction: ...
+
+
+def reversed_char_sum_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int | Fraction],
+    system_name: str,
+) -> int | Fraction:
     """Convert a right-to-left numeral string to a number by summing character values.
 
     Reverses ``numeral`` before processing, so that right-to-left writing systems
@@ -329,13 +345,13 @@ def multiplicative_additive_to_numeral(
     - Hundreds: a unit-multiplier glyph (omitted when 1) precedes the
       100 glyph.
     - Tens: a single dedicated decade glyph (10, 20, …, 90).
-    - Ones: a single dedicated unit glyph (1–9).
+    - Ones: a single dedicated unit glyph (1-9).
 
     Args:
         number: The Arabic number to convert.
         numeral_map: Ordered mapping from integer values to their glyphs. Must
-            contain keys for 1000, 100, each decade multiple of 10 (10–90),
-            and each unit 1–9.
+            contain keys for 1000, 100, each decade multiple of 10 (10-90),
+            and each unit 1-9.
 
     Returns:
         The numeral string representation of ``number``.
@@ -377,13 +393,13 @@ def _encode_sub_myriad(
     digit_map: Mapping[int, str],
     explicit_one_tens: bool,
 ) -> str:
-    """Encode a sub-myriad integer (0–9999) for multiplicative-myriad systems.
+    """Encode a sub-myriad integer (0-9999) for multiplicative-myriad systems.
 
     Args:
-        n: The sub-myriad integer to encode (0–9999).
+        n: The sub-myriad integer to encode (0-9999).
         sub_mult: Pre-computed sub-myriad multiplier items (1000, 100, 10),
             largest first.
-        digit_map: Mapping from digit values (1–9) to their glyphs.
+        digit_map: Mapping from digit values (1-9) to their glyphs.
         explicit_one_tens: If ``True``, the digit 1 is written before the tens
             multiplier even when the coefficient is 1.
 
@@ -414,15 +430,15 @@ def multiplicative_myriad_to_numeral(
 ) -> str:
     """Convert an integer to a multiplicative-myriad numeral string.
 
-    Handles systems (e.g. Tangut, Khitan) where digits 1–9 have unique glyphs
+    Handles systems (e.g. Tangut, Khitan) where digits 1-9 have unique glyphs
     and multipliers x10, x100, x1000, x10,000 are separate glyphs. The
     coefficient is omitted when equal to 1, except optionally for the tens
-    place. The myriad coefficient (1–9999) is itself encoded as a sub-myriad
+    place. The myriad coefficient (1-9999) is itself encoded as a sub-myriad
     number.
 
     Args:
         number: The Arabic number to convert.
-        digit_map: Ordered mapping from digit values (1–9) to their glyphs.
+        digit_map: Ordered mapping from digit values (1-9) to their glyphs.
         multiplier_map: Ordered mapping from multiplier values (10000, 1000,
             100, 10) to their glyphs, largest first.
         explicit_one_tens: If ``True``, the digit 1 is always written before
@@ -475,7 +491,7 @@ def multiplicative_myriad_from_numeral(
 
     Args:
         numeral: The numeral string to convert.
-        digit_map: Mapping from digit glyphs to their values (1–9).
+        digit_map: Mapping from digit glyphs to their values (1-9).
         multiplier_map: Mapping from multiplier glyphs to their values
             (10000, 1000, 100, 10).
         system_name: Human-readable system name used in the error message.
@@ -518,39 +534,52 @@ def multiplicative_myriad_from_numeral(
     return parse_sub(numeral)
 
 
+@overload
 def multiplicative_additive_from_numeral(
     numeral: str, from_map: Mapping[str, int], system_name: str
-) -> int:
-    """Convert a multiplicative-additive numeral string to an integer.
+) -> int: ...
+
+
+@overload
+def multiplicative_additive_from_numeral(
+    numeral: str, from_map: Mapping[str, int | Fraction], system_name: str
+) -> int | Fraction: ...
+
+
+def multiplicative_additive_from_numeral(
+    numeral: str, from_map: Mapping[str, int | Fraction], system_name: str
+) -> int | Fraction:
+    """Convert a multiplicative-additive numeral string to an integer or fraction.
 
     Infers character roles from their map values:
 
-    - unit_glyphs: value in 1–9
+    - unit_glyphs: value in 1-9
     - multiplier_glyphs: value in {100, 1000}
-    - decade_glyphs: value in 10–90 (multiples of 10)
+    - decade_glyphs: value in 10-90 (multiples of 10)
+    - fraction_glyphs: value is a Fraction (terminal additive, flushes unit buffer)
 
     Scans left-to-right:
 
     - Unit glyphs accumulate in a buffer.
     - Multiplier glyphs flush the buffer as a multiplier (defaulting to 1
       when empty), then reset the buffer.
-    - Decade glyphs flush the buffer as additive ones first, then add the
-      decade value.
+    - Decade and fraction glyphs flush the buffer as additive ones first,
+      then add the glyph value.
 
     After the loop, any remaining buffer is added as ones.
 
     Args:
         numeral: The numeral string to convert.
-        from_map: Mapping from individual glyphs to their integer values.
+        from_map: Mapping from individual glyphs to their numeric values.
         system_name: Human-readable system name used in the error message.
 
     Returns:
-        The integer value of ``numeral``.
+        The value of ``numeral`` as an int or Fraction.
 
     Raises:
         ValueError: If ``numeral`` contains an unrecognised character.
     """
-    total = 0
+    total: int | Fraction = 0
     unit_buffer = 0
 
     for char in numeral:

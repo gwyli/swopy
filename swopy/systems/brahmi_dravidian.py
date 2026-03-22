@@ -2,15 +2,12 @@
 
 This module implements numeral systems from scripts derived from Brahmi and
 used in Dravidian-language contexts.
+
 Currently supports:
 
-    Grantha         U+11300-U+1137F  (seven combining digit glyphs: 0-6,
-                                      U+11366-U+1136C)
-    Saurashtra      U+A880-U+A8DF   (ten positional digit glyphs: 0-9,
-                                      U+A8D0-U+A8D9)
-    Tamil           U+0B80-U+0BFF   (digit glyphs 1-9 U+0BE7-U+0BEF;
-                                      multipliers 10/100/1000 at
-                                      U+0BF0-U+0BF2)
+    Grantha         U+11300-U+1137F
+    Saurashtra      U+A880-U+A8DF
+    Tamil           U+0B80-U+0BFF
 
 Grantha uses seven combining digit marks (Unicode category Mn) for values 0-6,
 encoded here as a positional base-7 system. Each digit position represents a
@@ -42,25 +39,26 @@ from ._algorithms import positional_from_numeral, positional_to_numeral
 
 
 class Grantha(System[str, int]):
-    """Grantha base-7 numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and
+    Grantha numerals.
 
-    Implements bidirectional conversion between non-negative integers and
-    Grantha numeral strings using the seven combining digit glyphs
-    U+11366-U+1136C (values 0-6). The system is positional in base 7, with
-    the most-significant digit written first (left-to-right).
+    - Uses Unicode block U+11300-U+1137F, the seven combining digit glyphs
+    - The system is positional in base 7, with the most-significant digit written
+        first (left-to-right).
 
     Note: the Grantha digit characters are Unicode combining marks (category
     Mn). Standalone rendering may require a dotted circle base character.
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False, no value exists above infinity
+        encodings: UTF-8
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x11366 + i) for i in range(7)}
@@ -68,20 +66,11 @@ class Grantha(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {chr(0x11366 + i): i for i in range(7)}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Grantha base-7 representation.
 
-        Encodes ``number`` in base 7, emitting the most-significant digit
+        Encodes ``denotation`` in base 7, emitting the most-significant digit
         first. Zero is represented by the single combining digit zero glyph.
-
-        Args:
-            number: The non-negative integer to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Grantha._to_numeral(0)
@@ -95,23 +84,14 @@ class Grantha(System[str, int]):
             >>> Grantha._to_numeral(49)
             '𑍧𑍦𑍦'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 7)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 7)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Grantha base-7 numeral string to its integer value.
+        """Convert a Grantha base-7 numeral to its integer value.
 
         Scans each glyph left-to-right, accumulating
         ``total = total * 7 + digit``.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Grantha._from_numeral('𑍦')
@@ -133,23 +113,25 @@ class Grantha(System[str, int]):
 
 
 class Saurashtra(System[str, int]):
-    """Saurashtra decimal numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and
+    Saurashtra numerals
 
-    Implements bidirectional conversion between non-negative integers and
-    Saurashtra numeral strings using Unicode block U+A880-U+A8DF. The system
-    is positional in base 10, using ten digit glyphs (0-9) at U+A8D0-U+A8D9.
-    Numbers are encoded as a sequence of digit glyphs representing the decimal
-    expansion, most-significant digit first (left-to-right).
+    - Uses Unicode block U+A880-U+A8DF
+    - The system is positional in base 10, using ten digit glyphs (0-9) at
+        U+A8D0-U+A8D9
+    - Denotations are encoded as a sequence of digit glyphs representing the decimal
+        expansion, most-significant digit first (left-to-right).
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False, no values above infinity exist
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0xA8D0 + i) for i in range(10)}
@@ -157,21 +139,12 @@ class Saurashtra(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {chr(0xA8D0 + i): i for i in range(10)}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert a non-negative integer to its Saurashtra decimal representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert a non-negative integer to Saurashtra numerals.
 
-        Encodes ``number`` as a sequence of Saurashtra digit glyphs representing
+        Encodes ``denotation`` as a sequence of Saurashtra digit glyphs representing
         its decimal expansion, most-significant digit first. Zero is represented
         by the single zero glyph.
-
-        Args:
-            number: The non-negative integer to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Saurashtra._to_numeral(0)
@@ -187,23 +160,14 @@ class Saurashtra(System[str, int]):
             >>> Saurashtra._to_numeral(100)
             '\ua8d1\ua8d0\ua8d0'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 10)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Saurashtra numeral string to its integer value.
+        """Convert a Saurashtra numeral to its integer value.
 
         Scans each glyph left-to-right, accumulating
         ``total = total * 10 + digit``.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Saurashtra._from_numeral('\ua8d0')
@@ -227,28 +191,28 @@ class Saurashtra(System[str, int]):
 
 
 class Tamil(System[str, int]):
-    """Tamil traditional numeral system converter.
+    """Implements bidirectional conversion between integers and Tamil traditional
+    numeral strings.
 
-    Implements bidirectional conversion between integers and Tamil traditional
-    numeral strings using Unicode block U+0B80-U+0BFF.  The system is
-    multiplicative-additive: digit glyphs (1-9) precede a multiplier sign
-    (10, 100, 1000); the digit is omitted when the coefficient is 1.  There
-    are no dedicated decade signs, so 20 is ௨௰ (digit 2 + ten sign).  The
-    valid range is 1-9999.
+    - Uses Unicode block U+0B80-U+0BFF
+    - The system is multiplicative-additive: digit glyphs (1-9) precede a multiplier
+     sign (10, 100, 1000); the digit is omitted when the coefficient is 1
+    - There are no dedicated decade signs, so 20 is ௨௰ (digit 2 + ten sign)
 
     Distinct from Tamil decimal digits (U+0BE6-U+0BEF), which form a
     Hindu-Arabic positional system; these traditional forms use the
     higher-order signs U+0BF0-U+0BF2 as multipliers.
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False, integers above 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     # Digit glyphs 1-9 (U+0BE7-U+0BEF)
@@ -280,20 +244,11 @@ class Tamil(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Tamil traditional numeral.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Tamil traditional numeral.
 
         The digit coefficient is omitted when equal to 1; ones use the digit
         glyphs directly; no dedicated decade signs exist.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Tamil._to_numeral(1)
@@ -313,35 +268,24 @@ class Tamil(System[str, int]):
         """
         result = ""
         for mult in [1000, 100, 10]:
-            coeff = number // mult
-            number = number % mult
+            coeff = denotation // mult
+            denotation = denotation % mult
             if coeff:
                 if coeff > 1:
                     result += cls._digit_map[coeff]
                 result += cls._multiplier_map[mult]
-        if number:
-            result += cls._digit_map[number]
+        if denotation:
+            result += cls._digit_map[denotation]
         return result
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Tamil traditional numeral string to its Arabic integer value.
+        """Convert a Tamil traditional numeral to an integer.
 
         Scans left-to-right.  A digit glyph immediately followed by a
         multiplier sign contributes ``digit × multiplier``; a lone multiplier
         sign contributes ``1 × multiplier``; a lone digit contributes its
         face value.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Tamil._from_numeral('௧')

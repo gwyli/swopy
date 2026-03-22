@@ -12,6 +12,9 @@ wheels/
 .venv
 
 
+# Docs build output
+site/
+
 # MacOS
 .DS_Store
 tests/.DS_Store

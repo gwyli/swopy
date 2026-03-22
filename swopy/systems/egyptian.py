@@ -3,10 +3,8 @@
 This module implements numeral systems from the Egyptian script family.
 Currently supports:
 
-    Egyptian Hieroglyphic  U+13000-U+1342F  (seven glyphs for powers of 10:
-                                              1 to 1,000,000)
-    Coptic Epact           U+102E0-U+102FF  (single-glyph units, decades, and
-                                              centuries; 2-char thousands)
+    Egyptian Hieroglyphic  U+13000-U+1342F
+    Coptic Epact           U+102E0-U+102FF
 
 Egyptian Hieroglyphic is a purely additive system using greedy decomposition
 for encoding and character-sum for decoding.  Values above 999,999 are treated
@@ -33,20 +31,19 @@ from ._algorithms import (
 
 
 class Egyptian(System[str, int]):
-    """Egyptian hieroglyphic numeral system converter.
+    """Implements bidirectional conversion between integers and Egyptian Hieroglyphic
+    numerals.
 
-    Implements bidirectional conversion between integers and Egyptian hieroglyphic
-    numerals. Uses a base-10 system with individual hieroglyph symbols for powers of 10
-    (1, 10, 100, 1000, 10000, 100000, 1000000). Numbers above 999,999 are
-    considered "many" and capped at the maximum of 1,000,000.
+    - Uses Unicode block U+13000-U+1342F (seven glyphs for powers of 10:
+      1 to 1,000,000)
+    - The system is purely additive, written largest-to-smallest
+    - Values above 999,999 are treated as "many" and capped at 1,000,000
 
     Attributes:
-        to_numeral_map: Mapping of powers of 10 to their corresponding hieroglyph.
-        from_numeral_map: Reverse mapping of hieroglyphs to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum representable value (1,000,000).
-        maximum_is_many: True, indicating the maximum represents "many" in Egyptian
-            notation.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (1,000,000)
+        maximum_is_many: True - 1,000,000 represents "many" in Egyptian notation
+        encodings: UTF-8 only
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -68,20 +65,11 @@ class Egyptian(System[str, int]):
     encodings: ClassVar[Encodings] = {"utf8"}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Converts an integer to an Egyptian numeral.
 
         Takes an integer and converts it to its Egyptian hieroglyph representation
         using the base-10 system of hieroglyphic symbols.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Egyptian.to_numeral(1)
@@ -91,7 +79,7 @@ class Egyptian(System[str, int]):
             >>> Egyptian.to_numeral(1000001)
             '\U00013069'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -99,17 +87,6 @@ class Egyptian(System[str, int]):
 
         Takes an Egyptian numeral and converts it to its integer equivalent
         by summing the values of each hieroglyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Egyptian.from_numeral("\U000133fa")  # Single unit hieroglyph
@@ -121,25 +98,24 @@ class Egyptian(System[str, int]):
 
 
 class CopticEpact(System[str, int]):
-    """Coptic Epact numeral system converter.
+    """Implements bidirectional conversion between integers and Coptic Epact numerals.
 
-    Implements bidirectional conversion between integers and Coptic Epact numeral
-    strings using Unicode block U+102E0-U+102FB. The system is a ciphered additive
-    system with unique glyphs for each unit (1-9), decade (10-90), and century
-    (100-900). Thousands (1000-9000) are expressed by prefixing the COPTIC EPACT
-    THOUSANDS MARK (U+102E0, 𐋠) before the corresponding unit glyph.
-
-    The valid range is 1-9999.
+    - Uses Unicode block U+102E0-U+102FF
+    - The system is ciphered additive with unique glyphs for each unit (1-9), decade
+      (10-90), and century (100-900)
+    - Thousands (1,000-9,000) are expressed as the COPTIC EPACT THOUSANDS MARK (U+102E0)
+      prefixed before the corresponding unit glyph
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -222,21 +198,12 @@ class CopticEpact(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Coptic Epact numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to Coptic Epact numerals.
 
         Uses greedy additive decomposition. Thousands are encoded as a 2-character
         sequence: the COPTIC EPACT THOUSANDS MARK (𐋠) followed by the unit glyph
         for the thousands digit.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> CopticEpact._to_numeral(1)
@@ -256,26 +223,15 @@ class CopticEpact(System[str, int]):
             >>> CopticEpact._to_numeral(9999)
             '𐋠𐋩𐋻𐋲𐋩'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Coptic Epact numeral string to its Arabic integer value.
+        """Convert a Coptic Epact numeral to an integer.
 
         Uses longest-match scanning so that the 2-character thousands sequences
         (𐋠 + digit) are consumed before the bare digit glyphs. Values must appear
         in non-increasing order (thousands before hundreds before tens before units).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid or out of order.
 
         Examples:
             >>> CopticEpact._from_numeral('𐋡')

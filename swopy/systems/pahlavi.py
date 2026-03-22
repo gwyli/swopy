@@ -3,12 +3,9 @@
 This module implements numeral systems from the Pahlavi script family.
 Currently supports:
 
-    Inscriptional Parthian  U+10B40-U+10B5F  (eight glyphs: 1, 2, 3, 4, 10,
-                                               20, 100, 1000)
-    Inscriptional Pahlavi   U+10B60-U+10B7F  (eight glyphs: 1, 2, 3, 4, 10,
-                                               20, 100, 1000)
-    Psalter Pahlavi         U+10B80-U+10BAF  (seven glyphs: 1, 2, 3, 4, 10,
-                                               20, 100)
+    Inscriptional Parthian  U+10B40-U+10B5F
+    Inscriptional Pahlavi   U+10B60-U+10B7F
+    Psalter Pahlavi         U+10B80-U+10BAF
 
 All three systems are purely additive and written right-to-left (largest
 denomination on the right). Number signs occupy the high end of each block;
@@ -21,7 +18,7 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -29,21 +26,24 @@ from ._algorithms import (
 
 
 class InscriptionalParthian(System[str, int]):
-    """Inscriptional Parthian numeral system converter.
+    """Implements bidirectional conversion between integers and Inscriptional Parthian
+    numerals.
 
-    Implements bidirectional conversion between integers and Inscriptional
-    Parthian numeral strings using Unicode block U+10B40-U+10B5F. The system
-    is purely additive and written right-to-left (largest denomination on the
-    right), with dedicated signs for 1, 2, 3, 4, 10, 20, 100, and 1000.
-    The valid range is 1-9999.
+    - Uses Unicode block U+10B40-U+10B5F (eight glyphs: 1, 2, 3, 4, 10, 20, 100, 1000)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         1000: "\U00010b5f",  # 𐭟 INSCRIPTIONAL PARTHIAN NUMBER ONE THOUSAND
@@ -59,20 +59,11 @@ class InscriptionalParthian(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Inscriptional Parthian numeral.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Inscriptional Parthian numeral.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> InscriptionalParthian._to_numeral(1)
@@ -90,25 +81,14 @@ class InscriptionalParthian(System[str, int]):
             >>> InscriptionalParthian._to_numeral(1001)
             '𐭘𐭟'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Inscriptional Parthian numeral string to its Arabic integer value.
+        """Convert an Inscriptional Parthian numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> InscriptionalParthian._from_numeral('𐭘')
@@ -134,21 +114,24 @@ class InscriptionalParthian(System[str, int]):
 
 
 class InscriptionalPahlavi(System[str, int]):
-    """Inscriptional Pahlavi numeral system converter.
+    """Implements bidirectional conversion between integers and Inscriptional Pahlavi
+    numerals.
 
-    Implements bidirectional conversion between integers and Inscriptional
-    Pahlavi numeral strings using Unicode block U+10B60-U+10B7F. The system
-    is purely additive and written right-to-left (largest denomination on the
-    right), with dedicated signs for 1, 2, 3, 4, 10, 20, 100, and 1000.
-    The valid range is 1-9999.
+    - Uses Unicode block U+10B60-U+10B7F (eight glyphs: 1, 2, 3, 4, 10, 20, 100, 1000)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         1000: "\U00010b7f",  # 𐭿 INSCRIPTIONAL PAHLAVI NUMBER ONE THOUSAND
@@ -164,20 +147,11 @@ class InscriptionalPahlavi(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Inscriptional Pahlavi numeral.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Inscriptional Pahlavi numeral.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> InscriptionalPahlavi._to_numeral(1)
@@ -195,25 +169,14 @@ class InscriptionalPahlavi(System[str, int]):
             >>> InscriptionalPahlavi._to_numeral(1001)
             '𐭸𐭿'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Inscriptional Pahlavi numeral string to its Arabic integer value.
+        """Convert an Inscriptional Pahlavi numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> InscriptionalPahlavi._from_numeral('𐭸')
@@ -239,21 +202,24 @@ class InscriptionalPahlavi(System[str, int]):
 
 
 class PsalterPahlavi(System[str, int]):
-    """Psalter Pahlavi numeral system converter.
+    """Implements bidirectional conversion between integers and Psalter Pahlavi
+    numerals.
 
-    Implements bidirectional conversion between integers and Psalter Pahlavi
-    numeral strings using Unicode block U+10B80-U+10BAF. The system is purely
-    additive and written right-to-left (largest denomination on the right),
-    with dedicated signs for 1, 2, 3, 4, 10, 20, and 100. The valid range is
-    1-999.
+    - Uses Unicode block U+10B80-U+10BAF (seven glyphs: 1, 2, 3, 4, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010baf",  # 𐮯 PSALTER PAHLAVI NUMBER ONE HUNDRED
@@ -268,20 +234,11 @@ class PsalterPahlavi(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Psalter Pahlavi numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Psalter Pahlavi numeral.
 
         Uses greedy additive decomposition, largest denomination first, then
         reverses the result so the highest denomination appears rightmost.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> PsalterPahlavi._to_numeral(1)
@@ -297,25 +254,14 @@ class PsalterPahlavi(System[str, int]):
             >>> PsalterPahlavi._to_numeral(999)
             '𐮩𐮬𐮬𐮭𐮮𐮮𐮮𐮮𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯𐮯'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Psalter Pahlavi numeral string to its Arabic integer value.
+        """Convert a Psalter Pahlavi numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> PsalterPahlavi._from_numeral('𐮩')

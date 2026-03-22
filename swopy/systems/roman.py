@@ -3,9 +3,9 @@
 This module implements numeral systems from the Roman script family.
 Currently supports:
 
-    Early        (Roman numerals up to 899; subtractive notation)
-    Standard     (Roman numerals 1/12 to 3,999; subtractive + base-12 fractions)
-    Apostrophus  (Roman numerals 1 to 100,000; extended forms CⅠↃ, CCⅠↃↃ, etc.)
+    Early
+    Standard
+    Apostrophus
 
 All three systems use subtractive notation (e.g. ⅠⅤ for 4, ⅠⅩ for 9) for
 encoding and longest-match or subtractive scanning for decoding.  Standard
@@ -13,8 +13,8 @@ additionally supports base-12 fractions (twelfths) expressed with dot and S
 symbols.  Apostrophus extends the alphabet with parenthetical forms for large
 values.
 """
-# Ignore ambiguous unicode character strings in Roman numerals (e.g., 'I' vs 'Ⅰ').
-# ruff: noqa: RUF001 RUF002 RUF003
+
+# ruff: noqa: RUF001, RUF002
 
 from collections.abc import Mapping
 from fractions import Fraction
@@ -29,19 +29,18 @@ from ._algorithms import (
 
 
 class Early(System[str, int]):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers and Early Roman numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
+    - Uses Unicode block U+2160-U+216E (Roman numeral characters); ASCII I, V, X,
+      L, C, D are also accepted as input
+    - The system is subtractive with dedicated signs for 1, 5, 10, 50, 100, and 500
+      (no M; maximum is 899 = DCCCXCIX)
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (899), limited by Roman numeral notation.
-        maximum_is_many: False, as 899 is a precise limit.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (899)
+        maximum_is_many: False - integers greater than 899 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -74,24 +73,15 @@ class Early(System[str, int]):
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 899
-
     maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Converts an integer to a Roman numeral string.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Converts an integer to a Early Roman numeral.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Early.to_numeral(1)
@@ -107,25 +97,14 @@ class Early(System[str, int]):
                 ...
             ValueError: Number must be less than or equal to 899.
         """
-        return subtractive_to_numeral(number, cls._to_numeral_map)
+        return subtractive_to_numeral(denotation, cls._to_numeral_map)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Converts a Roman numeral to an integer.
+        """Converts an Early Roman numeral to an integer.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Early.from_numeral('Ⅹ')
@@ -143,22 +122,19 @@ class Early(System[str, int]):
 
 
 class Standard(System[str, int | Fraction]):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers or fractions and Standard
+    Roman numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
-
-    Type Parameter:
-        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, Ⅽ, Ⅾ, Ⅿ, etc.).
+    - Uses Unicode block U+2160-U+216F (Roman numeral characters); ASCII I, V, X, L, C,
+      D, M are also accepted as input
+    - The system is subtractive for integers (e.g. ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40)
+    - Base-12 fractions (1/12-11/12) are expressed with dot (·) and S notation
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (3999), limited by Roman numeral notation.
-        maximum_is_many: False, as 3999 is a precise limit.
+        minimum: Minimum valid value (1/12)
+        maximum: Maximum valid value (3,999)
+        maximum_is_many: False - integers greater than 3,999 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int | Fraction, str] = {
@@ -225,22 +201,15 @@ class Standard(System[str, int | Fraction]):
 
     minimum: ClassVar[int | float | Fraction] = Fraction(1, 12)
     maximum: ClassVar[int | float | Fraction] = 3_999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
-    def _to_numeral(cls, number: int | Fraction) -> str:
-        """Converts an integer to a Roman numeral string.
+    def _to_numeral(cls, denotation: int | Fraction) -> str:
+        """Converts an integer or fraction to a Roman numeral.
 
         Takes an integer and converts it to its Roman numeral representation,
         using subtractive notation where appropriate (e.g., ⅠⅤ for 4, ⅠⅩ for 9).
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Standard.to_numeral(1)
@@ -250,18 +219,16 @@ class Standard(System[str, int | Fraction]):
             >>> Standard.to_numeral(0)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be greater or equal to 1.
+            ValueError: Denotation must be greater or equal to 1.
             >>> Standard.to_numeral(4000)
             Traceback (most recent call last):
                 ...
-            ValueError: Number must be less than or equal to 899.
+            ValueError: Denotation must be less than or equal to 899.
         """
         result: str = ""
 
-        # Non-integer/fraction numbers and negative numbers are gated
-        # in System.to_numeral()
-        integer = int(number)
-        proper_fraction = number - integer
+        integer = int(denotation)
+        proper_fraction = denotation - integer
 
         for arabic, roman in cls._to_numeral_items:
             while integer >= arabic:
@@ -275,27 +242,16 @@ class Standard(System[str, int | Fraction]):
 
         fraction_glyph = cls._to_numeral_map.get(proper_fraction)
         if fraction_glyph is None:
-            raise ValueError(f"{number} cannot be represented in {cls.__name__}.")
+            raise ValueError(f"{denotation} cannot be represented in {cls.__name__}.")
 
         return result + fraction_glyph
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:
-        """Converts a Roman numeral to an integer.
+        """Converts a Roman numeral to an integer or fraction.
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Standard.from_numeral('Ⅹ')
@@ -336,22 +292,22 @@ class Standard(System[str, int | Fraction]):
 
 
 class Apostrophus(Early):
-    """Roman numeral system converter.
+    """Implements bidirectional conversion between integers and Apostrophus Roman
+    numerals.
 
-    Implements bidirectional conversion between integers and Roman numeral strings.
-    Supports the standard Roman numeral notation with subtractive notation for
-    efficiency (e.g., ⅠⅤ for 4, ⅠⅩ for 9, ⅩⅬ for 40).
-
-    Type Parameter:
-        str: Roman numerals are represented as strings (Ⅰ, Ⅴ, Ⅹ, Ⅼ, C, Ⅾ, CⅠↃ, etc.).
+    - Uses Unicode block U+2160-U+2169 plus multi-character Apostrophus forms (CⅠↃ,
+      CCⅠↃↃ, ⅠↃↃ, ⅠↃↃↃ, CCCⅠↃↃↃ); ASCII equivalents use ) for Ↄ (e.g. CI),
+      I)), CCI)), I))), CCCI)))); ASCII I, V, X, L are also accepted as input
+    - The system is subtractive with dedicated signs for 1, 5, 10, 50, and 100,
+      extended by Apostrophus forms for 500, 1,000, 5,000, 10,000, 50,000, and 100,000
+    - Longest-match decoding resolves multi-character tokens before constituent
+      characters; descending order is enforced
 
     Attributes:
-        to_numeral_map: Mapping of integer values to Roman numeral components,
-                   ordered by magnitude including subtractive pairs.
-        from_numeral_map: Mapping of Roman numeral characters to their integer values.
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (3999), limited by Roman numeral notation.
-        maximum_is_many: False, as 3999 is a precise limit.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (100,000)
+        maximum_is_many: False - integers greater than 100,000 are not representable
+        encodings: UTF-8 and ASCII
     """
 
     _to_numeral_map: Mapping[int, str] = {
@@ -369,11 +325,17 @@ class Apostrophus(Early):
     }
     _from_numeral_map: Mapping[str, int] = {
         "CCCⅠↃↃↃ": 100_000,
+        "CCCI)))": 100_000,
         "ⅠↃↃↃ": 50_000,
+        "I)))": 50_000,
         "CCⅠↃↃ": 10_000,
+        "CCI))": 10_000,
         "ⅠↃↃ": 5_000,
+        "I))": 5_000,
         "CⅠↃ": 1_000,
+        "CI)": 1_000,
         "ⅠↃ": 500,
+        "I)": 500,
         "C": 100,
         "\u216c": 50,
         "L": 50,
@@ -386,7 +348,8 @@ class Apostrophus(Early):
     }
 
     maximum: ClassVar[int | float | Fraction] = 100_000
-    encodings: ClassVar[Encodings] = {"utf8"}
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8", "ascii"}
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
@@ -394,17 +357,6 @@ class Apostrophus(Early):
 
         Takes a Roman numeral and converts it to its integer equivalent,
         properly handling subtractive notation (e.g., ⅠⅤ -> 4, ⅠⅩ -> 9).
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Apostrophus.from_numeral('Ⅹ')

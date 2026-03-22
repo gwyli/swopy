@@ -1,11 +1,9 @@
-# ruff: noqa: RUF002
 """Nabataean numeral system converters.
 
 This module implements numeral systems from the Nabataean script family.
 Currently supports:
 
-    Nabataean  U+10880-U+108AF  (nine glyphs: 1, 2, 3, 4, 5, 10, 20, 100;
-                                  alternate cruciform form of 4 at U+108AB)
+    Nabataean  U+10880-U+108AF  (alternate cruciform form of 4 at U+108AB)
 
 Nabataean is a purely additive system using greedy decomposition for encoding
 and character-sum for decoding.  An alternative cruciform form of 4 (U+108AB)
@@ -16,25 +14,29 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import char_sum_from_numeral, greedy_additive_to_numeral
 
 
 class Nabataean(System[str, int]):
-    """Nabataean numeral system converter.
+    """Implements bidirectional conversion between integers and Nabataean numerals.
 
-    Implements bidirectional conversion between integers and Nabataean numeral
-    strings using Unicode block U+10880–U+108AF. The system is purely additive
-    with dedicated signs for 1, 2, 3, 4, 5, 10, 20, and 100. An alternative
-    cruciform form of 4 (U+108AB) is accepted as input. The valid range is 1–999.
+    - Uses Unicode block U+10880-U+108AF
+    - The system is purely additive with dedicated signs for 1, 2, 3, 4, 5, 10,
+      20, and 100
+    - An alternative cruciform form of 4 (U+108AB) is accepted as input
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U000108af",  # 𐢯 NABATAEAN NUMBER ONE HUNDRED
@@ -60,19 +62,10 @@ class Nabataean(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Nabataean numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an Arabic to a Nabataean numeral.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Nabataean._to_numeral(1)
@@ -86,25 +79,14 @@ class Nabataean(System[str, int]):
             >>> Nabataean._to_numeral(999)
             '𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢯𐢮𐢮𐢮𐢮𐢭𐢬𐢪'
         """
-        return greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Nabataean numeral string to its Arabic integer value.
+        """Convert a Nabataean numeral to an integer.
 
         Accepts both the standard form (U+108AA) and the cruciform form
         (U+108AB) for the value 4. Sums the values of each glyph.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Nabataean._from_numeral('𐢧')

@@ -24,7 +24,7 @@ to avoid forming abbreviated divine names.
 Both regular and final letterforms are accepted in decoding.
 """
 
-# ruff: noqa: RUF002, RUF003
+# ruff: noqa: RUF002 RUF003
 
 from collections.abc import Mapping
 from fractions import Fraction
@@ -38,28 +38,25 @@ _GERESH = "\u05f3"  # ׳
 
 
 class Hebrew(System[str, int]):
-    """Hebrew alphabetic numeral system converter.
+    """Implements bidirectional conversion between integers and Hebrew numerals.
 
-    Implements bidirectional conversion between integers and Hebrew numeral
-    strings using Hebrew letters (U+0590-U+05FF).  The system is purely
-    additive: each letter contributes its face value and numerals are written
-    largest-to-smallest.
-
-    Thousands 1,000-9,000 are expressed as Geresh (U+05F3) + unit letter.
-    The Gershayim punctuation mark (U+05F4) is accepted in decoding but
-    contributes no value.  Both regular and final letterforms are accepted.
-
-    Traditional substitutions 15→ט״ו and 16→ט״ז are applied in encoding.
+    - Uses Unicode block U+0590-U+05FF (Hebrew letters as numerals)
+    - The system is purely additive, written largest-to-smallest
+    - Thousands 1,000-9,000 are expressed as Geresh (U+05F3) prefix + unit letter
+    - Traditional substitutions apply: 15→ט״ו and 16→ט״ז
+    - Gershayim (U+05F4) is accepted in decoding but carries no value
+    - Both regular and final letterforms are accepted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (9999).
-        encodings: UTF-8 only; Hebrew letters have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (9999)
+        maximum_is_many: False - integers greater than 9999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 9999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -139,21 +136,12 @@ class Hebrew(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Hebrew numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to Hebrew numerals.
 
         Uses greedy additive decomposition, then applies the traditional
         substitutions 15 → ט״ו (9+6) and 16 → ט״ז (9+7) to avoid forming
         abbreviated divine names.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Hebrew._to_numeral(1)
@@ -173,7 +161,7 @@ class Hebrew(System[str, int]):
             >>> Hebrew._to_numeral(5784)
             '׳התשפד'
         """
-        result = greedy_additive_to_numeral(number, cls._to_numeral_items)
+        result = greedy_additive_to_numeral(denotation, cls._to_numeral_items)
         # Traditional substitutions to avoid abbreviated divine names
         result = result.replace(
             "\u05d9\u05d4",
@@ -187,23 +175,12 @@ class Hebrew(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Hebrew numeral string to its Arabic integer value.
+        """Convert a Hebrew numeral to an integer.
 
         Sums the values of all tokens.  Two-character Geresh+letter tokens
         (thousands) are resolved before single-character tokens.  The
         Gershayim punctuation mark (U+05F4) is consumed but contributes 0.
         Both regular and final letterforms are accepted.
-
-        Args:
-            numeral: The Hebrew numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Hebrew._from_numeral('א')

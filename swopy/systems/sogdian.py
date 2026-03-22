@@ -4,22 +4,20 @@ This module implements numeral systems from the Sogdian script family and
 related Middle Iranian scripts.
 Currently supports:
 
-    Manichaean  U+10AC0-U+10AFF  (five glyphs: 1, 5, 10, 20, 100)
-    Old Sogdian U+10F00-U+10F2F  (nine glyphs: 1, 2, 3, 4, 5, 10, 20, 30, 100)
-    Sogdian     U+10F30-U+10F6F  (four glyphs: 1, 10, 20, 100)
+    Manichaean  U+10AC0-U+10AFF
+    Old Sogdian U+10F00-U+10F2F
+    Sogdian     U+10F30-U+10F6F
 
 All three systems are purely additive and written right-to-left (largest
 denomination on the right).  Encoding uses greedy decomposition followed by
 reversal; decoding reverses the input before summing.
 """
 
-# ruff: noqa: RUF002
-
 from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -27,20 +25,23 @@ from ._algorithms import (
 
 
 class Manichaean(System[str, int]):
-    """Manichaean numeral system converter.
+    """Implements bidirectional conversion between integers and Manichaean numerals.
 
-    Implements bidirectional conversion between integers and Manichaean numeral
-    strings using Unicode block U+10AC0–U+10AFF. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 5, 10, 20, and 100. The valid range is 1–999.
+    - Uses Unicode block U+10AC0-U+10AFF (five glyphs: 1, 5, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010aef",  # 𐫯 MANICHAEAN NUMBER ONE HUNDRED
@@ -53,19 +54,10 @@ class Manichaean(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Manichaean numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Manichaean numeral.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Manichaean._to_numeral(1)
@@ -83,24 +75,13 @@ class Manichaean(System[str, int]):
             >>> Manichaean._to_numeral(999)
             '𐫫𐫫𐫫𐫫𐫬𐫭𐫮𐫮𐫮𐫮𐫯𐫯𐫯𐫯𐫯𐫯𐫯𐫯𐫯'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Manichaean numeral string to its Arabic integer value.
+        """Convert a Manichaean numeral to an integer
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Manichaean._from_numeral('𐫫')
@@ -127,24 +108,27 @@ class Manichaean(System[str, int]):
         )
 
 
-class OldSogdian(System[str, int]):
-    """Old Sogdian numeral system converter.
+class OldSogdian(System[str, int | Fraction]):
+    """Implements bidirectional conversion between integers or fractions and Old Sogdian
+    numerals.
 
-    Implements bidirectional conversion between integers and Old Sogdian numeral
-    strings using Unicode block U+10F00–U+10F2F. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 2, 3, 4, 5, 10, 20, 30, and 100. The valid range
-    is 1–999. (U+10F26 NUMBER ONE HALF is excluded.)
+    - Uses Unicode block U+10F00-U+10F2F (ten glyphs: ½, 1, 2, 3, 4, 5, 10, 20, 30, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1/2)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
-    minimum: ClassVar[int | float | Fraction] = 1
+    minimum: ClassVar[int | float | Fraction] = Fraction(1, 2)
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
-    _to_numeral_map: Mapping[int, str] = {
+    _to_numeral_map: Mapping[int | Fraction, str] = {
         100: "\U00010f25",  # 𐼥 OLD SOGDIAN NUMBER ONE HUNDRED
         30: "\U00010f24",  # 𐼤 OLD SOGDIAN NUMBER THIRTY
         20: "\U00010f23",  # 𐼣 OLD SOGDIAN NUMBER TWENTY
@@ -154,24 +138,18 @@ class OldSogdian(System[str, int]):
         3: "\U00010f1f",  # 𐼟 OLD SOGDIAN NUMBER THREE
         2: "\U00010f1e",  # 𐼞 OLD SOGDIAN NUMBER TWO
         1: "\U00010f1d",  # 𐼝 OLD SOGDIAN NUMBER ONE
+        Fraction(1, 2): "\U00010f26",  # 𐼦 OLD SOGDIAN NUMBER ONE HALF
     }
 
-    _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
+    _from_numeral_map: Mapping[str, int | Fraction] = {
+        v: k for k, v in _to_numeral_map.items()
+    }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Old Sogdian numeral representation.
+    def _to_numeral(cls, denotation: int | Fraction) -> str:
+        """Convert an integer or fraction to Old Sogdian numerals.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> OldSogdian._to_numeral(1)
@@ -187,24 +165,13 @@ class OldSogdian(System[str, int]):
             >>> OldSogdian._to_numeral(999)
             '𐼠𐼡𐼤𐼤𐼤𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
-    def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Old Sogdian numeral string to its Arabic integer value.
+    def _from_numeral(cls, numeral: str) -> int | Fraction:
+        """Convert an Old Sogdian numeral to an integer or fraction.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> OldSogdian._from_numeral('𐼝')
@@ -230,20 +197,23 @@ class OldSogdian(System[str, int]):
 
 
 class Sogdian(System[str, int]):
-    """Sogdian numeral system converter.
+    """Implements bidirectional conversion between integers and Sogdian numerals.
 
-    Implements bidirectional conversion between integers and Sogdian numeral
-    strings using Unicode block U+10F30–U+10F6F. The system is purely additive
-    and written right-to-left (largest denomination on the right), with
-    dedicated signs for 1, 10, 20, and 100. The valid range is 1–999.
+    - Uses Unicode block U+10F30-U+10F6F (four glyphs: 1, 10, 20, 100)
+    - The system is purely additive and written right-to-left (largest denomination
+      on the right)
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         100: "\U00010f54",  # 𐽔 SOGDIAN NUMBER ONE HUNDRED
@@ -255,19 +225,10 @@ class Sogdian(System[str, int]):
     _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Sogdian numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to Sogdian numerals.
 
         Uses greedy additive decomposition, largest denomination first.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Sogdian._to_numeral(1)
@@ -283,24 +244,13 @@ class Sogdian(System[str, int]):
             >>> Sogdian._to_numeral(999)
             '𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽑𐽒𐽓𐽓𐽓𐽓𐽔𐽔𐽔𐽔𐽔𐽔𐽔𐽔𐽔'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Sogdian numeral string to its Arabic integer value.
+        """Convert a Sogdian numeral to an integer.
 
         Sums the values of each glyph in the string.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Sogdian._from_numeral('𐽑')

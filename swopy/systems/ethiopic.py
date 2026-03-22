@@ -3,9 +3,7 @@
 This module implements numeral systems from the Ethiopic script family.
 Currently supports:
 
-    Ethiopic  U+1369-U+137C  (digit glyphs 1-9 at U+1369-U+1371; decade
-                               signs 10-90 at U+1372-U+137A; hundreds sign
-                               U+137B; ten-thousands sign U+137C)
+    Ethiopic  U+1369-U+137C
 
 Ethiopic numerals are a two-tier multiplicative-additive system.  Dedicated
 digit glyphs cover 1-9; dedicated decade signs cover 10-90; a hundreds sign
@@ -101,28 +99,24 @@ def _decode_sub9999(numeral: str, system_name: str) -> int:
 
 
 class Ethiopic(System[str, int]):
-    """Ethiopic numeral system converter.
+    """Implements bidirectional conversion between integers and Ethiopic numerals.
 
-    Implements bidirectional conversion between integers and Ethiopic numeral
-    strings using Unicode glyphs U+1369-U+137C.  The system is a two-tier
-    multiplicative-additive system:
-
-    - Digits 1-9: dedicated glyphs ፩-፱.
-    - Decades 10-90: dedicated glyphs ፲-፺.
-    - Hundreds: digit/decade coefficient (omitted when 1) + ፻.
-    - Ten-thousands: sub-9999 coefficient + ፼ + sub-9999 remainder.
-
-    The valid range is 1-99,999,999.
+    - Uses Unicode block U+1369-U+137C
+    - The system is two-tier multiplicative-additive: digit glyphs (1-9) combine with
+      decade glyphs (10-90), a hundreds sign (፻), and a ten-thousands sign (፼) acting
+      as multipliers
+    - Hundreds and ten-thousands coefficients of 1 are omitted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -138,22 +132,13 @@ class Ethiopic(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Ethiopic numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to Ethiopic numerals.
 
-        Numbers >= 10,000 are expressed as ``encode_sub9999(coefficient) + ፼``
+        Denotations >= 10,000 are expressed as ``encode_sub9999(coefficient) + ፼``
         followed by ``encode_sub9999(remainder)``.  Within each sub-10,000
         segment, hundreds use ``encode_sub100(coefficient) + ፻`` with the
         coefficient omitted when equal to 1.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Ethiopic._to_numeral(1)
@@ -177,8 +162,8 @@ class Ethiopic(System[str, int]):
             >>> Ethiopic._to_numeral(99999999)
             '፺፱፻፺፱፼፺፱፻፺፱'
         """
-        myriads = number // 10000
-        remainder = number % 10000
+        myriads = denotation // 10000
+        remainder = denotation % 10000
         result = ""
         if myriads:
             if myriads != 1:
@@ -189,23 +174,12 @@ class Ethiopic(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ethiopic numeral string to its Arabic integer value.
+        """Convert an Ethiopic numeral to an integer.
 
         Splits at ፼ (if present): the portion before is decoded as a
         sub-9999 coefficient multiplied by 10,000; the portion after is
         decoded as the remainder.  Each sub-9999 segment is further split
         at ፻ to extract the hundreds coefficient.
-
-        Args:
-            numeral: The Ethiopic numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Ethiopic._from_numeral('፩')

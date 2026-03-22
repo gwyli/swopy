@@ -25,6 +25,10 @@ license-files = ["LICENSE"]
 dependencies = []
 
 [dependency-groups]
+docs = [
+    "mkdocstrings[python]",
+    "zensical>=0.0.28",
+]
 dev = [
     "deptry",
     "hypothesis",

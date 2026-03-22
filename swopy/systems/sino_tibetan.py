@@ -3,8 +3,8 @@
 This module implements numeral systems from the Sino-Tibetan script family.
 Currently supports:
 
-    Tangut        U+17000-U+187FF  (specific glyphs listed below)
-    Khitan Small  U+18B00-U+18CFF  (specific glyphs listed below)
+    Tangut        U+17000-U+187FF
+    Khitan Small  U+18B00-U+18CFF
     Suzhou        U+3000-U+303F    (Hangzhou numerals; digits U+3021-U+3029,
                                     zero U+3007; shorthand U+3038-U+303A)
     Chinese       U+4E00-U+9FFF    (CJK ideographic numerals; digits
@@ -48,27 +48,30 @@ from ._algorithms import (
 
 
 class Tangut(System[str, int]):
-    """Tangut numeral system converter.
+    """Implements bidirectional conversion between integers and Tangut numerals.
 
-    Implements bidirectional conversion between integers and Tangut numeral
-    strings. The system is multiplicative-additive with a myriad base:
-
-    - Digits 1-9 are represented by unique glyphs.
-    - Multipliers x10, x100, x1000, x10000 are separate characters.
-    - The tens place always carries an explicit digit (including 1).
-    - Hundreds, thousands and myriad coefficients omit the digit when it is 1.
-    - Zero places are skipped entirely (no zero glyph in normal use).
-    - The myriad (x10000) coefficient can itself be a sub-myriad number (1-9999).
+    - Uses Unicode block U+17000-U+187FF (nine digit glyphs and four multiplier
+      glyphs scattered across the Tangut ideograph block)
+    - The system is multiplicative-additive with myriad (×10,000) grouping; digits
+      1-9 each have a unique glyph and multipliers for ×10, ×100, ×1,000, and ×10,000
+      are separate characters
+    - Zero places are skipped entirely — no zero glyph is emitted; omitted place
+      values are implicit
+    - The tens coefficient is always written explicitly, including when it is 1;
+      hundreds, thousands, and myriad coefficients omit the digit when it is 1
+    - The myriad coefficient can itself be a sub-myriad denotation (1-9,999),
+      recursively encoded
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     # Individual digit glyphs (1-9)
@@ -117,21 +120,12 @@ class Tangut(System[str, int]):
         return {**cls._from_numeral_map, **cls._multiplier_from_map}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Tangut numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Tangut numeral.
 
-        Numbers >= 10,000 are expressed as ``encode(coefficient) + myriad``,
-        where the coefficient (1-9999) is itself encoded as a sub-myriad number.
+        Denotations >= 10,000 are expressed as ``encode(coefficient) + myriad``,
+        where the coefficient (1-9999) is itself encoded as a sub-myriad denotation.
         The remainder (0-9999) is appended directly.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Tangut._to_numeral(1)
@@ -156,7 +150,7 @@ class Tangut(System[str, int]):
             '𗢭𗃔𗢭𗋚𗢭𗰗𗢭𗑗𗢭𗃔𗢭𗋚𗢭𗰗𗢭'
         """
         return multiplicative_myriad_to_numeral(
-            number,
+            denotation,
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=True,
@@ -165,23 +159,12 @@ class Tangut(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Tangut numeral string to its Arabic integer value.
+        """Convert a Tangut numeral to an integer.
 
         Splits at the myriad glyph (if present): the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder. If no myriad glyph is
-        present, the whole string is parsed as a sub-myriad number.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
+        present, the whole string is parsed as a sub-myriad denotation.
 
         Examples:
             >>> Tangut._from_numeral('𗼑')
@@ -214,28 +197,31 @@ class Tangut(System[str, int]):
 
 
 class Khitan(System[str, int]):
-    """Khitan numeral system converter.
+    """Implements bidirectional conversion between integers and Khitan Small Script
+    numerals.
 
-    Implements bidirectional conversion between integers and Khitan Small
-    Script numeral strings. The system is multiplicative-additive with a
-    myriad base:
-
-    - Digits 1-9 are represented by unique glyphs (U+18B00-U+18B08).
-    - Multipliers x10, x100, x1000, x10000 are separate characters.
-    - The digit 1 is always omitted before every multiplier (including tens).
-    - Zero places are skipped entirely (no zero glyph in normal use).
-    - The myriad (x10000) coefficient can itself be a sub-myriad number
-      (2-9999); a coefficient of 1 is omitted entirely.
+    - Uses Unicode block U+18B00-U+18CFF (digits 1-9 at U+18B00-U+18B08; multipliers
+      at U+18B09-U+18B0C)
+    - The system is multiplicative-additive with myriad (×10,000) grouping; digits
+      1-9 each have a unique glyph and multipliers for ×10, ×100, ×1,000, and ×10,000
+      are separate characters
+    - Zero places are skipped entirely — no zero glyph is emitted; omitted place
+      values are implicit
+    - The digit 1 is omitted before every multiplier (including ×10); a myriad
+      coefficient of 1 is omitted entirely (bare myriad glyph = 10,000)
+    - The myriad coefficient can itself be a sub-myriad denotation (2-9,999),
+      recursively encoded
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     # Individual digit glyphs (1-9): U+18B00-U+18B08
@@ -274,22 +260,13 @@ class Khitan(System[str, int]):
         return {**cls._from_numeral_map, **cls._multiplier_from_map}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Khitan numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Khitan numeral.
 
-        Numbers >= 10,000 are expressed as ``encode(coefficient) + myriad``,
+        Denotations >= 10,000 are expressed as ``encode(coefficient) + myriad``,
         where a coefficient of 1 is omitted and coefficients 2-9999 are
-        encoded as sub-myriad numbers. The remainder (0-9999) is appended
+        encoded as sub-myriad denotations. The remainder (0-9999) is appended
         directly.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Khitan._to_numeral(1)
@@ -308,7 +285,7 @@ class Khitan(System[str, int]):
             '\U00018b01\U00018b0c'
         """
         return multiplicative_myriad_to_numeral(
-            number,
+            denotation,
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=False,
@@ -317,23 +294,12 @@ class Khitan(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Khitan numeral string to its Arabic integer value.
+        """Convert a Khitan numeral to a integer.
 
         Splits at the myriad glyph (if present): the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder. If no myriad glyph is
-        present, the whole string is parsed as a sub-myriad number.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
+        present, the whole string is parsed as a sub-myriad denotation.
 
         Examples:
             >>> Khitan._from_numeral('\U00018b00')
@@ -362,24 +328,25 @@ class Khitan(System[str, int]):
 
 
 class Suzhou(System[str, int]):
-    """Suzhou (Huāmǎ / 花碼) numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and Suzhou
+    numerals.
 
-    Implements bidirectional conversion between non-negative integers and
-    Suzhou numeral strings using Unicode block U+3000-U+303F.  The system is
-    positional base-10: digit glyphs U+3021-U+3029 represent 1-9 and U+3007
-    represents 0.  The shorthand glyphs U+3038 (ten), U+3039 (twenty), and
-    U+303A (thirty) are accepted as standalone numerals in decoding but are
-    never produced by encoding.
+    - Uses Unicode block U+3000-U+303F (digit glyphs 1-9 at U+3021-U+3029, zero at
+      U+3007)
+    - The system is positional in base 10, written most-significant digit first
+    - Shorthand glyphs U+3038-U+303A (10, 20, 30) are accepted as standalone input but
+      not emitted
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -396,21 +363,12 @@ class Suzhou(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
+    def _to_numeral(cls, denotation: int) -> str:
         """Convert a non-negative integer to its Suzhou positional representation.
 
-        Encodes ``number`` as a sequence of Hangzhou numeral glyphs
+        Encodes ``denotation`` as a sequence of Hangzhou numeral glyphs
         representing its decimal expansion, most-significant digit first.
         Zero is represented by the single ideographic zero glyph U+3007.
-
-        Args:
-            number: The non-negative integer to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Suzhou._to_numeral(0)
@@ -426,23 +384,14 @@ class Suzhou(System[str, int]):
             >>> Suzhou._to_numeral(100)
             '〡〇〇'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 10)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Suzhou numeral string to its Arabic integer value.
+        """Convert a Suzhou numeral to an integer.
 
         Standalone shorthand glyphs U+3038-U+303A decode to 10, 20, 30
         respectively.  All other strings are decoded positionally.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Suzhou._from_numeral('〇')
@@ -475,25 +424,24 @@ class Suzhou(System[str, int]):
 
 
 class Chinese(System[str, int]):
-    """Chinese (CJK) numeral system converter.
+    """Implements bidirectional conversion between integers and Chinese CJK numerals.
 
-    Implements bidirectional conversion between integers and Chinese numeral
-    strings using CJK Unified Ideographs (U+4E00-U+9FFF).  The system is
-    multiplicative-additive with myriad (10,000) grouping: digit ideographs
-    一-九 combine with multiplier ideographs 十/百/千/万.  The digit 一 is
-    omitted before every multiplier (including 十).  The zero character 零
-    is accepted as a placeholder in decoding but contributes no value and
-    is not produced by encoding.  The valid range is 1-99,999,999.
+    - Uses CJK Unified Ideographs (U+4E00-U+9FFF): digit ideographs 一-九 and
+      multiplier ideographs 十/百/千/万
+    - The system is multiplicative-additive with myriad (10,000) grouping
+    - The digit 一 is omitted before every multiplier (including 十); 零 is accepted
+      in decoding as a placeholder but carries no value and is not emitted
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99,999,999).
-        encodings: UTF-8 only; glyphs have no ASCII equivalents.
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999,999)
+        maximum_is_many: False - integers greater than 99,999,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99_999_999
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
@@ -544,21 +492,12 @@ class Chinese(System[str, int]):
         return {**cls._from_numeral_map, **cls._multiplier_from_map}
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Chinese numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Chinese numeral.
 
-        Numbers >= 10,000 are expressed as ``encode(coefficient) + 万``,
+        Denotations >= 10,000 are expressed as ``encode(coefficient) + 万``,
         where the coefficient (1-9999) is itself encoded as a sub-myriad
-        number.  The digit 一 is omitted before every multiplier.
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
+        denotation.  The digit 一 is omitted before every multiplier.
 
         Examples:
             >>> Chinese._to_numeral(1)
@@ -579,7 +518,7 @@ class Chinese(System[str, int]):
             '九千九百九十九万九千九百九十九'
         """
         return multiplicative_myriad_to_numeral(
-            number,
+            denotation,
             cls._to_numeral_map,
             cls._multiplier_map,
             explicit_one_tens=False,
@@ -588,23 +527,12 @@ class Chinese(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Chinese numeral string to its Arabic integer value.
+        """Convert a Chinese numeral to an integer.
 
         Splits at the myriad glyph 万 (if present); the portion before it is
         parsed as a sub-myriad coefficient and multiplied by 10,000; the
         portion after is parsed as the remainder.  The zero character 零
         is accepted as a placeholder but contributes no value.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Chinese._from_numeral('一')

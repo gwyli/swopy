@@ -4,7 +4,7 @@ This module implements numeral systems from scripts derived from Brahmi and
 used in Tai-language contexts.
 Currently supports:
 
-    Ahom  U+11700-U+1174F  (ten positional digit glyphs: 0-9, U+11730-U+11739)
+    Ahom  U+11700-U+1174F
 
 Ahom uses ten positional decimal digit glyphs (0-9) identical in structure to
 the Arabic base-10 system. Numbers are encoded as a sequence of digit glyphs
@@ -24,26 +24,24 @@ from ._algorithms import positional_to_numeral
 
 
 class Ahom(System[str, int]):
-    """Ahom decimal numeral system converter.
+    """Implements bidirectional conversion between non-negative integers and Ahom
+    numerals.
 
-    Implements bidirectional conversion between non-negative integers and Ahom
-    numeral strings using Unicode block U+11700-U+1174F. The system is
-    positional in base 10, using ten digit glyphs (0-9) at U+11730-U+11739.
-    Numbers are encoded as a sequence of digit glyphs representing the decimal
-    expansion, most-significant digit first (left-to-right).
-
-    The dedicated ten (U+1173A) and twenty (U+1173B) signs are accepted as
-    input (decoding to 10 and 20 respectively) but are not emitted on output.
+    - Uses Unicode block U+11730-U+11739 (digit glyphs 0-9) within block U+11700-U+1174F
+    - The system is positional in base 10, written most-significant digit first
+    - Dedicated signs for ten (U+1173A) and twenty (U+1173B) are accepted as input
+      but not emitted
 
     Attributes:
-        minimum: Minimum valid value (0).
-        maximum: Maximum valid value (+infinity).
-        encodings: UTF-8 only, as no ASCII equivalents exist.
+        minimum: Minimum valid value (0)
+        maximum: Maximum valid value (+infinity)
+        maximum_is_many: False - no natural bound exists
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 0
     maximum: ClassVar[int | float | Fraction] = inf
-
+    maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {i: chr(0x11730 + i) for i in range(10)}
@@ -55,21 +53,12 @@ class Ahom(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert a non-negative integer to its Ahom decimal representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert a non-negative integer to Ahom numerals.
 
-        Encodes ``number`` as a sequence of Ahom digit glyphs representing its
+        Encodes ``denotation`` as a sequence of Ahom digit glyphs representing its
         decimal expansion, most-significant digit first. Zero is represented
         by the single zero glyph.
-
-        Args:
-            number: The non-negative integer to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> Ahom._to_numeral(0)
@@ -85,25 +74,16 @@ class Ahom(System[str, int]):
             >>> Ahom._to_numeral(100)
             '\U00011731\U00011730\U00011730'
         """
-        return positional_to_numeral(number, cls._to_numeral_map, 10)
+        return positional_to_numeral(denotation, cls._to_numeral_map, 10)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ahom numeral string to its integer value.
+        """Convert an Ahom numeral to an integer.
 
         Scans each character left-to-right. Positional digit glyphs (U+11730-
         U+11739) accumulate using ``total = total * 10 + digit``. The dedicated
         ten (U+1173A) and twenty (U+1173B) signs are treated as additive
         contributions of 10 and 20.
-
-        Args:
-            numeral: The numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Ahom._from_numeral('\U00011730')

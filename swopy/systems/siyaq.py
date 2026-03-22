@@ -4,12 +4,10 @@ This module implements numeral systems from the Siyaq accounting tradition,
 used in Ottoman Turkish and Indo-Persian administrative contexts.
 Currently supports:
 
-    Ottoman Siyaq  U+1ED00-U+1ED4F  (forty-five standard glyphs covering 1-9,
-                                      10-90, 100-900, 1000-9000, 10000-90000;
-                                      plus alternate forms at U+1ED2F-U+1ED3B)
-    Indic Siyaq    U+1EC70-U+1ECBF  (forty-five standard glyphs covering 1-9,
-                                      10-90, 100-900, 1000-9000, 10000-90000;
-                                      plus alternate and prefixed forms)
+    Ottoman Siyaq  U+1ED00-U+1ED4F  (forty-five standard glyphs plus
+                                      alternate forms at U+1ED2F-U+1ED3B)
+    Indic Siyaq    U+1EC70-U+1ECBF  (forty-five standard plus
+                                      alternate and prefixed forms)
 
 Both systems assign a unique glyph to each representable value (no repetition
 of a single glyph). Both are written right-to-left (largest denomination on
@@ -21,7 +19,7 @@ from collections.abc import Mapping
 from fractions import Fraction
 from typing import ClassVar
 
-from ..system import System
+from ..system import Encodings, System
 from ._algorithms import (
     reversed_char_sum_from_numeral,
     reversed_greedy_additive_to_numeral,
@@ -29,24 +27,26 @@ from ._algorithms import (
 
 
 class OttomanSiyaq(System[str, int]):
-    """Ottoman Siyaq numeral system converter.
+    """Implements bidirectional conversion between integers and Ottoman Siyaq numerals.
 
-    Implements bidirectional conversion between integers and Ottoman Siyaq
-    numeral strings using Unicode block U+1ED00-U+1ED4F. Each value from 1 to
-    90,000 in the appropriate denomination has its own unique glyph; no glyph
-    is ever repeated in a single numeral. The system is written right-to-left
-    (largest denomination on the right). The valid range is 1-99,999.
-
-    Alternate glyph forms (U+1ED2F-U+1ED3B) are accepted on input but are
-    never emitted on output.
+    - Uses Unicode block U+1ED00-U+1ED4F (forty-five standard glyphs: units 1-9, decades
+      10-90, hundreds 100-900, thousands 1,000-9,000, ten-thousands 10,000-90,000;
+      alternate forms at U+1ED2F-U+1ED3B accepted as input but not emitted)
+    - The system is purely additive with one unique glyph per denomination; written
+      right-to-left (largest denomination on the right)
+    - Encoding reverses the greedy result; decoding reverses the input before summing
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         90000: "\U0001ed2d",  # 𞴭 OTTOMAN SIYAQ NUMBER NINETY THOUSAND
@@ -114,20 +114,11 @@ class OttomanSiyaq(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Ottoman Siyaq numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Ottoman Siyaq numeral.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> OttomanSiyaq._to_numeral(1)
@@ -143,26 +134,15 @@ class OttomanSiyaq(System[str, int]):
             >>> OttomanSiyaq._to_numeral(99999)
             '𞴉𞴒𞴛𞴤𞴭'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Ottoman Siyaq numeral string to its Arabic integer value.
+        """Convert an Ottoman Siyaq numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph. Both standard and alternate glyph forms are
         accepted.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> OttomanSiyaq._from_numeral('𞴁')
@@ -188,25 +168,26 @@ class OttomanSiyaq(System[str, int]):
 
 
 class IndicSiyaq(System[str, int]):
-    """Indic Siyaq numeral system converter.
+    """Implements bidirectional conversion between integers and Indic Siyaq numerals.
 
-    Implements bidirectional conversion between integers and Indic Siyaq
-    numeral strings using Unicode block U+1EC70-U+1ECBF. Each value from 1 to
-    90,000 in the appropriate denomination has its own unique glyph; no glyph
-    is ever repeated in a single numeral. The system is written right-to-left
-    (largest denomination on the right). The valid range is 1-99,999.
-
-    Alternate and prefixed glyph forms are accepted on input but are never
-    emitted on output. Higher values (lakh, karor) use a separate multiplicative
-    prefix notation not implemented here.
+    - Uses Unicode block U+1EC70-U+1ECBF (forty-five standard glyphs: units 1-9, decades
+      10-90, hundreds 100-900, thousands 1,000-9,000, ten-thousands 10,000-90,000;
+      alternate and prefixed forms also accepted as input but not emitted)
+    - The system is purely additive with one unique glyph per denomination; written
+      right-to-left (largest denomination on the right)
+    - Encoding reverses the greedy result; decoding reverses the input before summing
 
     Attributes:
-        minimum: Minimum valid value (1).
-        maximum: Maximum valid value (99999).
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (99,999)
+        maximum_is_many: False - integers greater than 99,999 are not representable
+        encodings: UTF-8 only
     """
 
     minimum: ClassVar[int | float | Fraction] = 1
     maximum: ClassVar[int | float | Fraction] = 99999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
 
     _to_numeral_map: Mapping[int, str] = {
         90000: "\U0001ec9d",  # 𞲝 INDIC SIYAQ NUMBER NINETY THOUSAND
@@ -273,20 +254,11 @@ class IndicSiyaq(System[str, int]):
     }
 
     @classmethod
-    def _to_numeral(cls, number: int) -> str:
-        """Convert an Arabic integer to its Indic Siyaq numeral representation.
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to a Indic Siyaq numeral.
 
         Selects the unique glyph for each denomination, largest first, then
         reverses so the highest denomination appears rightmost (RTL).
-
-        Args:
-            number: The Arabic number to convert.
-
-        Returns:
-            The representation of the number in this numeral system.
-
-        Raises:
-            ValueError: If the number is outside the valid range.
 
         Examples:
             >>> IndicSiyaq._to_numeral(1)
@@ -302,26 +274,15 @@ class IndicSiyaq(System[str, int]):
             >>> IndicSiyaq._to_numeral(99999)
             '𞱹𞲂𞲋𞲔𞲝'
         """
-        return reversed_greedy_additive_to_numeral(number, cls._to_numeral_items)
+        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Indic Siyaq numeral string to its Arabic integer value.
+        """Convert an Indic Siyaq numeral to an integer.
 
         Reverses the input (right-to-left -> left-to-right) then sums the
         values of each glyph. Alternate, prefixed, and standard glyph forms
         are all accepted.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> IndicSiyaq._from_numeral('𞱱')

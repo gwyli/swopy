@@ -180,10 +180,12 @@ def make_double_strategy[
         ]
         if frac_bases:
             min_base = min(frac_bases)
+            compatible = all(base % min_base == 0 for base in frac_bases)
             resolved: set[BaseNFraction | type] = set()
             for k in kinds:
                 if isinstance(k, BaseNFraction) or k is Fraction:
-                    resolved.add(BaseNFraction(min_base))
+                    if compatible:
+                        resolved.add(BaseNFraction(min_base))
                 else:
                     resolved.add(k)
             kinds = resolved
