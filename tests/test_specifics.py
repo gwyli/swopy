@@ -114,8 +114,15 @@ class TestKharosthiKharosthi:
         m = systems.kharosthi.Kharosthi._to_numeral_map  # pyright: ignore[reportPrivateUsage]
         assert (
             systems.kharosthi.Kharosthi._units_str(n)  # pyright: ignore[reportPrivateUsage]
-            == self._units_str_reference(n, m)
+            == self._units_str_reference(n, m)  # pyright: ignore[reportArgumentType]
         )
+
+    def test_fraction_half(self) -> None:
+        assert systems.kharosthi.Kharosthi.to_numeral(Fraction(756, 2)) == "𐩂𐩆𐩅𐩅𐩅𐩄𐩃𐩃"
+
+    def test_non_representable_fraction(self) -> None:
+        with pytest.raises(ValueError, match="cannot be represented in Kharosthi"):
+            systems.kharosthi.Kharosthi._to_numeral(Fraction(1, 3))  # pyright: ignore[reportPrivateUsage]
 
 
 class TestGreekAttic:
@@ -556,7 +563,7 @@ class TestAlgorithmsMultiplicativeAdditive:
         numeral = systems.kharosthi.Kharosthi.to_numeral(number)
         m = systems.kharosthi.Kharosthi._from_numeral_map  # pyright: ignore[reportPrivateUsage]
         got = multiplicative_additive_from_numeral(numeral, m, "Kharosthi")
-        assert got == self._reference(numeral, m, "Kharosthi")
+        assert got == self._reference(numeral, m, "Kharosthi")  # pyright: ignore[reportArgumentType]
 
 
 class TestAlgorithmsMultiplicativeAdditiveTo:

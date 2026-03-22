@@ -137,20 +137,11 @@ class Hebrew(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Hebrew numeral representation.
+        """Convert an integer to Hebrew numerals.
 
         Uses greedy additive decomposition, then applies the traditional
         substitutions 15 → ט״ו (9+6) and 16 → ט״ז (9+7) to avoid forming
         abbreviated divine names.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Hebrew._to_numeral(1)
@@ -184,23 +175,12 @@ class Hebrew(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Hebrew numeral string to its Arabic integer value.
+        """Convert a Hebrew numeral to an integer.
 
         Sums the values of all tokens.  Two-character Geresh+letter tokens
         (thousands) are resolved before single-character tokens.  The
         Gershayim punctuation mark (U+05F4) is consumed but contributes 0.
         Both regular and final letterforms are accepted.
-
-        Args:
-            numeral: The Hebrew numeral string to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside
-                the valid range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Hebrew._from_numeral('א')

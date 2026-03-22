@@ -59,7 +59,7 @@ def positional_from_numeral(
 
 
 def greedy_additive_to_numeral(
-    number: int, numeral_items: Iterable[tuple[int, str]]
+    number: int | Fraction, numeral_items: Iterable[tuple[int | Fraction, str]]
 ) -> str:
     """Convert an integer to a numeral string using greedy additive decomposition.
 
@@ -90,7 +90,7 @@ def greedy_additive_to_numeral(
 
 
 def reversed_greedy_additive_to_numeral(
-    number: int, numeral_items: Iterable[tuple[int, str]]
+    number: int | Fraction, numeral_items: Iterable[tuple[int | Fraction, str]]
 ) -> str:
     """Convert an integer to a right-to-left numeral string.
 
@@ -155,11 +155,27 @@ def char_sum_from_numeral(
     return total
 
 
+@overload
 def reversed_char_sum_from_numeral(
     numeral: str,
     from_map: Mapping[str, int],
     system_name: str,
-) -> int:
+) -> int: ...
+
+
+@overload
+def reversed_char_sum_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int | Fraction],
+    system_name: str,
+) -> int | Fraction: ...
+
+
+def reversed_char_sum_from_numeral(
+    numeral: str,
+    from_map: Mapping[str, int | Fraction],
+    system_name: str,
+) -> int | Fraction:
     """Convert a right-to-left numeral string to a number by summing character values.
 
     Reverses ``numeral`` before processing, so that right-to-left writing systems
@@ -518,39 +534,52 @@ def multiplicative_myriad_from_numeral(
     return parse_sub(numeral)
 
 
+@overload
 def multiplicative_additive_from_numeral(
     numeral: str, from_map: Mapping[str, int], system_name: str
-) -> int:
-    """Convert a multiplicative-additive numeral string to an integer.
+) -> int: ...
+
+
+@overload
+def multiplicative_additive_from_numeral(
+    numeral: str, from_map: Mapping[str, int | Fraction], system_name: str
+) -> int | Fraction: ...
+
+
+def multiplicative_additive_from_numeral(
+    numeral: str, from_map: Mapping[str, int | Fraction], system_name: str
+) -> int | Fraction:
+    """Convert a multiplicative-additive numeral string to an integer or fraction.
 
     Infers character roles from their map values:
 
     - unit_glyphs: value in 1-9
     - multiplier_glyphs: value in {100, 1000}
     - decade_glyphs: value in 10-90 (multiples of 10)
+    - fraction_glyphs: value is a Fraction (terminal additive, flushes unit buffer)
 
     Scans left-to-right:
 
     - Unit glyphs accumulate in a buffer.
     - Multiplier glyphs flush the buffer as a multiplier (defaulting to 1
       when empty), then reset the buffer.
-    - Decade glyphs flush the buffer as additive ones first, then add the
-      decade value.
+    - Decade and fraction glyphs flush the buffer as additive ones first,
+      then add the glyph value.
 
     After the loop, any remaining buffer is added as ones.
 
     Args:
         numeral: The numeral string to convert.
-        from_map: Mapping from individual glyphs to their integer values.
+        from_map: Mapping from individual glyphs to their numeric values.
         system_name: Human-readable system name used in the error message.
 
     Returns:
-        The integer value of ``numeral``.
+        The value of ``numeral`` as an int or Fraction.
 
     Raises:
         ValueError: If ``numeral`` contains an unrecognised character.
     """
-    total = 0
+    total: int | Fraction = 0
     unit_buffer = 0
 
     for char in numeral:

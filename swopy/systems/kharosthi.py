@@ -23,7 +23,7 @@ from ._algorithms import (
 )
 
 
-def _make_units_table(m: Mapping[int, str]) -> tuple[str, ...]:
+def _make_units_table(m: Mapping[int | Fraction, str]) -> tuple[str, ...]:
     """Pre-compute the greedy (4,3,2,1) decomposition for all integers 0-9."""
     table: list[str] = []
     for n in range(10):
@@ -36,28 +36,30 @@ def _make_units_table(m: Mapping[int, str]) -> tuple[str, ...]:
     return tuple(table)
 
 
-class Kharosthi(System[str, int]):
-    """Implements bidirectional conversion between integers and Kharosthi numerals.
+class Kharosthi(System[str, int | Fraction]):
+    """Implements bidirectional conversion between integers or fractions and Kharosthi
+    numerals.
 
-    - Uses Unicode block U+10A40-U+10A47 (eight glyphs: units 1-4, ten, twenty,
+    - Uses Unicode block U+10A40-U+10A48 (nine glyphs: ½, units 1-4, ten, twenty,
       hundred, thousand)
     - The system is multiplicative-additive: unit symbols (1-4) preceding a hundreds or
       thousands symbol act as a multiplier (omitted when 1); tens are written additively
       using 20s then an optional 10; units use greedy decomposition with 4, 3, 2, 1
+    - U+10A48 KHAROSHTHI FRACTION ONE HALF is a standalone terminal glyph (½)
 
     Attributes:
-        minimum: Minimum valid value (1)
+        minimum: Minimum valid value (1/2)
         maximum: Maximum valid value (9999)
         maximum_is_many: False - integers greater than 9999 are not representable
         encodings: UTF-8 only
     """
 
-    minimum: ClassVar[int | float | Fraction] = 1
+    minimum: ClassVar[int | float | Fraction] = Fraction(1, 2)
     maximum: ClassVar[int | float | Fraction] = 9999
     maximum_is_many: ClassVar[bool] = False
     encodings: ClassVar[Encodings] = {"utf8"}
 
-    _to_numeral_map: Mapping[int, str] = {
+    _to_numeral_map: Mapping[int | Fraction, str] = {
         1000: "\U00010a47",  # 𐩇
         100: "\U00010a46",  # 𐩆
         20: "\U00010a45",  # 𐩅
@@ -66,9 +68,12 @@ class Kharosthi(System[str, int]):
         3: "\U00010a42",  # 𐩂
         2: "\U00010a41",  # 𐩁
         1: "\U00010a40",  # 𐩀
+        Fraction(1, 2): "\U00010a48",  # 𐩈 KHAROSHTHI FRACTION ONE HALF
     }
 
-    _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
+    _from_numeral_map: Mapping[str, int | Fraction] = {
+        v: k for k, v in _to_numeral_map.items()
+    }
     _units_table: ClassVar[tuple[str, ...]] = _make_units_table(_to_numeral_map)
 
     @classmethod
@@ -92,13 +97,15 @@ class Kharosthi(System[str, int]):
         return cls._units_table[n]
 
     @classmethod
-    def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Kharosthi numeral representation.
+    def _to_numeral(cls, denotation: int | Fraction) -> str:
+        """Convert an Arabic integer or fraction to its Kharosthi numeral
+        representation.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
         (omitted if 1) followed by the group symbol. Tens are written as
         additive 20s then an optional 10. Ones are written as additive unit
-        symbols using greedy decomposition with 4, 3, 2, 1.
+        symbols using greedy decomposition with 4, 3, 2, 1. A trailing ½ glyph
+        is appended when the fractional part equals 1/2.
 
         Args:
             denotation: The Arabic denotation to convert.
@@ -107,7 +114,8 @@ class Kharosthi(System[str, int]):
             The Kharosthi string representation of ``denotation``.
 
         Raises:
-            ValueError: If ``denotation`` is outside the valid range.
+            ValueError: If ``denotation`` is outside the valid range or has a
+                fractional part other than 1/2.
 
         Examples:
             >>> Kharosthi._to_numeral(1)
@@ -128,40 +136,63 @@ class Kharosthi(System[str, int]):
             '𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩁'
             >>> Kharosthi._to_numeral(9999)
             '𐩃𐩃𐩀𐩇𐩃𐩃𐩀𐩆𐩅𐩅𐩅𐩅𐩄𐩃𐩃𐩀'
+            >>> from fractions import Fraction
+            >>> Kharosthi._to_numeral(Fraction(1, 2))
+            '𐩈'
+            >>> Kharosthi._to_numeral(Fraction(3, 2))
+            '𐩀𐩈'
+            >>> Kharosthi._to_numeral(Fraction(1, 3))
+            Traceback (most recent call last):
+                ...
+            ValueError: 1/3 cannot be represented in Kharosthi.
         """
-        result = ""
+        if isinstance(denotation, int):
+            result = ""
 
-        # Thousands group: unit multiplier (omitted if 1) + 𐩇
-        thousands = denotation // 1000
-        denotation = denotation % 1000
-        if thousands:
-            if thousands > 1:
-                result += cls._units_str(thousands)
-            result += cls._to_numeral_map[1000]
+            # Thousands group: unit multiplier (omitted if 1) + 𐩇
+            thousands = denotation // 1000
+            denotation = denotation % 1000
+            if thousands:
+                if thousands > 1:
+                    result += cls._units_str(thousands)
+                result += cls._to_numeral_map[1000]
 
-        # Hundreds group: unit multiplier (omitted if 1) + 𐩆
-        hundreds = denotation // 100
-        denotation = denotation % 100
-        if hundreds:
-            if hundreds > 1:
-                result += cls._units_str(hundreds)
-            result += cls._to_numeral_map[100]
+            # Hundreds group: unit multiplier (omitted if 1) + 𐩆
+            hundreds = denotation // 100
+            denotation = denotation % 100
+            if hundreds:
+                if hundreds > 1:
+                    result += cls._units_str(hundreds)
+                result += cls._to_numeral_map[100]
 
-        # Tens: additive 20s then optional 10
-        twenties = denotation // 20
-        denotation = denotation % 20
-        result += cls._to_numeral_map[20] * twenties
-        tens = denotation // 10
-        denotation = denotation % 10
-        result += cls._to_numeral_map[10] * tens
+            # Tens: additive 20s then optional 10
+            twenties = denotation // 20
+            denotation = denotation % 20
+            result += cls._to_numeral_map[20] * twenties
+            tens = denotation // 10
+            denotation = denotation % 10
+            result += cls._to_numeral_map[10] * tens
 
-        # Ones: additive 4, 3, 2, 1
-        result += cls._units_str(denotation)
+            # Ones: additive 4, 3, 2, 1
+            result += cls._units_str(denotation)
+
+            return result
+
+        frac = Fraction(denotation)
+        integer_part = int(frac)
+        frac_part = frac - integer_part
+
+        result = cls._to_numeral(integer_part) if integer_part else ""
+
+        if frac_part == Fraction(1, 2):
+            result += cls._to_numeral_map[Fraction(1, 2)]
+        elif frac_part:
+            raise ValueError(f"{denotation} cannot be represented in {cls.__name__}.")
 
         return result
 
     @classmethod
-    def _from_numeral(cls, numeral: str) -> int:
+    def _from_numeral(cls, numeral: str) -> int | Fraction:
         """Convert a Kharosthi numeral string to its Arabic integer value.
 
         Scans left-to-right. Unit symbols (𐩀-𐩃) accumulate in a buffer.

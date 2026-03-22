@@ -549,20 +549,11 @@ class Etruscan(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Etruscan numeral representation.
+        """Convert an integer to Etruscan numerals.
 
         Uses a greedy decomposition (largest denomination first), then reverses
         the result so the highest-denomination glyphs appear on the right, in
         keeping with the Etruscan right-to-left writing convention.
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
 
         Examples:
             >>> Etruscan._to_numeral(1)
@@ -586,23 +577,12 @@ class Etruscan(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Etruscan numeral string to its Arabic integer value.
+        """Convert an Etruscan numeral to an integer.
 
         Accepts both Unicode glyphs (e.g. ``'𐌠𐌡'``) and their ASCII equivalents
         (e.g. ``'IΛ'``).  The string is expected in standard right-to-left reading
         order (largest denomination on the right), so it is reversed internally
         before summing.
-
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
 
         Examples:
             >>> Etruscan._from_numeral('𐌠𐌠𐌠𐌠')

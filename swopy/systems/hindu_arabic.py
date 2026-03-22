@@ -49,15 +49,6 @@ class Arabic(System[float | Fraction | int, float | Fraction | int]):
     def _to_numeral(cls, denotation: float | Fraction | int) -> float | Fraction | int:
         """Placeholder function for converting a denotation to a Arabic numeral.
 
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The representation of the denotation in this numeral system.
-
-        Raises:
-            ValueError: If the denotation is outside the valid range.
-
         Examples:
             >>> Arabic.to_numeral(1)
             1
@@ -70,22 +61,11 @@ class Arabic(System[float | Fraction | int, float | Fraction | int]):
     def _from_numeral(cls, numeral: float | Fraction | int) -> float | Fraction | int:
         """Placeholder function for converting an Arabic numeral to an denotation.
 
-        Args:
-            numeral: The numeral to convert.
-
-        Returns:
-            The denotation of the numeral in Arabic numerals.
-
-        Raises:
-            ValueError: If the Arabic representation of the numeral is outside the valid
-                range.
-            ValueError: If the numeral representation is invalid.
-
-         Examples:
-             >>> Arabic.from_numeral(1)
-             1
-             >>> Arabic.from_numeral(42)
-             42
+        Examples:
+            >>> Arabic.from_numeral(1)
+            1
+            >>> Arabic.from_numeral(42)
+            42
         """
         return numeral
 
@@ -138,20 +118,11 @@ class Bakhshali(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert an Arabic integer to its Bakhshali numeral representation.
+        """Convert an integer to Bakhshali numerals.
 
         Thousands and hundreds groups are written as a unit-symbol multiplier
         (omitted when 1) followed by the group symbol. Tens use a dedicated
         decade symbol (10-90). Ones use a dedicated unit symbol (1-9).
-
-        Args:
-            denotation: The Arabic denotation to convert.
-
-        Returns:
-            The Bakhshali string representation of ``denotation``.
-
-        Raises:
-            ValueError: If ``denotation`` is outside the valid range.
 
         Examples:
             >>> Bakhshali._to_numeral(1)
@@ -181,22 +152,13 @@ class Bakhshali(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Bakhshali numeral string to its Arabic integer value.
+        """Convert a Bakhshali numeral to an integer.
 
         Scans left-to-right. Unit symbols (𑇡-𑇩) accumulate in a buffer.
         When a hundreds (𑇳) or thousands (𑇴) symbol is encountered the buffer
         is treated as a multiplier (defaulting to 1 when empty) and is reset.
         Decade symbols (𑇪-𑇲) flush the unit buffer as additive ones then add
         their face value. Any remaining buffer is added as ones at the end.
-
-        Args:
-            numeral: The Bakhshali numeral string to convert.
-
-        Returns:
-            The integer value of ``numeral``.
-
-        Raises:
-            ValueError: If ``numeral`` contains an unrecognised character.
 
         Examples:
             >>> Bakhshali._from_numeral('𑇩')
