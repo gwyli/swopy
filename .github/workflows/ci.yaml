@@ -5,12 +5,17 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - '.github/**'
+      - 'docs/**'
       - 'scripts/**'
+      - 'site/**'
       - '.gitignore'
       - '.pre-commit-config.yaml'
+      - '.readthedocs.yml'
+      - '*.md'
       - 'pyproject.toml'
       - 'tox.toml'
       - 'uv.lock'
+      - 'zensical.toml'
 
 permissions:
   contents: read
