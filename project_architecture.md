@@ -2,6 +2,8 @@
 
 `swopy` uses the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html), with the exceptions listed in the `tool.ruff` sections of `pyproject.toml`.
 
+Currently swopy supports numeral systems that are not equivalent to Hindu-Arabic numerals in any script. It is assumed that a future feature to allow translations via the locale is the best implementation to include them.
+
 ## Adding a new system
 
  When adding a new system of numerals:
