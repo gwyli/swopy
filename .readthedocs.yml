@@ -7,7 +7,7 @@ build:
   jobs:
     post_install:
       - pip install uv
-      - uv sync --system --group docs
+      - uv sync --active --only-group docs
     build:
       html:
         - zensical build
