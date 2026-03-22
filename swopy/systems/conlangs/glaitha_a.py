@@ -24,7 +24,7 @@ _ZERO = 0xE910
 
 
 class GlaithaA(System[str, int]):
-    """Implements bidirectional conversion between non-negative integers and GlaithaA
+    """Implements bidirectional conversion between non-negative integers and Glaitha-A
     numerals.
 
     - Uses Unicode Private Use Area U+E910-U+E91F (UCSUR block U+E900-U+E97F)
@@ -47,7 +47,7 @@ class GlaithaA(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert a non-negative integer to GlaithaA numerals.
+        """Convert a non-negative integer to Glaitha-A numerals.
 
         Examples:
             >>> GlaithaA._to_numeral(0)
@@ -61,7 +61,7 @@ class GlaithaA(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a GlaithaA numeral string to a non-negative integer.
+        """Convert a Glaitha-A numeral string to a non-negative integer.
 
         Examples:
             >>> GlaithaA._from_numeral('\ue910')

@@ -1,11 +1,11 @@
-"""Zirinka numeral system converters.
+"""Zírí:nka numeral system converters.
 
-This module implements numeral systems from the Zirinka conlang.
+This module implements numeral systems from the Zírí:nka conlang.
 Currently supports:
 
     Zirinka   U+E354-U+E35B  (Private Use Area)
 
-Zirinka uses a positional base-8 (octal) encoding with eight unique digit
+Zírí:nka uses a positional base-8 (octal) encoding with eight unique digit
 glyphs assigned from the UCSUR Private Use Area block U+E340-U+E35F.  Each
 digit position is a power of 8; numbers are written most-significant digit
 first (left-to-right).
@@ -23,7 +23,7 @@ _ZERO = 0xE354
 
 
 class Zirinka(System[str, int]):
-    """Implements bidirectional conversion between non-negative integers and Zirinka
+    """Implements bidirectional conversion between non-negative integers and Zírí:nka
     numerals.
 
     - Uses Unicode Private Use Area U+E354-U+E35B (UCSUR block U+E340-U+E35F)
@@ -46,7 +46,7 @@ class Zirinka(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert a non-negative integer to Zirinka numerals.
+        """Convert a non-negative integer to Zírí:nka numerals.
 
         Examples:
             >>> Zirinka._to_numeral(0)
@@ -60,7 +60,7 @@ class Zirinka(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Zirinka numeral string to a non-negative integer.
+        """Convert a Zírí:nka numeral string to a non-negative integer.
 
         Examples:
             >>> Zirinka._from_numeral('\ue354')

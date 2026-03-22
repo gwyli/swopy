@@ -1,11 +1,11 @@
-"""Engsvanyali numeral system converters.
+"""Engsvanyáli numeral system converters.
 
-This module implements numeral systems from the Engsvanyali conlang.
+This module implements numeral systems from the Engsvanyáli conlang.
 Currently supports:
 
     Engsvanyali   U+E140-U+E149  (Private Use Area)
 
-Engsvanyali uses a positional base-10 encoding with ten unique digit glyphs
+Engsvanyáli uses a positional base-10 encoding with ten unique digit glyphs
 assigned from the UCSUR Private Use Area block U+E100-U+E14F.  Digits 0-9
 map to U+E140-U+E149.  Numbers are written most-significant digit first
 (left-to-right).  Additional standalone glyphs for 10 (U+E14A), 100
@@ -27,7 +27,7 @@ _ZERO = 0xE140
 
 class Engsvanyali(System[str, int]):
     """Implements bidirectional conversion between non-negative integers and
-    Engsvanyali numerals.
+    Engsvanyáli numerals.
 
     - Uses Unicode Private Use Area U+E140-U+E149 (UCSUR block U+E100-U+E14F)
     - The system is positional in base 10 with 10 unique digit glyphs
@@ -72,7 +72,7 @@ class Engsvanyali(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert an Engsvanyali numeral string to a non-negative integer.
+        """Convert an Engsvanyáli numeral string to a non-negative integer.
 
         Standalone large-number glyphs (U+E14A-U+E14E) are accepted as input.
 

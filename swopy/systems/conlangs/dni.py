@@ -25,7 +25,7 @@ _ZERO = 0xE860
 
 
 class Dni(System[str, int]):
-    """Implements bidirectional conversion between non-negative integers and Dni
+    """Implements bidirectional conversion between non-negative integers and D'ni
     numerals.
 
     - Uses Unicode Private Use Area U+E860-U+E878 (UCSUR block U+E830-U+E88F)
@@ -53,7 +53,7 @@ class Dni(System[str, int]):
 
     @classmethod
     def _to_numeral(cls, denotation: int) -> str:
-        """Convert a non-negative integer to Dni numerals.
+        """Convert a non-negative integer to D'ni numerals.
 
         Examples:
             >>> Dni._to_numeral(0)
@@ -67,7 +67,7 @@ class Dni(System[str, int]):
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int:
-        """Convert a Dni numeral string to a non-negative integer.
+        """Convert a D'ni numeral string to a non-negative integer.
 
         The glyph U+E879 is accepted as a standalone alias for 25.
 
