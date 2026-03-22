@@ -6,8 +6,7 @@ build:
     python: "3.12"
   jobs:
     post_install:
-      - curl -LsSf https://astral.sh/uv/install.sh | sh
-      - export PATH="$HOME/.cargo/bin:$PATH"
+      - pip install uv
       - uv sync --system --group docs
     build:
       html:
