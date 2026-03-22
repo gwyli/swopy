@@ -128,6 +128,15 @@ class TestKharosthiKharosthi:
 class TestGreekAttic:
     """Specific tests for systems.greek.Attic."""
 
+    def test_additive_fraction(self) -> None:
+        """
+        Checks that the additive nature of Attic fractions is preserved
+        """
+
+        assert systems.greek.Attic.from_numeral(
+            systems.greek.Attic.to_numeral(Fraction(3, 4))
+        ) == Fraction(3, 4)
+
     def test_non_representable_fraction(self) -> None:
         """Checks that a ValueError is raised for a fraction that cannot be
         represented in Attic numerals (only 1/2 and 1/4 are supported).
@@ -1182,3 +1191,35 @@ class TestIsValidDenotation:
     def test_fraction_rejected_for_int_only_system(self) -> None:
         """Fraction is not valid for systems that only accept int."""
         assert not systems.mayan.Mayan.is_valid_denotation(Fraction(1, 2))
+
+
+class TestUnrepresentableFractions:
+    """Regression tests for ValueError on non-representable fractional denotations."""
+
+    def test_rumi_non_representable_fraction_raises(self) -> None:
+        """Rumi only supports {1/4, 1/3, 1/2, 2/3}; other fractions raise."""
+        with pytest.raises(ValueError):
+            systems.arabic.Rumi._to_numeral(  # pyright: ignore[reportPrivateUsage]
+                Fraction(5, 6)
+            )
+
+    def test_cuneiform_non_representable_fraction_raises(self) -> None:
+        """Cuneiform only supports 1/3 and 2/3; other fractions raise."""
+        with pytest.raises(ValueError):
+            systems.cuneiform.Cuneiform._to_numeral(  # pyright: ignore[reportPrivateUsage]
+                Fraction(3, 4)
+            )
+
+    def test_meroitic_cursive_non_representable_fraction_raises(self) -> None:
+        """MeroiticCursive only supports twelfths; other fractions raise."""
+        with pytest.raises(ValueError):
+            systems.meroitic.MeroiticCursive._to_numeral(  # pyright: ignore[reportPrivateUsage]
+                Fraction(1, 5)
+            )
+
+    def test_old_sogdian_non_representable_fraction_raises(self) -> None:
+        """OldSogdian only supports 1/2; other fractions raise."""
+        with pytest.raises(ValueError):
+            systems.sogdian.OldSogdian._to_numeral(  # pyright: ignore[reportPrivateUsage]
+                Fraction(3, 4)
+            )

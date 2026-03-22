@@ -1,8 +1,12 @@
 # Numeral Systems
 
-`swopy` supports 46 numeral systems across 20 families.
+`swopy` supports 52 numeral systems across 23 families.
 
 ### Numeral Systems
+
+::: swopy.systems.arabic
+    options:
+      heading_level: 4
 
 ::: swopy.systems.aramaic
     options:
@@ -48,6 +52,10 @@
     options:
       heading_level: 4
 
+::: swopy.systems.iranic
+    options:
+      heading_level: 4
+
 ::: swopy.systems.kaktovik
     options:
       heading_level: 4
@@ -61,6 +69,10 @@
       heading_level: 4
 
 ::: swopy.systems.medefaidrin
+    options:
+      heading_level: 4
+
+::: swopy.systems.meroitic
     options:
       heading_level: 4
 
@@ -97,5 +109,9 @@
       heading_level: 4
 
 ::: swopy.systems.south_arabian
+    options:
+      heading_level: 4
+
+::: swopy.systems.turkic
     options:
       heading_level: 4

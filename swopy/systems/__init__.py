@@ -11,10 +11,12 @@ from ..systems import (
     greek,
     hebrew,
     hindu_arabic,
+    iranic,
     kaktovik,
     kharosthi,
     mayan,
     medefaidrin,
+    meroitic,
     nabataean,
     numeric_systems,
     pahlavi,
@@ -24,6 +26,7 @@ from ..systems import (
     siyaq,
     sogdian,
     south_arabian,
+    turkic,
 )
 
 __all__ = [
@@ -39,10 +42,12 @@ __all__ = [
     "greek",
     "hebrew",
     "hindu_arabic",
+    "iranic",
     "kaktovik",
     "kharosthi",
     "mayan",
     "medefaidrin",
+    "meroitic",
     "nabataean",
     "numeric_systems",
     "pahlavi",
@@ -52,4 +57,5 @@ __all__ = [
     "siyaq",
     "sogdian",
     "south_arabian",
+    "turkic",
 ]

@@ -21,12 +21,13 @@ from fractions import Fraction
 from math import inf
 from typing import Any
 
+from hypothesis import strategies as st
 from hypothesis.strategies import SearchStrategy, one_of
 
 from swopy import Denotation, Numeral, System
 
 from . import builders
-from .numeric_type import BaseNFraction, infer_numeric_kind
+from .numeric_type import BaseNFraction, SampledFractions, infer_numeric_kind
 
 
 def _resolve_bounds[
@@ -136,8 +137,18 @@ def make_strategy[
             else:
                 builders_.append(builder.build(kind, lo, None))
 
-        # Otherwise, an expected success
-        # where bounds result in the exact number being returned
+        # Otherwise, an expected failure: generate out-of-bounds values.
+        elif isinstance(kind, SampledFractions):
+            # Fractions are in (0, 1) so none fall outside [lo, hi]; instead
+            # generate any fraction within the valid range that is not in the set.
+            lo_valid, hi_valid = _resolve_bounds(from_system, to_system)
+            builders_.append(
+                st.fractions(min_value=lo_valid, max_value=hi_valid).filter(
+                    lambda f, exc=kind.fractions: (
+                        (fp := f - int(f)) != 0 and fp not in exc
+                    )
+                )
+            )
         elif not over_max:
             builders_.append(builder.build(kind, hi, None))
             builders_.append(builder.build(kind, None, lo))
@@ -146,6 +157,46 @@ def make_strategy[
             builders_.append(builder.build(kind, None, lo))
 
     return one_of(*builders_)
+
+
+def _is_fraction_kind(k: Any) -> bool:
+    return k is Fraction or isinstance(k, (BaseNFraction, SampledFractions))
+
+
+def _resolve_sampled_kinds(
+    kinds: set[Any],
+    sampled: list[SampledFractions],
+    frac_bases: list[int],
+) -> set[Any]:
+    """Replace fraction-related kinds with the intersection of sampled fraction sets."""
+    result = {k for k in kinds if not _is_fraction_kind(k)}
+    combined: frozenset[Fraction] = sampled[0].fractions
+    for sf in sampled[1:]:
+        combined &= sf.fractions
+    if frac_bases:
+        min_base = min(frac_bases)
+        if all(base % min_base == 0 for base in frac_bases):
+            combined = frozenset(f for f in combined if min_base % f.denominator == 0)
+    if combined:
+        result.add(SampledFractions(combined))
+    return result
+
+
+def _resolve_base_n_kinds(
+    kinds: set[Any],
+    frac_bases: list[int],
+) -> set[Any]:
+    """Replace fraction-related kinds with a compatible BaseNFraction."""
+    min_base = min(frac_bases)
+    compatible = all(base % min_base == 0 for base in frac_bases)
+    resolved: set[BaseNFraction | type] = set()
+    for k in kinds:
+        if _is_fraction_kind(k):
+            if compatible:
+                resolved.add(BaseNFraction(min_base))
+        else:
+            resolved.add(k)
+    return resolved
 
 
 def make_double_strategy[
@@ -171,31 +222,33 @@ def make_double_strategy[
     Returns:
         A Hypothesis SearchStrategy for all (in)valid types for the Systems
     """
+    from_kinds = infer_numeric_kind(from_system)
+    to_kinds = infer_numeric_kind(to_system)
+
     if not falsify:
-        from_kinds = infer_numeric_kind(from_system)
-        to_kinds = infer_numeric_kind(to_system)
         kinds = from_kinds & to_kinds
-        frac_bases = [
-            k.base for k in (*from_kinds, *to_kinds) if isinstance(k, BaseNFraction)
-        ]
-        if frac_bases:
-            min_base = min(frac_bases)
-            compatible = all(base % min_base == 0 for base in frac_bases)
-            resolved: set[BaseNFraction | type] = set()
-            for k in kinds:
-                if isinstance(k, BaseNFraction) or k is Fraction:
-                    if compatible:
-                        resolved.add(BaseNFraction(min_base))
-                else:
-                    resolved.add(k)
-            kinds = resolved
+        all_kinds = (*from_kinds, *to_kinds)
+        sampled = [k for k in all_kinds if isinstance(k, SampledFractions)]
+        frac_bases = [k.base for k in all_kinds if isinstance(k, BaseNFraction)]
+        if sampled and Fraction in kinds:
+            kinds = _resolve_sampled_kinds(kinds, sampled, frac_bases)
+        elif frac_bases:
+            kinds = _resolve_base_n_kinds(kinds, frac_bases)
     else:
-        kinds = infer_numeric_kind(from_system) ^ infer_numeric_kind(to_system)
+        kinds = from_kinds ^ to_kinds
 
     builders_: list[SearchStrategy[Any]] = []
 
     for kind in kinds:
-        lo, hi = _resolve_bounds(from_system, to_system)
+        if falsify:
+            # Each XOR kind belongs to exactly one system; bound by that
+            # system so values outside the other's range are reachable.
+            owner: type[System[Any, Any]] = (
+                from_system if kind in from_kinds else to_system
+            )
+            lo, hi = _resolve_bounds(owner, None)
+        else:
+            lo, hi = _resolve_bounds(from_system, to_system)
 
         builder = builders.get_builder(kind)
         builders_.append(builder.build(kind, lo, hi))

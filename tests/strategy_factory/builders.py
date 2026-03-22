@@ -18,7 +18,7 @@ from typing import Any
 from hypothesis import assume
 from hypothesis import strategies as st
 
-from .numeric_type import BaseNFraction, NumericKind
+from .numeric_type import BaseNFraction, NumericKind, SampledFractions
 
 
 class StrategyBuilder[TNumeric: NumericKind](ABC):
@@ -166,3 +166,29 @@ class BaseNFractionStrategyBuilder(StrategyBuilder[Any]):
             return Fraction(numerator, denominator)
 
         return _strategy()
+
+
+@register_builder(SampledFractions)
+class SampledFractionsBuilder(StrategyBuilder[Any]):
+    """
+    Generates fractions drawn exactly from a fixed set (for systems with an incomplete
+    base-N fraction set).  Only fractions within [minimum, maximum] are included.
+    """
+
+    def build(
+        self,
+        kind: SampledFractions,
+        minimum: Fraction | None = None,
+        maximum: Fraction | None = None,
+    ) -> st.SearchStrategy:
+        fracs = sorted(
+            f
+            for f in kind.fractions
+            if (minimum is None or f >= minimum) and (maximum is None or f <= maximum)
+        )
+        if not fracs:
+            raise ValueError(
+                f"No representable fractions in {kind.fractions!r} "
+                f"within bounds [{minimum}, {maximum}]."
+            )
+        return st.sampled_from(fracs)

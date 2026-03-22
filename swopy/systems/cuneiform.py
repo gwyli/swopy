@@ -3,13 +3,17 @@
 This module implements numeral systems from the Cuneiform script family.
 Currently supports:
 
-    Cuneiform  U+12400-U+1247F  (Cuneiform Numbers and Punctuation block)
-               U+12000-U+123FF  (main block; ASH and DISH base signs)
+    Cuneiform   U+12400-U+1247F  (Cuneiform Numbers and Punctuation block)
+                U+12000-U+123FF  (main block; ASH and DISH base signs)
+    OldPersian  U+103D0-U+103D5  (Old Persian block)
 
 Cuneiform is a purely additive system using greedy decomposition for encoding
 and character-sum for decoding.  Multiple-of-10 signs (THREE DISH through
 NINE DISH) and unit signs (TWO ASH through NINE ASH) are combined greedily;
 the value 20 is represented by two DISH signs.
+
+Old Persian uses five additive glyphs (1, 2, 10, 20, 100); encoding uses
+greedy decomposition left-to-right and decoding sums each character.
 """
 
 from collections.abc import Mapping
@@ -149,5 +153,87 @@ class Cuneiform(System[str, int | Fraction]):
             Traceback (most recent call last):
                 ...
             ValueError: Invalid Cuneiform character: '?'
+        """
+        return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
+
+
+class OldPersian(System[str, int]):
+    """Implements bidirectional conversion between integers and Old Persian numerals.
+
+    - Uses Unicode block U+103D0-U+103D5 (five glyphs: 1, 2, 10, 20, 100)
+    - The system is purely additive with greedy decomposition left-to-right
+    - Encoding uses the largest denomination first; decoding sums each character
+
+    Attributes:
+        minimum: Minimum valid value (1)
+        maximum: Maximum valid value (999)
+        maximum_is_many: False - integers greater than 999 are not representable
+        encodings: UTF-8 only
+    """
+
+    minimum: ClassVar[int | float | Fraction] = 1
+    maximum: ClassVar[int | float | Fraction] = 999
+    maximum_is_many: ClassVar[bool] = False
+    encodings: ClassVar[Encodings] = {"utf8"}
+
+    _to_numeral_map: Mapping[int, str] = {
+        100: "\U000103d5",  # 𐏕 OLD PERSIAN NUMBER HUNDRED
+        20: "\U000103d4",  # 𐏔 OLD PERSIAN NUMBER TWENTY
+        10: "\U000103d3",  # 𐏓 OLD PERSIAN NUMBER TEN
+        2: "\U000103d2",  # 𐏒 OLD PERSIAN NUMBER TWO
+        1: "\U000103d1",  # 𐏑 OLD PERSIAN NUMBER ONE
+    }
+
+    _from_numeral_map: Mapping[str, int] = {v: k for k, v in _to_numeral_map.items()}
+
+    @classmethod
+    def _to_numeral(cls, denotation: int) -> str:
+        """Convert an integer to Old Persian numerals.
+
+        Uses greedy additive decomposition, largest denomination first.
+
+        Examples:
+            >>> OldPersian._to_numeral(1)
+            '𐏑'
+            >>> OldPersian._to_numeral(2)
+            '𐏒'
+            >>> OldPersian._to_numeral(10)
+            '𐏓'
+            >>> OldPersian._to_numeral(20)
+            '𐏔'
+            >>> OldPersian._to_numeral(21)
+            '𐏔𐏑'
+            >>> OldPersian._to_numeral(100)
+            '𐏕'
+            >>> OldPersian._to_numeral(122)
+            '𐏕𐏔𐏒'
+            >>> OldPersian._to_numeral(999)
+            '𐏕𐏕𐏕𐏕𐏕𐏕𐏕𐏕𐏕𐏔𐏔𐏔𐏔𐏓𐏒𐏒𐏒𐏒𐏑'
+        """
+        return greedy_additive_to_numeral(denotation, cls._to_numeral_items)
+
+    @classmethod
+    def _from_numeral(cls, numeral: str) -> int:
+        """Convert an Old Persian numeral to an integer.
+
+        Sums the values of each glyph in the string.
+
+        Examples:
+            >>> OldPersian._from_numeral('𐏑')
+            1
+            >>> OldPersian._from_numeral('𐏒')
+            2
+            >>> OldPersian._from_numeral('𐏓')
+            10
+            >>> OldPersian._from_numeral('𐏔')
+            20
+            >>> OldPersian._from_numeral('𐏕')
+            100
+            >>> OldPersian._from_numeral('𐏕𐏔𐏒')
+            122
+            >>> OldPersian._from_numeral('?')
+            Traceback (most recent call last):
+                ...
+            ValueError: Invalid OldPersian character: '?'
         """
         return char_sum_from_numeral(numeral, cls._from_numeral_map, cls.__name__)
