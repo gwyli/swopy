@@ -8,11 +8,12 @@ from typing import ClassVar
 
 import pytest
 from hypothesis import given
+from hypothesis.strategies import one_of
 
 from swopy import System
 
-from .factory import make_strategy
-from .numeric_type import BaseNFraction, infer_numeric_kind
+from .factory import make_double_strategy, make_strategy
+from .numeric_type import BaseNFraction, SampledFractions, infer_numeric_kind
 
 
 class FloatSystem(System[float, float]):
@@ -34,17 +35,23 @@ class Base12FractionSystem(System[str, Fraction]):
     """
     A system whose named values imply a base-12 (duodecimal) structure.
     The factory infers base=12 from the LCM of the denominators in `map`.
+    All 11 twelfths (1/12 through 11/12) are present, so the set is complete.
     """
 
     minimum: ClassVar[int | float | Fraction] = Fraction(0)
     maximum: ClassVar[int | float | Fraction] = Fraction(1)
     _from_numeral_map: Mapping[str, Fraction] = {
-        "one_third": Fraction(1, 3),
-        "one_half": Fraction(1, 2),
-        "one_quarter": Fraction(1, 4),
-        "five_sixths": Fraction(5, 6),
         "one_twelfth": Fraction(1, 12),
+        "one_sixth": Fraction(1, 6),
+        "one_quarter": Fraction(1, 4),
+        "one_third": Fraction(1, 3),
+        "five_twelfths": Fraction(5, 12),
+        "one_half": Fraction(1, 2),
         "seven_twelfths": Fraction(7, 12),
+        "two_thirds": Fraction(2, 3),
+        "three_quarters": Fraction(3, 4),
+        "five_sixths": Fraction(5, 6),
+        "eleven_twelfths": Fraction(11, 12),
     }
 
 
@@ -57,12 +64,17 @@ class FractionIntSystem(System[str, Fraction | int]):
     minimum: ClassVar[int | float | Fraction] = Fraction(0)
     maximum: ClassVar[int | float | Fraction] = 1
     _from_numeral_map: Mapping[str, Fraction | int] = {
-        "one_third": Fraction(1, 3),
-        "one_half": Fraction(1, 2),
-        "one_quarter": Fraction(1, 4),
-        "five_sixths": Fraction(5, 6),
         "one_twelfth": Fraction(1, 12),
+        "one_sixth": Fraction(1, 6),
+        "one_quarter": Fraction(1, 4),
+        "one_third": Fraction(1, 3),
+        "five_twelfths": Fraction(5, 12),
+        "one_half": Fraction(1, 2),
         "seven_twelfths": Fraction(7, 12),
+        "two_thirds": Fraction(2, 3),
+        "three_quarters": Fraction(3, 4),
+        "five_sixths": Fraction(5, 6),
+        "eleven_twelfths": Fraction(11, 12),
         "one": 1,
     }
 
@@ -198,13 +210,55 @@ def test_infers_base12_fraction():
     assert kind.base == 12  # noqa: PLR2004
 
 
+class SampledASystem(System[str, Fraction]):
+    """Incomplete fraction set: {1/3, 1/2} — additive closure cannot reach 1/6."""
+
+    minimum: ClassVar[int | float | Fraction] = Fraction(0)
+    maximum: ClassVar[int | float | Fraction] = Fraction(1)
+    _from_numeral_map: Mapping[str, Fraction] = {
+        "one_third": Fraction(1, 3),
+        "one_half": Fraction(1, 2),
+    }
+
+
+class SampledBSystem(System[str, Fraction]):
+    """Incomplete fraction set: {1/5, 1/2} — additive closure cannot reach 1/10."""
+
+    minimum: ClassVar[int | float | Fraction] = Fraction(0)
+    maximum: ClassVar[int | float | Fraction] = Fraction(1)
+    _from_numeral_map: Mapping[str, Fraction] = {
+        "one_fifth": Fraction(1, 5),
+        "one_half": Fraction(1, 2),
+    }
+
+
+class TestDoubleSampledFractionsStrategy:
+    """make_double_strategy with two SampledFractions systems intersects their sets."""
+
+    def test_infers_sampled_kinds(self):
+        kind_a = infer_numeric_kind(SampledASystem).pop()
+        kind_b = infer_numeric_kind(SampledBSystem).pop()
+        assert isinstance(kind_a, SampledFractions)
+        assert isinstance(kind_b, SampledFractions)
+
+    @given(one_of(*make_double_strategy(SampledASystem, SampledBSystem)))
+    def test_values_are_intersection_of_fraction_sets(self, value: Fraction):
+        # {1/3, 1/2} ∩ {1/5, 1/2} = {1/2}
+        assert value == Fraction(1, 2)
+
+    @given(one_of(*make_double_strategy(SampledASystem, SampledBSystem)))
+    def test_values_in_bounds(self, value: Fraction):
+        assert SampledASystem.minimum <= value <= SampledASystem.maximum
+
+
 def test_infers_base_from_simple_halves_and_quarters():
     class Base4System(System[str, Fraction]):
         minimum: ClassVar[int | float | Fraction] = Fraction(0)
         maximum: ClassVar[int | float | Fraction] = Fraction(1)
         _from_numeral_map: Mapping[str, Fraction] = {
-            "half": Fraction(1, 2),
             "quarter": Fraction(1, 4),
+            "half": Fraction(1, 2),
+            "three_quarters": Fraction(3, 4),
         }
 
     kind = infer_numeric_kind(Base4System).pop()

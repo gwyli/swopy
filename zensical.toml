@@ -5,7 +5,7 @@ repo_url = "https://github.com/gwyli/swopy"
 
 nav = [
   { "Home" = "index.md" },
-  { "API Reference" = ["reference/terms.md","reference/api.md","reference/systems.md"]}
+  { "API Reference" = ["reference/terms.md","reference/api.md","reference/systems.md","reference/conlangs.md"]}
 ]
 
 [project.theme]

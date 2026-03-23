@@ -4,6 +4,8 @@ This module contains property-based tests using Hypothesis for main swopy API to
 convert between different numeral systems.
 """
 
+from fractions import Fraction
+from math import inf
 from typing import Any
 
 import pytest
@@ -21,6 +23,33 @@ from swopy import (
 from .strategy_factory.factory import make_double_strategy, make_strategy
 
 SYSTEMS: list[type[System[Any, Any]]] = list(get_all_systems().values())
+
+
+@given(strategies.data())
+def test_round_the_world(data: strategies.DataObject) -> None:
+    """Performs a round-the-world trip through every system to test the full
+    set of algorithms."""
+
+    lo: int | float | Fraction = -inf
+    hi: int | float | Fraction = inf
+
+    # Calculate the global high and low bounds that would result in a
+    # successful round trip.
+    for system in SYSTEMS:
+        lo = max(lo, system.minimum)
+        hi = min(hi, system.maximum)
+
+    lo = int(lo)
+    hi = int(hi)
+
+    # Some systems only support integers so the test need only use this type.
+    numeral = data.draw(strategies.integers(min_value=lo, max_value=hi))
+
+    previous_system = systems.hindu_arabic.Arabic
+
+    for system in SYSTEMS:
+        numeral = swop(numeral, previous_system, system)
+        previous_system = system
 
 
 @given(

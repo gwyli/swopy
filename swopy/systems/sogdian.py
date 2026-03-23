@@ -150,6 +150,7 @@ class OldSogdian(System[str, int | Fraction]):
         """Convert an integer or fraction to Old Sogdian numerals.
 
         Uses greedy additive decomposition, largest denomination first.
+        The only representable fraction is 1/2.
 
         Examples:
             >>> OldSogdian._to_numeral(1)
@@ -164,8 +165,35 @@ class OldSogdian(System[str, int | Fraction]):
             '𐼥'
             >>> OldSogdian._to_numeral(999)
             '𐼠𐼡𐼤𐼤𐼤𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥𐼥'
+            >>> from fractions import Fraction
+            >>> OldSogdian._to_numeral(Fraction(3, 2))
+            '𐼝𐼦'
+            >>> OldSogdian._to_numeral(Fraction(3, 4))
+            Traceback (most recent call last):
+                ...
+            ValueError: 3/4 cannot be represented in OldSogdian.
         """
-        return reversed_greedy_additive_to_numeral(denotation, cls._to_numeral_items)
+        if isinstance(denotation, int):
+            return reversed_greedy_additive_to_numeral(
+                denotation, cls._to_numeral_items
+            )
+
+        frac = Fraction(denotation)
+        integer_part = int(frac)
+        frac_part = frac - integer_part
+
+        result = (
+            reversed_greedy_additive_to_numeral(integer_part, cls._to_numeral_items)
+            if integer_part
+            else ""
+        )
+
+        if frac_part == Fraction(1, 2):
+            result += cls._to_numeral_map[Fraction(1, 2)]
+        elif frac_part:
+            raise ValueError(f"{denotation} cannot be represented in {cls.__name__}.")
+
+        return result
 
     @classmethod
     def _from_numeral(cls, numeral: str) -> int | Fraction:

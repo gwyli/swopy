@@ -8,7 +8,7 @@ Currently swopy supports numeral systems that are not equivalent to Hindu-Arabic
 
  When adding a new system of numerals:
 
- 1. If it doesn't exist, add a new file to `swopy/systems/` with the name of the script family from which the numeral system comes from
+ 1. If it doesn't exist, add a new file to `swopy/systems/` with the name of the script family from which the numeral system comes from. If it's a conlang add the file to `swopy/systems/conlangs` with the name of the conlang
  2. Add a class named after the numeral system to the new file inheriting from the ABC `System`
  3. Implement the abstact method `_to_numeral` to translate from an Arabic number to the new numeral system in the new class
    - use an already existing algorithms from `_algorithms.py` if available
@@ -24,8 +24,8 @@ Currently swopy supports numeral systems that are not equivalent to Hindu-Arabic
  6. Implement the variable `_from_numeral_map`
     - `_from_numeral_map` should include both upper- and lower-case variants of a string so that the API will accept both
  7. Implement `_to_numeral_map`, the reverse of `_from_numeral_map`, but only including the most common variant to output a consistent approach to the user
- 8. Add the system to the correct location in `docs/references/systems.md`
- 9. Register the system in `swopy/systems/__init__.py` and add to `__all__`
+ 8. Add the system to the correct location in `docs/references/systems.md`, or if a conlang to `docs/references/conlangs.md`
+ 9. Register the module in `swopy/systems/__init__.py` and add to `__all__`, or if a conlang register the class in `swopy/systems/conlangs/__init__.py`.
  10. Use `noqa: RUF001 RUF002 RUF003` as needed to avoid linting errors
  11. `test_swopy.py` and `test_systems.py` should not be modified to make a single system pass testing. They exist to test the API of all systems.
 
@@ -171,4 +171,4 @@ Optimisations applied (in order):
 - `tox -p` — runs all envs in parallel (3.13, 3.14.0, 3.14.3, 3.15.0a7, lint, typecheck, dependencycheck, zizmor)
 - Linter: ruff (88-char line limit); formatter: Black via ruff
 - Type checker: Pyright
-- `noqa: RUF001 RUF002 RUF003` used throughout for Unicode ambiguous characters in numeral maps
+- `noqa: RUF001 RUF002 RUF003` used throughout for Unicode ambiguous characters in numeral maps or comments

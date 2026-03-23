@@ -20,6 +20,10 @@
     options:
       heading_level: 4
 
+::: swopy.system.Encodings
+    options:
+      heading_level: 4
+
 ## Systems
 
 ::: swopy.system.System

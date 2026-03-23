@@ -13,15 +13,13 @@ The following systems need to be added
 - Old Persian: https://www.unicode.org/charts/PDF/U103A0.pdf
 - Chorasmian: https://www.unicode.org/charts/PDF/U10FB0.pdf
 - Rumi: https://www.unicode.org/charts/PDF/U10E60.pdf
-- Merotic: https://www.unicode.org/charts/PDF/U109A0.pdf
+- Merotic Cursive: https://www.unicode.org/charts/PDF/U109A0.pdf
 - Old Hungrian: https://www.unicode.org/charts/PDF/U10C80.pdf
-- Sinhala Archaia numbers: https://www.unicode.org/charts/PDF/U111E0.pdf
-- Bhaiksuki: https://www.unicode.org/charts/PDF/U11C00.pdf
-- Viniculum form of Roman numerals: There is no specific Viniculum Unicode block, however, they're possible to construct with the combining characters U+0305 (◌̅) and U+033F (◌̿)
+- Vinculum form of Roman numerals: There is no specific Viniculum Unicode block, however, they're possible to construct with the combining characters U+0305 (◌̅) and U+033F (◌̿)
 
 ### Investigate
 
-The following systems should be investigate to see whether they fit the criteria for inclusion
+The following systems should be investigated to see whether they fit the criteria for inclusion
 
 - Myanmar Extended C: https://www.unicode.org/charts/PDF/U116D0.pdf
 - Nushu: https://en.wikipedia.org/wiki/N%C3%BCshu
@@ -67,7 +65,11 @@ The following systems are assumed to be based on Hindu-Arabic numerals but are n
 
 ### Conlangs
 
-The [ConScript Unicode Registry](https://www.evertype.com/standards/csur/) and the [Under-ConScript Unicode Registry](https://www.kreativekorp.com/ucsur/) coordinate the use of the Unicode Private Use Area to to include conlangs in Unicode, assuming the user has installed a compatible font. Most numbers in conlangs are direct translations of Hindu-Arabic numerals and thus would normally be excluded, however, they are highly unlikely to ever be availble in any future local-based feature for translation and so should be considered.
+The [ConScript Unicode Registry](https://www.evertype.com/standards/csur/) and the [Under-ConScript Unicode Registry](https://www.kreativekorp.com/ucsur/) coordinate the use of the Unicode Private Use Area to to include conlangs in Unicode, assuming the user has installed a compatible font. Most numbers in conlangs are direct translations of Hindu-Arabic numerals and thus would normally be excluded, however, they are highly unlikely to ever be availble in any future local-based feature for translation and so are eligible.
+
+The Under-ConScript Unicode Registry is a the superset register. Conlangs will be placed in `swopy/systems/conlangs/` in a file <conlang-name>.py with the class name `Conlang`. `conlangs/__init__.py` will import the class and make the class public in `__all__` meaning that conlangs are separated, but can be accessed in swopy via `systems.conlangs.ConlangClass`.
+
+Process: iterate through the (U)CSUR Allocations table on https://www.kreativekorp.com/ucsur/. Read the PDF. If it does not contain numerals ignore it. If it does contain numerals follow the instructions for adding a conlang. I've added __init__.py.
 
 
 ## Testing
